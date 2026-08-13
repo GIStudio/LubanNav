@@ -1,13 +1,65 @@
 export const DATASET = {
-  id: 'hkustgz-schematic-v1',
-  name: 'HKUST(GZ) schematic navigation graph',
+  id: 'hkustgz-osm-navigation-v1',
+  name: 'HKUST(GZ) OSM-backed navigation graph',
   version: '2026-08-13',
-  coordinateSystem: 'local-svg-estimated',
-  sourceUrl: 'https://studyathkustgz.hkust-gz.edu.cn/detail-819',
-  sourceDate: '2025-05-07',
+  coordinateSystem: 'WGS84 with legacy local coordinates',
+  sourceUrl: 'https://www.openstreetmap.org/way/894157108',
+  sourceDate: '2026-08-13',
+  mapAttribution: '© OpenStreetMap contributors',
+  mapLicense: 'ODbL-1.0',
   disclaimer:
-    '地点名称与相对布局参考学校公开校园地图；坐标、距离和连通关系为演示估算，未经现场测绘，不可用于真实机器人运动控制。',
+    '建筑、水域和道路来自 OpenStreetMap；导航拓扑、距离与部分地点坐标仍为演示估算，未经现场测绘，不可用于真实机器人运动控制。',
 };
+
+export const CAMPUS_BOUNDS = [
+  [22.8855, 113.474],
+  [22.895, 113.484],
+];
+
+const GEO_COORDINATES = {
+  'main-entrance': [113.4783197, 22.8878039],
+  administration: [113.476636, 22.8900975],
+  'activity-center': [113.4776701, 22.8898246],
+  'west-concourse': [113.47664, 22.89094],
+  'east-concourse': [113.4782, 22.89015],
+  library: [113.4780569, 22.8923387],
+  'food-court': [113.4780496, 22.8917561],
+  'lecture-halls': [113.4775173, 22.8914252],
+  w1: [113.4762296, 22.8912547],
+  w2: [113.4763811, 22.891729],
+  w3: [113.4767096, 22.8922243],
+  w4: [113.4770166, 22.8925521],
+  e1: [113.4781055, 22.8902847],
+  e2: [113.4784656, 22.8906208],
+  e3: [113.4787573, 22.8911057],
+  e4: [113.4789368, 22.8915546],
+  'south-residences': [113.48015, 22.88834],
+  'dorm-1': [113.4790276, 22.8890118],
+  'dorm-2': [113.4785597, 22.8882702],
+  'dorm-3': [113.4802928, 22.8883275],
+  'dorm-4': [113.4799256, 22.8874005],
+  'dorm-5': [113.4813012, 22.8878173],
+  'dorm-6': [113.4812714, 22.8868343],
+  'sports-hall': [113.4813014, 22.8887634],
+  stadium: [113.4819696, 22.890055],
+  'academic-south': [113.47743, 22.89032],
+  'academic-center': [113.4775, 22.89086],
+  'west-mid': [113.47655, 22.89176],
+  'west-north': [113.477, 22.89218],
+  'east-mid': [113.4785, 22.89104],
+  'east-north': [113.47834, 22.89186],
+  'east-crossing': [113.47867, 22.88923],
+  'residence-west': [113.47915, 22.88862],
+  'residence-center': [113.48014, 22.88788],
+  'residence-east': [113.4812, 22.88753],
+  'sports-junction': [113.48078, 22.88906],
+  'stadium-junction': [113.48142, 22.88963],
+};
+
+function geographicPosition(id) {
+  const [longitude, latitude] = GEO_COORDINATES[id];
+  return { longitude, latitude };
+}
 
 const publicNode = (id, name, en, x, y, category, aliases = []) => ({
   id,
@@ -18,6 +70,7 @@ const publicNode = (id, name, en, x, y, category, aliases = []) => ({
   category,
   aliases,
   public: true,
+  ...geographicPosition(id),
 });
 
 const waypoint = (id, x, y) => ({
@@ -29,6 +82,7 @@ const waypoint = (id, x, y) => ({
   category: 'waypoint',
   aliases: [],
   public: false,
+  ...geographicPosition(id),
 });
 
 export const NODES = [
@@ -217,23 +271,3 @@ export const MODES = {
     accessibleOnly: true,
   },
 };
-
-export const BUILDINGS = [
-  { id: 'w4', x: 92, y: 126, w: 152, h: 66, label: 'W-4' },
-  { id: 'w3', x: 70, y: 226, w: 150, h: 64, label: 'W-3' },
-  { id: 'w2', x: 70, y: 316, w: 150, h: 64, label: 'W-2' },
-  { id: 'w1', x: 92, y: 412, w: 150, h: 64, label: 'W-1' },
-  { id: 'e4', x: 490, y: 126, w: 152, h: 66, label: 'E-4' },
-  { id: 'e3', x: 520, y: 226, w: 150, h: 64, label: 'E-3' },
-  { id: 'e2', x: 520, y: 316, w: 150, h: 64, label: 'E-2' },
-  { id: 'e1', x: 490, y: 412, w: 150, h: 64, label: 'E-1' },
-  { id: 'administration', x: 260, y: 520, w: 130, h: 75, label: '行政' },
-  { id: 'activity-center', x: 435, y: 520, w: 125, h: 75, label: '活动中心' },
-  { id: 'sports-hall', x: 795, y: 320, w: 155, h: 100, label: '体育馆', round: true },
-  { id: 'dorm-1', x: 650, y: 515, w: 105, h: 62, label: '宿舍 1' },
-  { id: 'dorm-3', x: 785, y: 515, w: 105, h: 62, label: '宿舍 3' },
-  { id: 'dorm-5', x: 920, y: 515, w: 105, h: 62, label: '宿舍 5' },
-  { id: 'dorm-2', x: 665, y: 642, w: 110, h: 62, label: '宿舍 2' },
-  { id: 'dorm-4', x: 810, y: 642, w: 110, h: 62, label: '宿舍 4' },
-  { id: 'dorm-6', x: 955, y: 642, w: 110, h: 62, label: '宿舍 6' },
-];

@@ -8,6 +8,10 @@ describe('findRoute', () => {
     expect(route.status).toBe('ok');
     expect(route.path[0].id).toBe('main-entrance');
     expect(route.path.at(-1).id).toBe('library');
+    expect(route.path[0]).toMatchObject({
+      longitude: 113.4783197,
+      latitude: 22.8878039,
+    });
     expect(route.summary.distanceMeters).toBeGreaterThan(0);
     expect(route.instructions.at(-1)).toContain('图书馆');
   });

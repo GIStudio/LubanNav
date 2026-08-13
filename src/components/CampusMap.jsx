@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
-import { BUILDINGS, EDGES, NODE_BY_ID, PUBLIC_LOCATIONS } from '../data/campus.js';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { CAMPUS_BOUNDS, NODE_BY_ID, PUBLIC_LOCATIONS } from '../data/campus.js';
 
 const CATEGORY_LABELS = {
   entrance: '入口',
@@ -9,30 +11,266 @@ const CATEGORY_LABELS = {
   sports: '运动',
 };
 
+const OSM_DATA_URL = `${import.meta.env.BASE_URL}data/campus-osm.geojson`;
+const CAMPUS_CENTER = [22.8902, 113.4791];
+
+function roadWeight(highway) {
+  if (['motorway', 'trunk', 'primary', 'secondary', 'tertiary'].includes(highway)) return 5;
+  if (['residential', 'unclassified'].includes(highway)) return 3.8;
+  if (['service', 'pedestrian'].includes(highway)) return 3;
+  return 2;
+}
+
+function roadColor(highway) {
+  if (['motorway', 'trunk', 'primary', 'secondary', 'tertiary'].includes(highway)) return '#73888b';
+  if (['footway', 'path', 'steps', 'pedestrian'].includes(highway)) return '#5f8f8a';
+  return '#526f74';
+}
+
+function tooltipName(feature) {
+  return feature.properties.name ?? feature.properties['name:en'] ?? feature.properties.ref;
+}
+
+function addOsmLayers(map, data) {
+  const canvas = L.canvas({ padding: 0.5, tolerance: 5 });
+  const isClass = (featureClass) => (feature) => feature.properties.featureClass === featureClass;
+  const bindTooltip = (feature, layer) => {
+    const name = tooltipName(feature);
+    if (name) layer.bindTooltip(name, { className: 'osm-feature-tooltip', sticky: true });
+  };
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'waterPane',
+    filter: isClass('water'),
+    style: {
+      fillColor: '#145869',
+      fillOpacity: 0.72,
+      color: '#23798a',
+      opacity: 0.8,
+      weight: 1.2,
+    },
+    onEachFeature: bindTooltip,
+  }).addTo(map);
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'roadPane',
+    filter: isClass('waterway'),
+    style: {
+      color: '#277b89',
+      opacity: 0.76,
+      weight: 3,
+    },
+    onEachFeature: bindTooltip,
+  }).addTo(map);
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'roadPane',
+    filter: isClass('road'),
+    style: (feature) => ({
+      color: '#061722',
+      opacity: 0.78,
+      weight: roadWeight(feature.properties.highway) + 3.4,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }),
+  }).addTo(map);
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'roadDetailPane',
+    filter: isClass('road'),
+    style: (feature) => ({
+      color: roadColor(feature.properties.highway),
+      opacity: feature.properties.tunnel === 'yes' ? 0.36 : 0.92,
+      weight: roadWeight(feature.properties.highway),
+      dashArray: ['footway', 'path', 'steps'].includes(feature.properties.highway) ? '5 6' : null,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }),
+    onEachFeature: bindTooltip,
+  }).addTo(map);
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'buildingPane',
+    filter: isClass('building'),
+    style: (feature) => ({
+      fillColor: feature.properties.building === 'dormitory' ? '#173f50' : '#1a4655',
+      fillOpacity: 0.92,
+      color: '#4f7880',
+      opacity: 0.94,
+      weight: 1.1,
+    }),
+    onEachFeature: bindTooltip,
+  }).addTo(map);
+}
+
+function locationLatLng(location) {
+  return [location.latitude, location.longitude];
+}
+
 export function CampusMap({ route, destination, onSelectDestination }) {
-  const [zoom, setZoom] = useState(1);
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerLayerRef = useRef(null);
+  const routeLayerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const routeIds = useMemo(() => new Set(route?.path.map((node) => node.id) ?? []), [route]);
-  const pathPoints = route?.path.map((node) => `${node.x},${node.y}`).join(' ') ?? '';
+  const [mapStatus, setMapStatus] = useState('loading');
+  const [zoom, setZoom] = useState(17);
 
   useEffect(() => {
-    setZoom(1);
-  }, [route?.request.from, route?.request.to]);
+    if (!containerRef.current || mapRef.current) return undefined;
 
-  const visibleLocations = PUBLIC_LOCATIONS.filter(
-    (location) => selectedCategory === 'all' || location.category === selectedCategory,
-  );
+    const map = L.map(containerRef.current, {
+      attributionControl: false,
+      center: CAMPUS_CENTER,
+      zoom: 17,
+      minZoom: 16,
+      maxZoom: 21,
+      zoomControl: false,
+      preferCanvas: true,
+      zoomSnap: 0.25,
+      wheelPxPerZoomLevel: 90,
+      maxBounds: L.latLngBounds(CAMPUS_BOUNDS).pad(0.2),
+    });
+    map.createPane('waterPane').style.zIndex = 220;
+    map.createPane('roadPane').style.zIndex = 260;
+    map.createPane('roadDetailPane').style.zIndex = 270;
+    map.createPane('buildingPane').style.zIndex = 320;
+    map.createPane('routePane').style.zIndex = 430;
+    map.createPane('locationPane').style.zIndex = 470;
+    map.fitBounds(CAMPUS_BOUNDS, { padding: [28, 28] });
+    map.on('zoomend', () => setZoom(map.getZoom()));
+
+    mapRef.current = map;
+    markerLayerRef.current = L.layerGroup().addTo(map);
+    routeLayerRef.current = L.layerGroup().addTo(map);
+
+    fetch(OSM_DATA_URL)
+      .then((response) => {
+        if (!response.ok) throw new Error(`OSM GeoJSON ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        addOsmLayers(map, data);
+        setMapStatus('ready');
+      })
+      .catch((error) => {
+        console.error(error);
+        setMapStatus('error');
+      });
+
+    const resizeObserver = new ResizeObserver(() => map.invalidateSize({ pan: false }));
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = markerLayerRef.current;
+    if (!map || !layer) return;
+    layer.clearLayers();
+
+    PUBLIC_LOCATIONS.filter(
+      (location) => selectedCategory === 'all' || location.category === selectedCategory,
+    ).forEach((location) => {
+      const selected = destination === location.id;
+      const marker = L.circleMarker(locationLatLng(location), {
+        pane: 'locationPane',
+        radius: selected ? 8 : 5.5,
+        color: selected ? '#071c2c' : '#79ded5',
+        weight: selected ? 3 : 2,
+        fillColor: selected ? '#b9f227' : '#0d3142',
+        fillOpacity: 1,
+      });
+      marker.bindTooltip(location.name, {
+        className: selected ? 'location-tooltip selected' : 'location-tooltip',
+        direction: 'top',
+        offset: [0, -8],
+        permanent: selected,
+      });
+      marker.on('click', () => onSelectDestination(location.id));
+      marker.addTo(layer);
+    });
+  }, [destination, onSelectDestination, selectedCategory]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = routeLayerRef.current;
+    if (!map || !layer || !route?.path.length) return;
+    layer.clearLayers();
+
+    const latLngs = route.path.map((node) => [node.latitude, node.longitude]);
+    L.polyline(latLngs, {
+      pane: 'routePane',
+      color: '#b9f227',
+      opacity: 0.2,
+      weight: 16,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(layer);
+    L.polyline(latLngs, {
+      pane: 'routePane',
+      color: '#b9f227',
+      opacity: 1,
+      weight: 5,
+      dashArray: '12 9',
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(layer);
+    L.circleMarker(latLngs[0], {
+      pane: 'routePane',
+      radius: 8,
+      color: '#071c2c',
+      weight: 3,
+      fillColor: '#79ded5',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(layer);
+    L.circleMarker(latLngs[latLngs.length - 1], {
+      pane: 'routePane',
+      radius: 9,
+      color: '#071c2c',
+      weight: 3,
+      fillColor: '#b9f227',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(layer);
+
+    map.fitBounds(L.latLngBounds(latLngs), {
+      paddingTopLeft: [55, 70],
+      paddingBottomRight: [55, 70],
+      maxZoom: 18.25,
+      animate: true,
+    });
+  }, [route]);
+
+  function resetView() {
+    mapRef.current?.fitBounds(CAMPUS_BOUNDS, { padding: [28, 28], animate: true });
+  }
 
   return (
-    <section class="map-panel" aria-label="校园示意地图">
+    <section class="map-panel" aria-label="OpenStreetMap 校园地图">
       <div class="map-toolbar">
         <div>
-          <p class="eyebrow">SCHEMATIC / 01</p>
+          <p class="eyebrow">OSM / WGS84</p>
           <h2>校园路径网络</h2>
         </div>
         <div class="legend" aria-label="地图图例">
           <span><i class="legend-line active" />推荐路径</span>
-          <span><i class="legend-dot" />可导航地点</span>
+          <span><i class="legend-building" />建筑</span>
+          <span><i class="legend-road" />道路</span>
+          <span><i class="legend-water" />水域</span>
         </div>
       </div>
 
@@ -43,121 +281,26 @@ export function CampusMap({ route, destination, onSelectDestination }) {
         ))}
       </div>
 
-      <div class="map-viewport">
-        <svg
-          class="campus-map"
-          viewBox="0 0 1100 760"
-          style={{ transform: `scale(${zoom})` }}
-          role="img"
-          aria-labelledby="map-title map-desc"
+      <div class="map-viewport osm-map-viewport">
+        <div ref={containerRef} class="osm-map" role="img" aria-label="港科大广州校园 OSM 建筑、水域和道路地图" />
+        {mapStatus !== 'ready' && (
+          <div class={`map-loading ${mapStatus}`} role="status">
+            {mapStatus === 'loading' ? '正在载入本地 OSM 数据…' : 'OSM 数据载入失败'}
+          </div>
+        )}
+        <a
+          class="osm-attribution"
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
         >
-          <title id="map-title">香港科技大学（广州）校园轻量示意地图</title>
-          <desc id="map-desc">显示主入口、教学区、宿舍区与体育设施之间的演示路径网络。</desc>
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(136, 180, 173, .08)" stroke-width="1" />
-            </pattern>
-            <filter id="routeGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="6" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-          </defs>
-
-          <rect width="1100" height="760" fill="url(#grid)" />
-          <path class="water" d="M1045 -20 C990 130 1088 278 1028 430 C986 535 1095 652 1020 790 L1140 790 L1140 -20Z" />
-          <path class="campus-road" d="M15 720 H1085 M345 720 V610 M610 500 H1045 M745 492 C770 380 770 270 815 90" />
-          <path class="green-loop" d="M34 610 C75 520 155 510 230 570 S330 670 410 620 S560 510 635 585" />
-          <ellipse class="stadium" cx="900" cy="155" rx="120" ry="82" />
-          <ellipse class="stadium-field" cx="900" cy="155" rx="91" ry="58" />
-          <text class="map-area-label" x="900" y="160" text-anchor="middle">体育场</text>
-
-          <g class="network" aria-hidden="true">
-            {EDGES.map((item) => {
-              const from = NODE_BY_ID[item.from];
-              const to = NODE_BY_ID[item.to];
-              return (
-                <line
-                  key={`${item.from}-${item.to}`}
-                  x1={from.x}
-                  y1={from.y}
-                  x2={to.x}
-                  y2={to.y}
-                  class={item.covered ? 'network-edge covered' : 'network-edge'}
-                />
-              );
-            })}
-          </g>
-
-          <g class="buildings" aria-hidden="true">
-            {BUILDINGS.map((building) => (
-              <g key={building.id} class={routeIds.has(building.id) ? 'building route-building' : 'building'}>
-                <rect
-                  x={building.x}
-                  y={building.y}
-                  width={building.w}
-                  height={building.h}
-                  rx={building.round ? 36 : 7}
-                />
-                <text x={building.x + building.w / 2} y={building.y + building.h / 2 + 5} text-anchor="middle">
-                  {building.label}
-                </text>
-              </g>
-            ))}
-          </g>
-
-          <g class="academic-core" aria-hidden="true">
-            <circle cx="365" cy="135" r="30" />
-            <circle cx="365" cy="220" r="27" />
-            <circle cx="365" cy="305" r="27" />
-            <text x="365" y="140" text-anchor="middle">图书馆</text>
-            <text x="365" y="225" text-anchor="middle">饭堂</text>
-            <text x="365" y="310" text-anchor="middle">演讲厅</text>
-          </g>
-
-          {route && (
-            <g class="active-route" aria-label="当前推荐路径">
-              <polyline class="route-glow" points={pathPoints} />
-              <polyline class="route-line" points={pathPoints} filter="url(#routeGlow)" />
-              <circle class="route-start" cx={route.path[0].x} cy={route.path[0].y} r="11" />
-              <circle
-                class="route-end"
-                cx={route.path[route.path.length - 1].x}
-                cy={route.path[route.path.length - 1].y}
-                r="12"
-              />
-            </g>
-          )}
-
-          <g class="locations">
-            {visibleLocations.map((location) => (
-              <g
-                key={location.id}
-                class={`location-marker ${destination === location.id ? 'selected' : ''}`}
-                transform={`translate(${location.x} ${location.y})`}
-                role="button"
-                tabIndex="0"
-                aria-label={`导航到${location.name}`}
-                onClick={() => onSelectDestination(location.id)}
-                onKeyDown={(event) => event.key === 'Enter' && onSelectDestination(location.id)}
-              >
-                <circle r="8" />
-                <circle class="marker-pulse" r="14" />
-                <title>{location.name} / {location.en}</title>
-              </g>
-            ))}
-          </g>
-
-          <g class="north-arrow" transform="translate(1050 65)" aria-hidden="true">
-            <path d="M0 18 L10 -16 L20 18 L10 10Z" />
-            <text x="10" y="34" text-anchor="middle">N</text>
-          </g>
-        </svg>
-
-        <div class="map-note">非测绘图 · 距离为估算</div>
+          © OpenStreetMap contributors · ODbL
+        </a>
+        <div class="map-note">OSM 实际几何 · 路径仍为演示估算</div>
         <div class="zoom-controls" aria-label="地图缩放">
-          <button onClick={() => setZoom((value) => Math.min(1.6, value + 0.15))} aria-label="放大地图">＋</button>
-          <button onClick={() => setZoom(1)} aria-label="重置缩放">{Math.round(zoom * 100)}%</button>
-          <button onClick={() => setZoom((value) => Math.max(0.8, value - 0.15))} aria-label="缩小地图">−</button>
+          <button onClick={() => mapRef.current?.zoomIn()} aria-label="放大地图">＋</button>
+          <button onClick={resetView} aria-label="显示完整校园">{zoom.toFixed(1)}</button>
+          <button onClick={() => mapRef.current?.zoomOut()} aria-label="缩小地图">−</button>
         </div>
       </div>
     </section>

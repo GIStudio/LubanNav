@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "refresh:osm": "node scripts/fetch-osm-campus.mjs",
     "generate:api": "node scripts/generate-static-api.mjs",
     "build": "npm run generate:api && vite build",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "preact": "^10.27.1"
   },
   "devDependencies": {

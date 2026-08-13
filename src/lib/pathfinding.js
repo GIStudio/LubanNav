@@ -85,7 +85,14 @@ export function findRoute(from, to, modeId = 'pedestrian') {
         },
         path: pathIds.map((id) => {
           const node = NODE_BY_ID[id];
-          return { id: node.id, name: node.name, x: node.x, y: node.y };
+          return {
+            id: node.id,
+            name: node.name,
+            x: node.x,
+            y: node.y,
+            longitude: node.longitude,
+            latitude: node.latitude,
+          };
         }),
         instructions: makeInstructions(pathIds),
         disclaimer: DATASET.disclaimer,
