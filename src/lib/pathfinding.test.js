@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MODES, PUBLIC_LOCATIONS } from '../data/campus.js';
-import { findRoute } from './pathfinding.js';
+import { findRoute, getLocationBinding, getRoutingGraph } from './pathfinding.js';
 
 describe('findRoute', () => {
   it('finds an A* route with expected endpoints and summary', () => {
@@ -35,6 +35,83 @@ describe('findRoute', () => {
     ]);
     expect(route.instructions.some((instruction) => instruction.includes('室内通道'))).toBe(true);
     expect(route.instructions.at(-1)).toContain('图书馆');
+  });
+
+  it('returns a self-contained ordered segment path with coordinates and edge metadata', () => {
+    const route = findRoute('dorm-5', 'library', 'pedestrian');
+    expect(route.schemaVersion).toBe('1.3');
+    expect(route.summary.segmentCount).toBe(route.segments.length);
+    expect(route.segments[0]).toMatchObject({
+      segmentType: 'location-connector',
+      source: 'inferred-building-boundary',
+    });
+    expect(route.segments.some((segment) => segment.segmentType === 'osm-road')).toBe(true);
+    expect(route.segments.some((segment) => segment.segmentType === 'indoor-path')).toBe(true);
+
+    for (const [index, segment] of route.segments.entries()) {
+      expect(segment.from).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          longitude: expect.any(Number),
+          latitude: expect.any(Number),
+        }),
+      );
+      expect(segment.to).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          longitude: expect.any(Number),
+          latitude: expect.any(Number),
+        }),
+      );
+      if (index < route.segments.length - 1) {
+        expect(segment.to).toMatchObject(route.segments[index + 1].from);
+      }
+    }
+
+    const detailedDistance = route.segments.reduce(
+      (total, segment) => total + segment.distanceMeters,
+      0,
+    );
+    expect(Math.abs(detailedDistance - route.summary.distanceMeters)).toBeLessThanOrEqual(0.5);
+    expect(route.geometry).toEqual({
+      type: 'LineString',
+      coordinates: route.path.map((point) => [point.longitude, point.latitude]),
+    });
+  });
+
+  it('embeds resolved routing nodes and exports a graph that needs no OSM lookup', () => {
+    const binding = getLocationBinding('dorm-5');
+    expect(binding).toMatchObject({
+      roadNodeId: 'osm-node/10775863297',
+      roadNode: {
+        id: 'osm-node/10775863297',
+        osmNodeId: 10775863297,
+        longitude: expect.any(Number),
+        latitude: expect.any(Number),
+      },
+      routingByMode: {
+        pedestrian: {
+          routingNodeId: 'osm-node/10775863297',
+          routingNode: {
+            longitude: expect.any(Number),
+            latitude: expect.any(Number),
+          },
+          connectorDistanceMeters: 5.12,
+        },
+      },
+    });
+
+    const routingGraph = getRoutingGraph();
+    const nodeIds = new Set(routingGraph.graph.nodes.map((node) => node.id));
+    expect(routingGraph.schemaVersion).toBe('1.0');
+    expect(routingGraph.directed).toBe(false);
+    expect(nodeIds.has(binding.roadNodeId)).toBe(true);
+    expect(routingGraph.graph.edges.length).toBeGreaterThan(300);
+    expect(routingGraph.locations['dorm-5'].routing.roadNode).toEqual(binding.roadNode);
+    for (const edge of routingGraph.graph.edges) {
+      expect(nodeIds.has(edge.from)).toBe(true);
+      expect(nodeIds.has(edge.to)).toBe(true);
+    }
   });
 
   it('keeps an unverified indoor segment out of the robot search space', () => {

@@ -26,7 +26,11 @@
     <section>
       <h2>1. 查询地点 ID</h2>
       <pre>GET <a href="./v1/locations.json">./v1/locations.json</a></pre>
-      <h2>2. 查询路径</h2>
+      <p>地点绑定不仅包含 <code>roadNodeId</code>，也内嵌对应节点的经纬度和分模式路由节点。</p>
+      <h2>2. 下载完整寻路图（后端离线 A*）</h2>
+      <pre>GET <a href="./v1/routing-graph.json">./v1/routing-graph.json</a></pre>
+      <p>文件包含全部节点、边、模式权限与地点绑定。后端缓存这一份 JSON 后，无需另行持有或查询 OSM 数据。</p>
+      <h2>3. 查询预计算路径</h2>
       <pre>GET ./v1/routes/{from}/{to}.{mode}.json</pre>
       <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。路线由 OSM <code>footway/path/pedestrian/service</code> 与分层室内 <code>corridor</code> 共同构图，并使用 A* 计算。</p>
       <pre>GET <a href="./v1/routes/main-entrance/library.pedestrian.json">./v1/routes/main-entrance/library.pedestrian.json</a></pre>
@@ -37,7 +41,8 @@
       <h2>响应边界</h2>
       <ul>
         <li>HTTP 200 表示该预生成组合存在；未知 ID 返回 GitHub Pages 的 404。</li>
-        <li>响应同时包含 WGS84 经纬度和旧版局部坐标，并公开入口来源、吸附道路节点、连接段距离与经过的 OSM way。</li>
+        <li>路线的 <code>segments</code> 是完整有序路段：每段包含起终点经纬度、距离、道路类型、模式权限、来源与 OSM way / 室内要素 ID。</li>
+        <li><code>path</code> 和 GeoJSON <code>geometry</code> 可直接绘制；无需再用 <code>roadNodeId</code> 查询坐标。</li>
         <li>建筑缺少 OSM 入口时，系统使用距离可通行道路节点最近的建筑边界点，并明确标记为推断入口。</li>
         <li>室内补丁公开 <code>level</code>、模式权限、数据来源和核验状态；未核验室内段默认只进入步行搜索空间。</li>
         <li>建筑、入口、水域和道路来自 OpenStreetMap，遵循 ODbL 1.0；数据仍未经现场通行性测绘。</li>

@@ -3,6 +3,7 @@ dist/
 public/api/v1/routes/
 public/api/v1/locations.json
 public/api/v1/catalog.json
+public/api/v1/routing-graph.json
 .DS_Store
 playwright-report/
 test-results/

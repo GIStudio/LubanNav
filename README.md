@@ -10,17 +10,18 @@ GitHub Pages 不运行服务端代码。构建时，LubanNav 会为所有公开�
 
 ```text
 GET https://<user>.github.io/<repo>/api/v1/locations.json
+GET https://<user>.github.io/<repo>/api/v1/routing-graph.json
 GET https://<user>.github.io/<repo>/api/v1/routes/main-entrance/library.pedestrian.json
 GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 ```
 
-完整机器可读目录位于 `api/v1/catalog.json`，网页 API 说明位于 `api/`。
+已知地点对可以直接读取预计算路线。需要在自己的后端运行 A* 时，只需缓存 `routing-graph.json`；它内含全部节点坐标、边、模式权限、地点入口和分模式图节点绑定，不依赖另一份 OSM 数据。完整机器可读目录位于 `api/v1/catalog.json`，网页 API 说明位于 `api/`。
 
 响应示例：
 
 ```json
 {
-  "schemaVersion": "1.2",
+  "schemaVersion": "1.3",
   "dataset": "hkustgz-layered-routing-v3",
   "status": "ok",
   "request": {
@@ -34,7 +35,8 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
     "distanceEstimated": true,
     "roadDistanceMeters": 896,
     "connectorDistanceMeters": 46,
-    "indoorDistanceMeters": 51
+    "indoorDistanceMeters": 51,
+    "segmentCount": 38
   },
   "path": [
     {
@@ -45,6 +47,19 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
       "latitude": 22.8883663
     }
   ],
+  "segments": [
+    {
+      "id": "way/1192908727/1",
+      "from": {"id": "osm-node/10763132989", "longitude": 113.4776815, "latitude": 22.8883663},
+      "to": {"id": "osm-node/11073090128", "longitude": 113.4777049, "latitude": 22.8884435},
+      "distanceMeters": 8.913,
+      "highway": "service",
+      "osmWayId": 1192908727,
+      "segmentType": "osm-road",
+      "modes": ["pedestrian", "robot"]
+    }
+  ],
+  "geometry": {"type": "LineString", "coordinates": [[113.4776815, 22.8883663], [113.4777049, 22.8884435]]},
   "routing": {
     "engine": "layered-osm-indoor-a-star",
     "allowedHighways": ["footway", "path", "pedestrian", "service"],
@@ -66,7 +81,16 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 
 第二种链接需要浏览器执行页面 JavaScript；需要原始 JSON 时使用上面的静态 API。
 
-路径节点同时提供 WGS84 `longitude` / `latitude` 和早期客户端使用的 `x` / `y`。后者只为兼容保留，不应解释为地理坐标。
+`path` 是可直接绘制的有序点列，并同时提供 WGS84 `longitude` / `latitude` 和早期客户端使用的 `x` / `y`；后者只为兼容保留，不应解释为地理坐标。`segments` 是后端导航应优先使用的有序路段，逐段给出起终点经纬度、距离、`highway`、`segmentType`、可用模式、OSM way 或室内要素来源。`geometry` 是可直接读取的 GeoJSON `LineString`。
+
+### 无 OSM 后端如何自行寻路
+
+1. GET 并缓存 `api/v1/routing-graph.json`，用 `graph.nodes` 建立节点索引，用 `graph.edges` 建立无向邻接表。
+2. 从 `locations[地点ID].routing.routingByMode[模式]` 读取 `routingNodeId`、完整 `routingNode` 和 `connectorDistanceMeters`。
+3. 只保留 `edge.modes` 包含当前模式的边，使用 `distanceMeters` 作为 A* 或 Dijkstra 权重。
+4. 将起终点的 `connectorDistanceMeters` 计入总距离；地点入口和图节点的坐标都已内嵌，无需查询 OSM node/way。
+
+如果起点和终点都在公开地点列表中，更简单的方式是直接 GET 预计算路线 JSON；其 `segments` 已经是从入口到目的地的完整有序路径。
 
 ## 本地开发
 
@@ -85,7 +109,7 @@ npm run build
 npm run preview
 ```
 
-`npm run build` 会先在 `public/api/v1/routes/` 生成静态路径响应，再由 Vite 写入 `dist/`。生成文件被 Git 忽略，避免提交大量机械产物。
+`npm run build` 会先生成 `routing-graph.json`、地点绑定和 `public/api/v1/routes/` 静态路径响应，再由 Vite 写入 `dist/`。生成文件被 Git 忽略，避免提交大量机械产物。
 
 ## OSM 数据层
 
@@ -117,7 +141,7 @@ npm run build
 4. 将入口绑定到最近道路节点，记录 `roadNodeId`、`snapDistanceMeters`、建筑/入口 OSM ID 与来源。
 5. 把通过校验的室内入口、走廊和地点锚点接入同一张图，A* 根据模式在室外与室内边上统一搜索。
 
-当前快照与室内补丁生成 322 个节点、337 条边，其中 OSM 共同连通分量有 277 个节点；25 个公开地点均有绑定。API 将 OSM 道路、入口连接段与室内段距离分别返回，便于调用方识别推断部分。
+当前快照与室内补丁生成 322 个节点、337 条边，其中 OSM 共同连通分量有 277 个节点；25 个公开地点均有绑定。API 不仅返回 `roadNodeId`，还内嵌对应节点坐标并提供完整路网下载；单条路线将 OSM 道路、入口连接段与室内段逐段返回，便于调用方离线导航并识别推断部分。
 
 ### 如何添加室内搜索空间
 

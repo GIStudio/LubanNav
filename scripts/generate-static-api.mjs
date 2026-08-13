@@ -2,7 +2,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DATASET, MODES, PUBLIC_LOCATIONS } from '../src/data/campus.js';
-import { findRoute, getLocationBinding } from '../src/lib/pathfinding.js';
+import { findRoute, getLocationBinding, getRoutingGraph } from '../src/lib/pathfinding.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const apiRoot = resolve(root, 'public/api/v1');
@@ -23,13 +23,15 @@ const locations = PUBLIC_LOCATIONS.map(({ id, name, en, category, aliases }) => 
 
 await writeFile(
   resolve(apiRoot, 'locations.json'),
-  pretty({ schemaVersion: '1.1', dataset: DATASET, count: locations.length, locations }),
+  pretty({ schemaVersion: '1.2', dataset: DATASET, count: locations.length, locations }),
 );
+
+await writeFile(resolve(apiRoot, 'routing-graph.json'), pretty(getRoutingGraph()));
 
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
@@ -41,9 +43,12 @@ await writeFile(
         path: '../../data/campus-indoor.geojson',
         policy: 'Pedestrian by default; robot requires robotValidated=true.',
       },
+      offlineUse:
+        'Download routingGraph once, use each location routingByMode binding as the A* endpoint, and filter edges by modes.',
     },
     endpoints: {
       locations: './locations.json',
+      routingGraph: './routing-graph.json',
       routeTemplate: './routes/{from}/{to}.{mode}.json',
     },
     examples: [

@@ -97,6 +97,23 @@ function routingNodeId(binding, modeId) {
   return binding.modeNodeIds?.[modeId] ?? binding.roadNodeId;
 }
 
+function publicRoutingNode(nodeId) {
+  if (!nodeId) return null;
+  const node = ROUTING_NODE_BY_ID.get(nodeId);
+  if (!node) return null;
+  return {
+    id: node.id,
+    osmNodeId: node.osmNodeId ?? null,
+    longitude: node.longitude,
+    latitude: node.latitude,
+    kind: node.kind ?? 'road',
+    indoor: node.indoor ?? false,
+    level: node.level ?? null,
+    source: node.source ?? 'openstreetmap',
+    verificationStatus: node.verificationStatus ?? null,
+  };
+}
+
 function endpointPoint(locationId, role, modeId) {
   const location = NODE_BY_ID[locationId];
   const binding = OSM_ROUTING.locations[locationId];
@@ -211,15 +228,43 @@ function publicBinding(locationId, modeId = null) {
     entrance: binding.entrance,
     destination: binding.destination ?? null,
     roadNodeId: binding.roadNodeId,
+    roadNode: publicRoutingNode(binding.roadNodeId),
     accessNodeId: binding.accessNodeId ?? null,
+    accessNode: publicRoutingNode(binding.accessNodeId),
     snapDistanceMeters: binding.snapDistanceMeters,
     modeNodeIds: binding.modeNodeIds ?? null,
+    modeNodes: binding.modeNodeIds
+      ? Object.fromEntries(
+          Object.entries(binding.modeNodeIds).map(([mode, nodeId]) => [
+            mode,
+            publicRoutingNode(nodeId),
+          ]),
+        )
+      : null,
     indoorRoute: binding.indoorRoute ?? null,
   };
   if (modeId) {
     result.selectedDestination = selectedDestination(binding, modeId);
     result.routingNodeId = routingNodeId(binding, modeId);
+    result.routingNode = publicRoutingNode(result.routingNodeId);
+    result.connectorDistanceMeters = externalConnectorDistance(binding, modeId);
     result.indoorAccess = binding.indoorRoute?.modes.includes(modeId) ?? false;
+  } else {
+    result.routingByMode = Object.fromEntries(
+      Object.keys(MODES).map((mode) => {
+        const nodeId = routingNodeId(binding, mode);
+        return [
+          mode,
+          {
+            destination: selectedDestination(binding, mode),
+            routingNodeId: nodeId,
+            routingNode: publicRoutingNode(nodeId),
+            connectorDistanceMeters: externalConnectorDistance(binding, mode),
+            indoorAccess: binding.indoorRoute?.modes.includes(mode) ?? false,
+          },
+        ];
+      }),
+    );
   }
   return result;
 }
@@ -227,6 +272,92 @@ function publicBinding(locationId, modeId = null) {
 function externalConnectorDistance(binding, modeId) {
   const nodeId = binding.modeNodeIds?.[modeId];
   return nodeId && nodeId !== binding.roadNodeId ? 0 : binding.snapDistanceMeters;
+}
+
+function segmentPoint(point) {
+  return {
+    id: point.id,
+    longitude: point.longitude,
+    latitude: point.latitude,
+    kind: point.kind,
+    indoor: point.indoor ?? false,
+    level: point.level ?? null,
+  };
+}
+
+function graphSegmentPoint(nodeId) {
+  return segmentPoint(roadPoint(nodeId));
+}
+
+function locationConnectorSegment(locationId, role, modeId, nodeId, distanceMetersValue) {
+  const binding = OSM_ROUTING.locations[locationId];
+  const locationPoint = segmentPoint(endpointPoint(locationId, role, modeId));
+  const routingPoint = graphSegmentPoint(nodeId);
+  const [from, to] =
+    role === 'origin' ? [locationPoint, routingPoint] : [routingPoint, locationPoint];
+  return {
+    id: `location/${locationId}/${role}-connector`,
+    from,
+    to,
+    distanceMeters: distanceMetersValue,
+    highway: 'connector',
+    osmWayId: null,
+    modes: [modeId],
+    segmentType: 'location-connector',
+    indoor: false,
+    level: binding.entrance.level ?? null,
+    source: binding.entrance.source,
+    verificationStatus: binding.entrance.verificationStatus ?? null,
+    accessAssumed: true,
+  };
+}
+
+function routeSegments(from, to, modeId, roadRoute) {
+  const segments = [];
+  const fromBinding = OSM_ROUTING.locations[from];
+  const toBinding = OSM_ROUTING.locations[to];
+  const fromConnectorDistance = externalConnectorDistance(fromBinding, modeId);
+  const toConnectorDistance = externalConnectorDistance(toBinding, modeId);
+
+  if (fromConnectorDistance > 0) {
+    segments.push(
+      locationConnectorSegment(
+        from,
+        'origin',
+        modeId,
+        roadRoute.nodeIds[0],
+        fromConnectorDistance,
+      ),
+    );
+  }
+
+  roadRoute.edges.forEach((edge, index) => {
+    const { node: _adjacentNode, from: _storedFrom, to: _storedTo, ...metadata } = edge;
+    segments.push({
+      ...metadata,
+      from: graphSegmentPoint(roadRoute.nodeIds[index]),
+      to: graphSegmentPoint(roadRoute.nodeIds[index + 1]),
+    });
+  });
+
+  if (toConnectorDistance > 0) {
+    segments.push(
+      locationConnectorSegment(
+        to,
+        'destination',
+        modeId,
+        roadRoute.nodeIds.at(-1),
+        toConnectorDistance,
+      ),
+    );
+  }
+  return segments;
+}
+
+function routeGeometry(path) {
+  const coordinates = path.map((point) => [point.longitude, point.latitude]);
+  if (coordinates.length === 1) coordinates.push([...coordinates[0]]);
+  return { type: 'LineString', coordinates };
 }
 
 export function findRoute(from, to, modeId = 'pedestrian') {
@@ -242,8 +373,9 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   const fromBinding = OSM_ROUTING.locations[from];
   const toBinding = OSM_ROUTING.locations[to];
   if (from === to) {
+    const path = [endpointPoint(from, 'origin-destination', modeId)];
     return {
-      schemaVersion: '1.2',
+      schemaVersion: '1.3',
       dataset: DATASET.id,
       status: 'ok',
       request: { from, to, mode: modeId },
@@ -254,8 +386,11 @@ export function findRoute(from, to, modeId = 'pedestrian') {
         roadDistanceMeters: 0,
         connectorDistanceMeters: 0,
         indoorDistanceMeters: 0,
+        segmentCount: 0,
       },
-      path: [endpointPoint(from, 'origin-destination', modeId)],
+      path,
+      segments: [],
+      geometry: routeGeometry(path),
       instructions: makeInstructions(from, to, modeId, []),
       routing: {
         engine: 'layered-osm-indoor-a-star',
@@ -275,7 +410,7 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   );
   if (!roadRoute) {
     return {
-      schemaVersion: '1.2',
+      schemaVersion: '1.3',
       dataset: DATASET.id,
       status: 'no_route',
       request: { from, to, mode: modeId },
@@ -306,9 +441,11 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   const distance = roadDistance + indoorDistance + connectorDistance;
   const distanceMetersRounded = Math.round(distance);
   const durationSeconds = Math.ceil(distance / mode.speedMetersPerSecond);
+  const path = composePath(from, to, modeId, roadRoute.nodeIds);
+  const segments = routeSegments(from, to, modeId, roadRoute);
 
   return {
-    schemaVersion: '1.2',
+    schemaVersion: '1.3',
     dataset: DATASET.id,
     status: 'ok',
     request: { from, to, mode: modeId },
@@ -319,8 +456,11 @@ export function findRoute(from, to, modeId = 'pedestrian') {
       roadDistanceMeters: Math.round(roadDistance),
       connectorDistanceMeters: Math.round(connectorDistance),
       indoorDistanceMeters: Math.round(indoorDistance),
+      segmentCount: segments.length,
     },
-    path: composePath(from, to, modeId, roadRoute.nodeIds),
+    path,
+    segments,
+    geometry: routeGeometry(path),
     instructions: makeInstructions(from, to, modeId, roadRoute.edges),
     routing: {
       engine: 'layered-osm-indoor-a-star',
@@ -342,6 +482,46 @@ export function findRoute(from, to, modeId = 'pedestrian') {
 export function getLocationBinding(locationId) {
   if (!OSM_ROUTING.locations[locationId]) return null;
   return publicBinding(locationId);
+}
+
+export function getRoutingGraph() {
+  return {
+    schemaVersion: '1.0',
+    dataset: DATASET,
+    generatedAt: OSM_ROUTING.generatedAt,
+    coordinateSystem: 'WGS84 longitude/latitude',
+    directed: false,
+    modes: Object.values(MODES),
+    routing: {
+      engine: 'layered-osm-indoor-a-star',
+      allowedHighways: OSM_ROUTING.allowedHighways,
+      indoorHighways: OSM_ROUTING.indoorHighways,
+      locationBindingPolicy:
+        'Use locations[id].routingByMode[mode].routingNodeId as the graph endpoint and add connectorDistanceMeters to the graph path cost.',
+    },
+    graph: {
+      nodes: OSM_ROUTING.graph.nodes.map((node) => publicRoutingNode(node.id)),
+      edges: OSM_ROUTING.graph.edges,
+      routableNodeIds: OSM_ROUTING.graph.routableNodeIds,
+    },
+    locations: Object.fromEntries(
+      Object.keys(OSM_ROUTING.locations).map((locationId) => [
+        locationId,
+        {
+          id: locationId,
+          name: NODE_BY_ID[locationId].name,
+          en: NODE_BY_ID[locationId].en,
+          routing: publicBinding(locationId),
+        },
+      ]),
+    ),
+    sources: {
+      outdoor: OSM_ROUTING.source,
+      indoor: OSM_ROUTING.indoorSource,
+    },
+    stats: OSM_ROUTING.stats,
+    disclaimer: DATASET.disclaimer,
+  };
 }
 
 export function formatDuration(seconds) {
