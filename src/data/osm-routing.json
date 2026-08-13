@@ -8040,26 +8040,42 @@
       "entrance": {
         "longitude": 113.47664,
         "latitude": 22.89094,
-        "source": "location-coordinate",
-        "osmFeatureId": null,
-        "osmEntranceId": null
+        "source": "local-entrance-poi",
+        "osmFeatureId": "way/1096048403",
+        "osmEntranceId": null,
+        "localFeatureId": "local/west-lobby-entrance-poi",
+        "level": "0",
+        "evidence": "user-confirmed-poi",
+        "inferredFrom": null,
+        "verificationStatus": "user-confirmed",
+        "buildingBoundaryDistanceMeters": 2.9
       },
       "roadNodeId": "osm-node/13909959263",
       "snapDistanceMeters": 80.58,
-      "matchedBuildingFeatureIds": []
+      "matchedBuildingFeatureIds": [
+        "way/1096048403"
+      ]
     },
     "east-concourse": {
       "locationId": "east-concourse",
       "entrance": {
-        "longitude": 113.4782,
-        "latitude": 22.89015,
-        "source": "location-coordinate",
-        "osmFeatureId": null,
-        "osmEntranceId": null
+        "longitude": 113.47762,
+        "latitude": 22.8904414,
+        "source": "local-entrance-poi",
+        "osmFeatureId": "way/1098450389",
+        "osmEntranceId": null,
+        "localFeatureId": "local/east-lobby-entrance-poi",
+        "level": "0",
+        "evidence": "building-relative-counterpart-of-west-lobby",
+        "inferredFrom": "local/west-lobby-entrance-poi",
+        "verificationStatus": "approximate-unverified",
+        "buildingBoundaryDistanceMeters": 2.8
       },
-      "roadNodeId": "osm-node/10740248759",
-      "snapDistanceMeters": 67.48,
-      "matchedBuildingFeatureIds": []
+      "roadNodeId": "osm-node/10057722435",
+      "snapDistanceMeters": 89.59,
+      "matchedBuildingFeatureIds": [
+        "way/1098450389"
+      ]
     },
     "library": {
       "locationId": "library",
@@ -8419,7 +8435,8 @@
     "osmEntrances": 6,
     "taggedLocationEntrances": 1,
     "inferredBuildingEntrances": 20,
-    "coordinateAnchors": 4,
+    "coordinateAnchors": 2,
+    "localEntrancePois": 2,
     "maximumSnapDistanceMeters": 140.15
   }
 }

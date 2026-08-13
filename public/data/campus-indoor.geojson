@@ -1,10 +1,55 @@
 {
   "type": "FeatureCollection",
   "schemaVersion": "1.0",
-  "name": "HKUST(GZ) local indoor routing overlays",
+  "name": "HKUST(GZ) local entrance and indoor routing overlays",
   "source": "local-routing-overlay",
   "disclaimer": "Indoor geometry is approximate and must be checked against a floor plan or field survey before operational use.",
   "features": [
+    {
+      "type": "Feature",
+      "id": "local/west-lobby-entrance-poi",
+      "properties": {
+        "featureClass": "entrancePoi",
+        "locationId": "west-concourse",
+        "buildingFeatureId": "way/1096048403",
+        "name": "西翼大堂入口",
+        "entrance": "main",
+        "level": "0",
+        "source": "local-routing-overlay",
+        "evidence": "user-confirmed-poi",
+        "verificationStatus": "user-confirmed"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.47664,
+          22.89094
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "local/east-lobby-entrance-poi",
+      "properties": {
+        "featureClass": "entrancePoi",
+        "locationId": "east-concourse",
+        "buildingFeatureId": "way/1098450389",
+        "name": "东翼大堂入口（对应点）",
+        "entrance": "main",
+        "level": "0",
+        "source": "local-routing-overlay",
+        "evidence": "building-relative-counterpart-of-west-lobby",
+        "inferredFrom": "local/west-lobby-entrance-poi",
+        "verificationStatus": "approximate-unverified"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.47762,
+          22.8904414
+        ]
+      }
+    },
     {
       "type": "Feature",
       "id": "local/library-level-0-main-corridor",

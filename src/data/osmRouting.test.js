@@ -62,7 +62,7 @@ describe('generated OSM routing graph', () => {
       const binding = routing.locations[location.id];
       expect(binding.roadNodeId).toMatch(/^osm-node\//);
       expect(binding.entrance.source).toMatch(
-        /^(osm-entrance|inferred-building-boundary|location-coordinate)$/,
+        /^(osm-entrance|inferred-building-boundary|local-entrance-poi|location-coordinate)$/,
       );
       expect(binding.snapDistanceMeters).toBeGreaterThanOrEqual(0);
       expect(binding.snapDistanceMeters).toBeLessThan(160);
@@ -74,8 +74,39 @@ describe('generated OSM routing graph', () => {
     expect(routing.stats.inferredBuildingEntrances).toBeGreaterThanOrEqual(15);
   });
 
+  it('binds both lobby POIs as corresponding local entrances', () => {
+    const entrancePois = indoorData.features.filter(
+      (feature) => feature.properties.featureClass === 'entrancePoi',
+    );
+    expect(entrancePois).toHaveLength(2);
+    expect(routing.stats.localEntrancePois).toBe(2);
+    expect(routing.stats.coordinateAnchors).toBe(2);
+
+    expect(routing.locations['west-concourse'].entrance).toMatchObject({
+      longitude: 113.47664,
+      latitude: 22.89094,
+      source: 'local-entrance-poi',
+      osmFeatureId: 'way/1096048403',
+      verificationStatus: 'user-confirmed',
+      buildingBoundaryDistanceMeters: 2.9,
+    });
+    expect(routing.locations['east-concourse'].entrance).toMatchObject({
+      longitude: 113.47762,
+      latitude: 22.8904414,
+      source: 'local-entrance-poi',
+      osmFeatureId: 'way/1098450389',
+      inferredFrom: 'local/west-lobby-entrance-poi',
+      verificationStatus: 'approximate-unverified',
+      buildingBoundaryDistanceMeters: 2.8,
+    });
+  });
+
   it('adds the local library indoor corridor to pedestrian routing only', () => {
-    expect(indoorData.features).toHaveLength(1);
+    expect(
+      indoorData.features.filter(
+        (feature) => feature.properties.featureClass === 'indoorPath',
+      ),
+    ).toHaveLength(1);
     const library = routing.locations.library;
     expect(library.destination).toMatchObject({
       indoor: true,

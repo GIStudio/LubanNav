@@ -32,6 +32,12 @@ describe('destination parser', () => {
     expect(matchLocation('图书管')?.id).toBe('library');
   });
 
+  it('recognizes the renamed east and west lobbies plus legacy aliases', () => {
+    expect(matchLocation('西翼大堂')?.id).toBe('west-concourse');
+    expect(matchLocation('东翼入口')?.id).toBe('east-concourse');
+    expect(matchLocation('西翼大学')?.id).toBe('west-concourse');
+  });
+
   it('does not invent an unknown destination', () => {
     expect(parseNavigationQuery('带我去火星')).toMatchObject({ understood: false, to: null });
   });

@@ -351,6 +351,52 @@ function indoorNodeId(locationId, level, suffix) {
   return `indoor/${locationId}/level-${level}/${suffix}`;
 }
 
+export function applyEntrancePoiOverrides(campusGeojson, overlayGeojson, roadGraph, bindings) {
+  const featureById = new Map(campusGeojson.features.map((feature) => [feature.id, feature]));
+  const routableIds = new Set(roadGraph.routableNodeIds);
+  const roadNodes = roadGraph.nodes.filter((node) => routableIds.has(node.id));
+  let applied = 0;
+
+  for (const feature of overlayGeojson.features ?? []) {
+    if (feature.properties.featureClass !== 'entrancePoi') continue;
+    if (feature.geometry?.type !== 'Point') {
+      throw new Error(`Entrance POI ${feature.id} must be a Point`);
+    }
+    const locationId = feature.properties.locationId;
+    const binding = bindings[locationId];
+    if (!binding) throw new Error(`Entrance POI ${feature.id} references unknown location ${locationId}`);
+    const building = featureById.get(feature.properties.buildingFeatureId);
+    if (!building || building.properties.featureClass !== 'building') {
+      throw new Error(`Entrance POI ${feature.id} references unknown building ${feature.properties.buildingFeatureId}`);
+    }
+
+    const coordinate = feature.geometry.coordinates;
+    const boundary = distanceToFeatureBoundary(coordinate, building);
+    if (!pointInsideFeature(coordinate, building) || boundary.distance > 5) {
+      throw new Error(`Entrance POI ${feature.id} must be inside and within 5 m of ${building.id}`);
+    }
+    const nearest = nearestRoadNode(coordinate, roadNodes);
+    binding.entrance = {
+      longitude: Number(coordinate[0].toFixed(7)),
+      latitude: Number(coordinate[1].toFixed(7)),
+      source: 'local-entrance-poi',
+      osmFeatureId: building.id,
+      osmEntranceId: null,
+      localFeatureId: feature.id,
+      level: String(feature.properties.level ?? '0'),
+      evidence: feature.properties.evidence ?? null,
+      inferredFrom: feature.properties.inferredFrom ?? null,
+      verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+      buildingBoundaryDistanceMeters: Number(boundary.distance.toFixed(2)),
+    };
+    binding.roadNodeId = nearest.node.id;
+    binding.snapDistanceMeters = Number(nearest.distance.toFixed(2));
+    binding.matchedBuildingFeatureIds = [building.id];
+    applied += 1;
+  }
+  return { entrancePois: applied };
+}
+
 export function addIndoorRoutesToGraph(campusGeojson, indoorGeojson, roadGraph, bindings) {
   const featureById = new Map(campusGeojson.features.map((feature) => [feature.id, feature]));
   const nodeById = new Map(roadGraph.nodes.map((node) => [node.id, node]));

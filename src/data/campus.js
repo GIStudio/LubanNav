@@ -21,7 +21,7 @@ const GEO_COORDINATES = {
   administration: [113.476636, 22.8900975],
   'activity-center': [113.4776701, 22.8898246],
   'west-concourse': [113.47664, 22.89094],
-  'east-concourse': [113.4782, 22.89015],
+  'east-concourse': [113.47762, 22.8904414],
   library: [113.4780569, 22.8923387],
   'food-court': [113.4780496, 22.8917561],
   'lecture-halls': [113.4775173, 22.8914252],
@@ -76,13 +76,19 @@ export const NODES = [
     '学生活动中心',
     'activity',
   ]),
-  publicNode('west-concourse', '西翼大学', 'West Concourse', 275, 410, 'academic', [
+  publicNode('west-concourse', '西翼大堂', 'West Lobby', 275, 410, 'academic', [
     '西翼',
+    '西翼大学',
+    '西翼入口',
     'west wing',
+    'west lobby',
   ]),
-  publicNode('east-concourse', '东翼大学', 'East Concourse', 455, 410, 'academic', [
+  publicNode('east-concourse', '东翼大堂', 'East Lobby', 455, 410, 'academic', [
     '东翼',
+    '东翼大学',
+    '东翼入口',
     'east wing',
+    'east lobby',
   ]),
   publicNode('library', '图书馆', 'Library', 365, 135, 'service', ['图书', 'library']),
   publicNode('food-court', '饭堂', 'Food Court', 365, 220, 'service', [

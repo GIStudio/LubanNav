@@ -4,6 +4,7 @@ import { DATASET, LOCATION_OSM_FEATURES, PUBLIC_LOCATIONS } from '../src/data/ca
 import {
   ROUTABLE_HIGHWAYS,
   addIndoorRoutesToGraph,
+  applyEntrancePoiOverrides,
   bindLocationsToRoadGraph,
   buildRoadGraph,
 } from './lib/osm-routing.mjs';
@@ -20,6 +21,7 @@ const locations = bindLocationsToRoadGraph(
   PUBLIC_LOCATIONS,
   LOCATION_OSM_FEATURES,
 );
+const entrancePoiStats = applyEntrancePoiOverrides(geojson, indoorGeojson, graph, locations);
 const indoorStats = addIndoorRoutesToGraph(geojson, indoorGeojson, graph, locations);
 
 const routing = {
@@ -54,6 +56,7 @@ const routing = {
     coordinateAnchors: Object.values(locations).filter(
       (binding) => binding.entrance.source === 'location-coordinate',
     ).length,
+    localEntrancePois: entrancePoiStats.entrancePois,
     maximumSnapDistanceMeters: Math.max(
       ...Object.values(locations).map((binding) => binding.snapDistanceMeters),
     ),

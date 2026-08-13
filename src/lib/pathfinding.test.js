@@ -47,6 +47,25 @@ describe('findRoute', () => {
     expect(robot.routing.destination.indoorAccess).toBe(false);
   });
 
+  it('routes to the two lobby entrance POIs without changing stable IDs', () => {
+    const west = findRoute('main-entrance', 'west-concourse');
+    const east = findRoute('main-entrance', 'east-concourse');
+    expect(west.path.at(-1)).toMatchObject({
+      id: 'west-concourse',
+      name: '西翼大堂',
+      longitude: 113.47664,
+      latitude: 22.89094,
+      entranceSource: 'local-entrance-poi',
+    });
+    expect(east.path.at(-1)).toMatchObject({
+      id: 'east-concourse',
+      name: '东翼大堂',
+      longitude: 113.47762,
+      latitude: 22.8904414,
+      entranceSource: 'local-entrance-poi',
+    });
+  });
+
   it('uses the selected mobility profile', () => {
     const pedestrian = findRoute('dorm-5', 'sports-hall', 'pedestrian');
     const robot = findRoute('dorm-5', 'sports-hall', 'robot');
