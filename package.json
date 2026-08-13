@@ -1,0 +1,21 @@
+{
+  "name": "luban-nav",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "generate:api": "node scripts/generate-static-api.mjs",
+    "build": "npm run generate:api && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "preact": "^10.27.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "vite": "^7.1.2",
+    "vitest": "^3.2.4"
+  }
+}

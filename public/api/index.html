@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LubanNav Static GET API</title>
+    <style>
+      :root { color-scheme: dark; font-family: "Avenir Next", "PingFang SC", sans-serif; background: #071c2c; color: #eef2e8; }
+      body { width: min(860px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0; }
+      h1 { margin: 0; font-size: clamp(2rem, 7vw, 4.6rem); line-height: .92; letter-spacing: -.05em; }
+      h1 span { color: #b9f227; }
+      p, li { color: #a9bab4; line-height: 1.7; }
+      section { margin-top: 38px; padding-top: 24px; border-top: 1px solid #284552; }
+      code, pre { font-family: "SFMono-Regular", monospace; }
+      code { color: #79ded5; }
+      pre { padding: 16px; overflow-x: auto; border: 1px solid #284552; background: #051722; color: #d8e4dc; }
+      a { color: #b9f227; text-underline-offset: 3px; }
+      .badge { display: inline-block; margin-bottom: 24px; padding: 6px 9px; border: 1px solid #42606c; color: #79ded5; font: 700 11px/1 monospace; }
+    </style>
+  </head>
+  <body>
+    <span class="badge">STATIC · GET · JSON</span>
+    <h1>LubanNav<br /><span>Route API</span></h1>
+    <p>为 GitHub Pages 预生成的只读路径 API。无需 JavaScript、无需鉴权，AI 或机器人客户端可直接通过 HTTP GET 获得 JSON。</p>
+
+    <section>
+      <h2>1. 查询地点 ID</h2>
+      <pre>GET <a href="./v1/locations.json">./v1/locations.json</a></pre>
+      <h2>2. 查询路径</h2>
+      <pre>GET ./v1/routes/{from}/{to}.{mode}.json</pre>
+      <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。</p>
+      <pre>GET <a href="./v1/routes/main-entrance/library.pedestrian.json">./v1/routes/main-entrance/library.pedestrian.json</a></pre>
+      <pre>GET <a href="./v1/routes/dorm-5/sports-hall.robot.json">./v1/routes/dorm-5/sports-hall.robot.json</a></pre>
+    </section>
+
+    <section>
+      <h2>响应边界</h2>
+      <ul>
+        <li>HTTP 200 表示该预生成组合存在；未知 ID 返回 GitHub Pages 的 404。</li>
+        <li>距离、坐标和路径拓扑均为演示估算，不是测绘数据。</li>
+        <li>真实机器人接入前必须增加定位、动态避障、权限与安全停机层。</li>
+      </ul>
+      <p><a href="../">← 返回地图</a> · <a href="./v1/catalog.json">查看机器可读目录</a></p>
+    </section>
+  </body>
+</html>

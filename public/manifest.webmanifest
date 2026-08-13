@@ -1,0 +1,15 @@
+{
+  "name": "LubanNav Campus Navigation",
+  "short_name": "LubanNav",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#071c2c",
+  "theme_color": "#071c2c",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
