@@ -13,6 +13,7 @@ const CATEGORY_LABELS = {
 };
 
 const OSM_DATA_URL = `${import.meta.env.BASE_URL}data/campus-osm.geojson`;
+const INDOOR_DATA_URL = `${import.meta.env.BASE_URL}data/campus-indoor.geojson`;
 const CAMPUS_CENTER = [22.8902, 113.4791];
 
 function roadWeight(highway) {
@@ -109,10 +110,47 @@ function addOsmLayers(map, data) {
   }).addTo(map);
 }
 
-function locationLatLng(location) {
+function addIndoorLayers(map, data) {
+  const canvas = L.canvas({ padding: 0.5, tolerance: 7 });
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'indoorPane',
+    filter: (feature) => feature.properties.featureClass === 'indoorPath',
+    style: {
+      color: '#79ded5',
+      opacity: 0.82,
+      weight: 3,
+      dashArray: '3 5',
+      lineCap: 'round',
+      lineJoin: 'round',
+    },
+    onEachFeature: (feature, layer) => {
+      const level = feature.properties.level ?? '?';
+      layer.bindTooltip(`${feature.properties.name} · level ${level} · 待核验`, {
+        className: 'osm-feature-tooltip',
+        sticky: true,
+      });
+    },
+  }).addTo(map);
+}
+
+function locationLatLng(location, modeId) {
   const binding = getLocationBinding(location.id);
+  if (binding?.indoorRoute?.modes.includes(modeId) && binding.destination) {
+    return [binding.destination.latitude, binding.destination.longitude];
+  }
   if (binding) return [binding.entrance.latitude, binding.entrance.longitude];
   return [location.latitude, location.longitude];
+}
+
+function indoorRoutePoints(path) {
+  const indoorIndexes = path
+    .map((point, index) => (point.indoor === true ? index : -1))
+    .filter((index) => index >= 0);
+  if (!indoorIndexes.length) return [];
+  const start = Math.max(0, Math.min(...indoorIndexes) - 1);
+  const end = Math.min(path.length, Math.max(...indoorIndexes) + 2);
+  return path.slice(start, end);
 }
 
 export function CampusMap({ route, destination, onSelectDestination }) {
@@ -143,6 +181,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
     map.createPane('roadPane').style.zIndex = 260;
     map.createPane('roadDetailPane').style.zIndex = 270;
     map.createPane('buildingPane').style.zIndex = 320;
+    map.createPane('indoorPane').style.zIndex = 380;
     map.createPane('routePane').style.zIndex = 430;
     map.createPane('locationPane').style.zIndex = 470;
     map.fitBounds(CAMPUS_BOUNDS, { padding: [28, 28] });
@@ -152,13 +191,17 @@ export function CampusMap({ route, destination, onSelectDestination }) {
     markerLayerRef.current = L.layerGroup().addTo(map);
     routeLayerRef.current = L.layerGroup().addTo(map);
 
-    fetch(OSM_DATA_URL)
-      .then((response) => {
-        if (!response.ok) throw new Error(`OSM GeoJSON ${response.status}`);
-        return response.json();
-      })
-      .then((data) => {
-        addOsmLayers(map, data);
+    Promise.all(
+      [OSM_DATA_URL, INDOOR_DATA_URL].map((url) =>
+        fetch(url).then((response) => {
+          if (!response.ok) throw new Error(`${url} ${response.status}`);
+          return response.json();
+        }),
+      ),
+    )
+      .then(([osmData, indoorData]) => {
+        addOsmLayers(map, osmData);
+        addIndoorLayers(map, indoorData);
         setMapStatus('ready');
       })
       .catch((error) => {
@@ -186,7 +229,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
       (location) => selectedCategory === 'all' || location.category === selectedCategory,
     ).forEach((location) => {
       const selected = destination === location.id;
-      const marker = L.circleMarker(locationLatLng(location), {
+      const marker = L.circleMarker(locationLatLng(location, route?.request.mode), {
         pane: 'locationPane',
         radius: selected ? 8 : 5.5,
         color: selected ? '#071c2c' : '#79ded5',
@@ -203,7 +246,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
       marker.on('click', () => onSelectDestination(location.id));
       marker.addTo(layer);
     });
-  }, [destination, onSelectDestination, selectedCategory]);
+  }, [destination, onSelectDestination, route?.request.mode, selectedCategory]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -221,6 +264,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
       lineJoin: 'round',
       interactive: false,
     }).addTo(layer);
+
     L.polyline(latLngs, {
       pane: 'routePane',
       color: '#b9f227',
@@ -231,6 +275,32 @@ export function CampusMap({ route, destination, onSelectDestination }) {
       lineJoin: 'round',
       interactive: false,
     }).addTo(layer);
+    const indoorPoints = indoorRoutePoints(route.path);
+    if (indoorPoints.length) {
+      const indoorLatLngs = indoorPoints.map((point) => [point.latitude, point.longitude]);
+      L.polyline(indoorLatLngs, {
+        pane: 'routePane',
+        color: '#79ded5',
+        opacity: 0.34,
+        weight: 14,
+        lineCap: 'round',
+        lineJoin: 'round',
+        interactive: false,
+      }).addTo(layer);
+      L.polyline(indoorLatLngs, {
+        pane: 'routePane',
+        color: '#b9f227',
+        opacity: 1,
+        weight: 6,
+        lineCap: 'round',
+        lineJoin: 'round',
+      })
+        .bindTooltip(
+          `室内 · level ${route.routing.destination.selectedDestination.level ?? route.routing.origin.selectedDestination.level ?? '?'} · 近似待核验`,
+          { className: 'osm-feature-tooltip', sticky: true },
+        )
+        .addTo(layer);
+    }
     L.circleMarker(latLngs[0], {
       pane: 'routePane',
       radius: 8,
@@ -273,6 +343,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
           <span><i class="legend-line active" />推荐路径</span>
           <span><i class="legend-building" />建筑</span>
           <span><i class="legend-road" />道路</span>
+          <span><i class="legend-indoor" />室内</span>
           <span><i class="legend-water" />水域</span>
         </div>
       </div>
@@ -299,7 +370,11 @@ export function CampusMap({ route, destination, onSelectDestination }) {
         >
           © OpenStreetMap contributors · ODbL
         </a>
-        <div class="map-note">OSM 实际路网 · 缺失入口使用边界推断</div>
+        <div class="map-note">
+          {route?.summary.indoorDistanceMeters > 0
+            ? `室内约 ${route.summary.indoorDistanceMeters} m · level 0 为假定值`
+            : 'OSM 实际路网 · 未核验室内段仅开放步行'}
+        </div>
         <div class="zoom-controls" aria-label="地图缩放">
           <button onClick={() => mapRef.current?.zoomIn()} aria-label="放大地图">＋</button>
           <button onClick={resetView} aria-label="显示完整校园">{zoom.toFixed(1)}</button>

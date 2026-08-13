@@ -119,6 +119,10 @@ export function buildRoadGraph(geojson) {
         highway: road.properties.highway,
         osmWayId: road.properties.osmId,
         modes,
+        segmentType: 'osm-road',
+        indoor: false,
+        level: null,
+        source: 'openstreetmap',
         accessAssumed:
           road.properties.access === undefined ||
           (road.properties.highway !== 'pedestrian' && road.properties.foot === undefined),
@@ -324,4 +328,193 @@ export function bindLocationsToRoadGraph(geojson, roadGraph, locations, featureI
     };
   }
   return bindings;
+}
+
+function pointInRing(point, ring) {
+  let inside = false;
+  for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index, index += 1) {
+    const [x, y] = ring[index];
+    const [previousX, previousY] = ring[previous];
+    const intersects =
+      y > point[1] !== previousY > point[1] &&
+      point[0] < ((previousX - x) * (point[1] - y)) / (previousY - y) + x;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
+function pointInsideFeature(point, feature) {
+  return polygonRings(feature).some((ring) => pointInRing(point, ring));
+}
+
+function indoorNodeId(locationId, level, suffix) {
+  return `indoor/${locationId}/level-${level}/${suffix}`;
+}
+
+export function addIndoorRoutesToGraph(campusGeojson, indoorGeojson, roadGraph, bindings) {
+  const featureById = new Map(campusGeojson.features.map((feature) => [feature.id, feature]));
+  const nodeById = new Map(roadGraph.nodes.map((node) => [node.id, node]));
+  const edgeIds = new Set(roadGraph.edges.map((edge) => edge.id));
+  let addedNodes = 0;
+  let addedEdges = 0;
+  let addedIndoorEdges = 0;
+  let addedConnectorEdges = 0;
+  let routes = 0;
+
+  for (const feature of indoorGeojson.features ?? []) {
+    if (feature.properties.featureClass !== 'indoorPath') continue;
+    if (feature.geometry?.type !== 'LineString' || feature.geometry.coordinates.length < 2) {
+      throw new Error(`Indoor route ${feature.id} must be a LineString with at least two coordinates`);
+    }
+    if (BLOCKED_ACCESS.has(feature.properties.access)) continue;
+
+    const locationId = feature.properties.locationId;
+    const binding = bindings[locationId];
+    if (!binding) throw new Error(`Indoor route ${feature.id} references unknown location ${locationId}`);
+    const building = featureById.get(feature.properties.buildingFeatureId);
+    if (!building || building.properties.featureClass !== 'building') {
+      throw new Error(`Indoor route ${feature.id} references unknown building ${feature.properties.buildingFeatureId}`);
+    }
+    const level = String(feature.properties.level ?? '');
+    if (!level) throw new Error(`Indoor route ${feature.id} is missing level`);
+
+    const declaredStart = feature.geometry.coordinates[0];
+    const entranceCoordinate = [binding.entrance.longitude, binding.entrance.latitude];
+    if (distanceMeters(declaredStart, entranceCoordinate) > 3) {
+      throw new Error(`Indoor route ${feature.id} does not start at the bound building entrance`);
+    }
+    for (const coordinate of feature.geometry.coordinates.slice(1)) {
+      if (!pointInsideFeature(coordinate, building)) {
+        throw new Error(`Indoor route ${feature.id} contains a point outside ${building.id}`);
+      }
+    }
+
+    const requestedModes = feature.properties.modes ?? ['pedestrian'];
+    const modes = requestedModes.filter(
+      (mode) => mode === 'pedestrian' || (mode === 'robot' && feature.properties.robotValidated === true),
+    );
+    if (!modes.includes('pedestrian')) {
+      throw new Error(`Indoor route ${feature.id} must explicitly permit pedestrian routing`);
+    }
+
+    const coordinates = [entranceCoordinate, ...feature.geometry.coordinates.slice(1)];
+    const entranceNodeId = indoorNodeId(locationId, level, 'entrance');
+    const routeNodeIds = coordinates.map((coordinate, index) =>
+      index === 0 ? entranceNodeId : indoorNodeId(locationId, level, `point-${index}`),
+    );
+    routeNodeIds.forEach((id, index) => {
+      if (nodeById.has(id)) throw new Error(`Duplicate indoor routing node ${id}`);
+      const destination = index === routeNodeIds.length - 1;
+      const node = {
+        id,
+        osmNodeId: null,
+        longitude: coordinates[index][0],
+        latitude: coordinates[index][1],
+        kind: index === 0 ? 'entrance' : destination ? 'indoor-destination' : 'indoor-waypoint',
+        indoor: index === 0 ? 'transition' : true,
+        level,
+        source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
+        verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+      };
+      nodeById.set(id, node);
+      roadGraph.nodes.push(node);
+      addedNodes += 1;
+    });
+
+    const outdoorNode = nodeById.get(binding.roadNodeId);
+    if (!outdoorNode) throw new Error(`Indoor route ${feature.id} has no outdoor attachment node`);
+    const connectorId = `${feature.id}/entrance-connector`;
+    if (edgeIds.has(connectorId)) throw new Error(`Duplicate indoor routing edge ${connectorId}`);
+    roadGraph.edges.push({
+      id: connectorId,
+      from: binding.roadNodeId,
+      to: entranceNodeId,
+      distanceMeters: Number(
+        distanceMeters(
+          [outdoorNode.longitude, outdoorNode.latitude],
+          entranceCoordinate,
+        ).toFixed(3),
+      ),
+      highway: 'connector',
+      osmWayId: null,
+      modes: ['pedestrian', 'robot'],
+      segmentType: 'entrance-connector',
+      indoor: false,
+      level,
+      source: binding.entrance.source,
+      accessAssumed: true,
+    });
+    edgeIds.add(connectorId);
+    addedEdges += 1;
+    addedConnectorEdges += 1;
+
+    for (let index = 1; index < routeNodeIds.length; index += 1) {
+      const id = `${feature.id}/segment-${index}`;
+      if (edgeIds.has(id)) throw new Error(`Duplicate indoor routing edge ${id}`);
+      roadGraph.edges.push({
+        id,
+        from: routeNodeIds[index - 1],
+        to: routeNodeIds[index],
+        distanceMeters: Number(distanceMeters(coordinates[index - 1], coordinates[index]).toFixed(3)),
+        highway: feature.properties.highway ?? 'corridor',
+        osmWayId: null,
+        modes,
+        segmentType: 'indoor-path',
+        indoor: true,
+        level,
+        source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
+        verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+        indoorFeatureId: feature.id,
+        accessAssumed: feature.properties.verificationStatus !== 'verified',
+      });
+      edgeIds.add(id);
+      addedEdges += 1;
+      addedIndoorEdges += 1;
+    }
+
+    const finalCoordinate = coordinates.at(-1);
+    const finalNodeId = routeNodeIds.at(-1);
+    binding.accessNodeId = entranceNodeId;
+    binding.modeNodeIds = {
+      pedestrian: modes.includes('pedestrian') ? finalNodeId : entranceNodeId,
+      robot: modes.includes('robot') ? finalNodeId : entranceNodeId,
+    };
+    binding.destination = {
+      longitude: Number(finalCoordinate[0].toFixed(7)),
+      latitude: Number(finalCoordinate[1].toFixed(7)),
+      source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
+      featureId: feature.id,
+      indoor: true,
+      level,
+      levelAssumed: feature.properties.levelAssumed === true,
+      verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+    };
+    binding.indoorRoute = {
+      featureId: feature.id,
+      buildingFeatureId: building.id,
+      highway: feature.properties.highway ?? 'corridor',
+      level,
+      levelAssumed: feature.properties.levelAssumed === true,
+      modes,
+      evidence: feature.properties.evidence ?? null,
+      verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+    };
+    routes += 1;
+  }
+
+  roadGraph.nodes.sort((a, b) => a.id.localeCompare(b.id));
+  roadGraph.edges.sort((a, b) => a.id.localeCompare(b.id));
+  roadGraph.stats.nodes = roadGraph.nodes.length;
+  roadGraph.stats.edges = roadGraph.edges.length;
+  roadGraph.stats.indoorRoutes = routes;
+  roadGraph.stats.indoorNodes = addedNodes;
+  roadGraph.stats.indoorEdges = addedIndoorEdges;
+  roadGraph.stats.entranceConnectorEdges = addedConnectorEdges;
+  return {
+    routes,
+    nodes: addedNodes,
+    edges: addedEdges,
+    indoorEdges: addedIndoorEdges,
+    entranceConnectorEdges: addedConnectorEdges,
+  };
 }

@@ -23,19 +23,24 @@ const locations = PUBLIC_LOCATIONS.map(({ id, name, en, category, aliases }) => 
 
 await writeFile(
   resolve(apiRoot, 'locations.json'),
-  pretty({ schemaVersion: '1.0', dataset: DATASET, count: locations.length, locations }),
+  pretty({ schemaVersion: '1.1', dataset: DATASET, count: locations.length, locations }),
 );
 
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
-      engine: 'osm-highway-a-star',
+      engine: 'layered-osm-indoor-a-star',
       allowedHighways: ['footway', 'path', 'pedestrian', 'service'],
+      indoorHighways: ['corridor'],
       entranceFallback: 'nearest building-boundary point to the routable graph',
+      indoorOverlay: {
+        path: '../../data/campus-indoor.geojson',
+        policy: 'Pedestrian by default; robot requires robotValidated=true.',
+      },
     },
     endpoints: {
       locations: './locations.json',

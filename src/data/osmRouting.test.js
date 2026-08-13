@@ -8,11 +8,21 @@ const routing = JSON.parse(
 const osmData = JSON.parse(
   readFileSync(new URL('../../public/data/campus-osm.geojson', import.meta.url), 'utf8'),
 );
+const indoorData = JSON.parse(
+  readFileSync(new URL('../../public/data/campus-indoor.geojson', import.meta.url), 'utf8'),
+);
 
 describe('generated OSM routing graph', () => {
   it('uses only the requested highway classes', () => {
     expect(routing.allowedHighways).toEqual(['footway', 'path', 'pedestrian', 'service']);
-    expect(new Set(routing.graph.edges.map((edge) => edge.highway))).toEqual(
+    expect(routing.indoorHighways).toEqual(['corridor']);
+    expect(
+      new Set(
+        routing.graph.edges
+          .filter((edge) => edge.segmentType === 'osm-road')
+          .map((edge) => edge.highway),
+      ),
+    ).toEqual(
       new Set(['footway', 'path', 'pedestrian', 'service']),
     );
   });
@@ -62,5 +72,28 @@ describe('generated OSM routing graph', () => {
   it('records both tagged and inferred entrance provenance', () => {
     expect(routing.stats.taggedLocationEntrances).toBeGreaterThanOrEqual(1);
     expect(routing.stats.inferredBuildingEntrances).toBeGreaterThanOrEqual(15);
+  });
+
+  it('adds the local library indoor corridor to pedestrian routing only', () => {
+    expect(indoorData.features).toHaveLength(1);
+    const library = routing.locations.library;
+    expect(library.destination).toMatchObject({
+      indoor: true,
+      level: '0',
+      levelAssumed: true,
+      verificationStatus: 'approximate-unverified',
+    });
+    expect(library.indoorRoute).toMatchObject({
+      highway: 'corridor',
+      modes: ['pedestrian'],
+      evidence: 'user-confirmed-walkable',
+    });
+    expect(library.modeNodeIds.pedestrian).toMatch(/^indoor\/library\//);
+    expect(library.modeNodeIds.robot).toBe(library.accessNodeId);
+
+    const indoorEdges = routing.graph.edges.filter((edge) => edge.indoor === true);
+    expect(indoorEdges).toHaveLength(4);
+    expect(indoorEdges.every((edge) => edge.modes.includes('pedestrian'))).toBe(true);
+    expect(indoorEdges.some((edge) => edge.modes.includes('robot'))).toBe(false);
   });
 });

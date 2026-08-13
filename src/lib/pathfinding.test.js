@@ -13,17 +13,38 @@ describe('findRoute', () => {
       entranceSource: 'osm-entrance',
     });
     expect(route.path.some((point) => point.kind === 'road')).toBe(true);
-    expect(route.path.at(-1).entranceSource).toBe('inferred-building-boundary');
+    expect(route.path.at(-1)).toMatchObject({
+      kind: 'indoor-destination',
+      indoor: true,
+      level: '0',
+      levelAssumed: true,
+      entranceSource: 'inferred-building-boundary',
+    });
     expect(route.summary.distanceMeters).toBeGreaterThan(0);
     expect(route.summary.roadDistanceMeters).toBeGreaterThan(0);
-    expect(route.routing.engine).toBe('osm-highway-a-star');
+    expect(route.summary.indoorDistanceMeters).toBeGreaterThan(40);
+    expect(route.routing.engine).toBe('layered-osm-indoor-a-star');
     expect(route.routing.allowedHighways).toEqual([
       'footway',
       'path',
       'pedestrian',
       'service',
     ]);
+    expect(route.routing.indoorFeatureIds).toEqual([
+      'local/library-level-0-main-corridor',
+    ]);
+    expect(route.instructions.some((instruction) => instruction.includes('室内通道'))).toBe(true);
     expect(route.instructions.at(-1)).toContain('图书馆');
+  });
+
+  it('keeps an unverified indoor segment out of the robot search space', () => {
+    const pedestrian = findRoute('main-entrance', 'library', 'pedestrian');
+    const robot = findRoute('main-entrance', 'library', 'robot');
+    expect(pedestrian.path.at(-1).kind).toBe('indoor-destination');
+    expect(pedestrian.summary.indoorDistanceMeters).toBeGreaterThan(0);
+    expect(robot.path.at(-1).kind).toBe('entrance');
+    expect(robot.summary.indoorDistanceMeters).toBe(0);
+    expect(robot.routing.destination.indoorAccess).toBe(false);
   });
 
   it('uses the selected mobility profile', () => {

@@ -1,6 +1,6 @@
 export const DATASET = {
-  id: 'hkustgz-osm-routing-v2',
-  name: 'HKUST(GZ) OSM highway routing graph',
+  id: 'hkustgz-layered-routing-v3',
+  name: 'HKUST(GZ) layered outdoor-indoor routing graph',
   version: '2026-08-13',
   coordinateSystem: 'WGS84 with legacy local coordinates',
   sourceUrl: 'https://www.openstreetmap.org/way/894157108',
@@ -8,7 +8,7 @@ export const DATASET = {
   mapAttribution: '© OpenStreetMap contributors',
   mapLicense: 'ODbL-1.0',
   disclaimer:
-    '建筑、入口与道路来自 OpenStreetMap；路线由 footway/path/pedestrian/service 自动生成。OSM 入口缺失时使用推断建筑边界点，数据未经现场测绘，不可直接控制真实机器人。',
+    '室外建筑、入口与道路来自 OpenStreetMap；室内段来自明确标注来源与核验状态的本地补丁。OSM 入口缺失时使用推断建筑边界点，数据未经现场测绘，不可直接控制真实机器人。',
 };
 
 export const CAMPUS_BOUNDS = [

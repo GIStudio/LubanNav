@@ -164,8 +164,13 @@ export function App() {
                 <strong>{formatDuration(route.summary.durationSeconds)}</strong>
               </div>
               <div>
-                <span>路径节点</span>
-                <strong>{route.path.length}<small> 个</small></strong>
+                <span>{route.summary.indoorDistanceMeters > 0 ? '室内路段' : '路径节点'}</span>
+                <strong>
+                  {route.summary.indoorDistanceMeters > 0
+                    ? route.summary.indoorDistanceMeters
+                    : route.path.length}
+                  <small>{route.summary.indoorDistanceMeters > 0 ? ' m' : ' 个'}</small>
+                </strong>
               </div>
             </div>
 

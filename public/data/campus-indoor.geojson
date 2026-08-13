@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "schemaVersion": "1.0",
+  "name": "HKUST(GZ) local indoor routing overlays",
+  "source": "local-routing-overlay",
+  "disclaimer": "Indoor geometry is approximate and must be checked against a floor plan or field survey before operational use.",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "local/library-level-0-main-corridor",
+      "properties": {
+        "featureClass": "indoorPath",
+        "locationId": "library",
+        "buildingFeatureId": "way/1098450394",
+        "name": "图书馆 0 层入口通道（近似）",
+        "highway": "corridor",
+        "indoor": "yes",
+        "level": "0",
+        "levelAssumed": true,
+        "access": "yes",
+        "modes": [
+          "pedestrian"
+        ],
+        "source": "local-routing-overlay",
+        "evidence": "user-confirmed-walkable",
+        "verificationStatus": "approximate-unverified"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.4776064,
+            22.8925129
+          ],
+          [
+            113.47771,
+            22.892458
+          ],
+          [
+            113.47783,
+            22.89239
+          ],
+          [
+            113.47795,
+            22.892348
+          ],
+          [
+            113.4780569,
+            22.8923387
+          ]
+        ]
+      }
+    }
+  ]
+}

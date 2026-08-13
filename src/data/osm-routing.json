@@ -1,16 +1,78 @@
 {
   "schemaVersion": "2.0",
-  "dataset": "hkustgz-osm-routing-v2",
+  "dataset": "hkustgz-layered-routing-v3",
   "generatedAt": "2026-08-13T05:57:34.212Z",
   "source": "https://www.openstreetmap.org/way/894157108",
+  "indoorSource": {
+    "source": "local-routing-overlay",
+    "disclaimer": "Indoor geometry is approximate and must be checked against a floor plan or field survey before operational use."
+  },
   "allowedHighways": [
     "footway",
     "path",
     "pedestrian",
     "service"
   ],
+  "indoorHighways": [
+    "corridor"
+  ],
   "graph": {
     "nodes": [
+      {
+        "id": "indoor/library/level-0/entrance",
+        "osmNodeId": null,
+        "longitude": 113.4776064,
+        "latitude": 22.8925129,
+        "kind": "entrance",
+        "indoor": "transition",
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified"
+      },
+      {
+        "id": "indoor/library/level-0/point-1",
+        "osmNodeId": null,
+        "longitude": 113.47771,
+        "latitude": 22.892458,
+        "kind": "indoor-waypoint",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified"
+      },
+      {
+        "id": "indoor/library/level-0/point-2",
+        "osmNodeId": null,
+        "longitude": 113.47783,
+        "latitude": 22.89239,
+        "kind": "indoor-waypoint",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified"
+      },
+      {
+        "id": "indoor/library/level-0/point-3",
+        "osmNodeId": null,
+        "longitude": 113.47795,
+        "latitude": 22.892348,
+        "kind": "indoor-waypoint",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified"
+      },
+      {
+        "id": "indoor/library/level-0/point-4",
+        "osmNodeId": null,
+        "longitude": 113.4780569,
+        "latitude": 22.8923387,
+        "kind": "indoor-destination",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified"
+      },
       {
         "id": "osm-node/10057722423",
         "osmNodeId": 10057722423,
@@ -1916,6 +1978,95 @@
     ],
     "edges": [
       {
+        "id": "local/library-level-0-main-corridor/entrance-connector",
+        "from": "osm-node/10775863319",
+        "to": "indoor/library/level-0/entrance",
+        "distanceMeters": 46.305,
+        "highway": "connector",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "segmentType": "entrance-connector",
+        "indoor": false,
+        "level": "0",
+        "source": "inferred-building-boundary",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/library-level-0-main-corridor/segment-1",
+        "from": "indoor/library/level-0/entrance",
+        "to": "indoor/library/level-0/point-1",
+        "distanceMeters": 12.243,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified",
+        "indoorFeatureId": "local/library-level-0-main-corridor",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/library-level-0-main-corridor/segment-2",
+        "from": "indoor/library/level-0/point-1",
+        "to": "indoor/library/level-0/point-2",
+        "distanceMeters": 14.432,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified",
+        "indoorFeatureId": "local/library-level-0-main-corridor",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/library-level-0-main-corridor/segment-3",
+        "from": "indoor/library/level-0/point-2",
+        "to": "indoor/library/level-0/point-3",
+        "distanceMeters": 13.15,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified",
+        "indoorFeatureId": "local/library-level-0-main-corridor",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/library-level-0-main-corridor/segment-4",
+        "from": "indoor/library/level-0/point-3",
+        "to": "indoor/library/level-0/point-4",
+        "distanceMeters": 10.999,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "level": "0",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-unverified",
+        "indoorFeatureId": "local/library-level-0-main-corridor",
+        "accessAssumed": true
+      },
+      {
         "id": "way/1098450445/0",
         "from": "osm-node/10057722423",
         "to": "osm-node/11073090130",
@@ -1926,6 +2077,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -1939,6 +2094,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -1952,6 +2111,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -1965,6 +2128,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -1978,6 +2145,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -1991,6 +2162,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2004,6 +2179,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2017,6 +2196,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2030,6 +2213,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2043,6 +2230,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2056,6 +2247,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2069,6 +2264,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2082,6 +2281,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2095,6 +2298,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2108,6 +2315,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2121,6 +2332,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2134,6 +2349,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2147,6 +2366,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2160,6 +2383,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2173,6 +2400,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2186,6 +2417,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2199,6 +2434,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2212,6 +2451,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2225,6 +2468,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2238,6 +2485,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2251,6 +2502,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2264,6 +2519,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2277,6 +2536,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2290,6 +2553,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2303,6 +2570,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2316,6 +2587,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2329,6 +2604,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2342,6 +2621,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2355,6 +2638,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2368,6 +2655,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2381,6 +2672,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2394,6 +2689,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2407,6 +2706,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2420,6 +2723,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2433,6 +2740,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2446,6 +2757,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2459,6 +2774,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2472,6 +2791,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2485,6 +2808,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2498,6 +2825,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2511,6 +2842,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2524,6 +2859,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2537,6 +2876,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2550,6 +2893,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2563,6 +2910,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2576,6 +2927,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2589,6 +2944,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2602,6 +2961,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2615,6 +2978,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2628,6 +2995,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2641,6 +3012,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2654,6 +3029,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2667,6 +3046,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2680,6 +3063,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2693,6 +3080,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2706,6 +3097,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2719,6 +3114,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2732,6 +3131,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2745,6 +3148,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2758,6 +3165,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2771,6 +3182,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2784,6 +3199,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2797,6 +3216,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2810,6 +3233,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2823,6 +3250,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2836,6 +3267,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2849,6 +3284,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2862,6 +3301,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2875,6 +3318,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2888,6 +3335,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2901,6 +3352,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2914,6 +3369,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2927,6 +3386,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2940,6 +3403,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2953,6 +3420,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2966,6 +3437,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2979,6 +3454,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -2992,6 +3471,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3005,6 +3488,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3018,6 +3505,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3031,6 +3522,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3044,6 +3539,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3057,6 +3556,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3070,6 +3573,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3083,6 +3590,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3096,6 +3607,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3109,6 +3624,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3122,6 +3641,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3135,6 +3658,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3148,6 +3675,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3161,6 +3692,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3174,6 +3709,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3187,6 +3726,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3200,6 +3743,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3213,6 +3760,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3226,6 +3777,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3239,6 +3794,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3252,6 +3811,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3265,6 +3828,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3278,6 +3845,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3291,6 +3862,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3304,6 +3879,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3317,6 +3896,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3330,6 +3913,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3343,6 +3930,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3356,6 +3947,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3369,6 +3964,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3382,6 +3981,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3395,6 +3998,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3408,6 +4015,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3421,6 +4032,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3434,6 +4049,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3447,6 +4066,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3460,6 +4083,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3473,6 +4100,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3486,6 +4117,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3499,6 +4134,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3512,6 +4151,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3525,6 +4168,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3538,6 +4185,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3551,6 +4202,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3564,6 +4219,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3577,6 +4236,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3590,6 +4253,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3603,6 +4270,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3616,6 +4287,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3629,6 +4304,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3642,6 +4321,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3655,6 +4338,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3668,6 +4355,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3681,6 +4372,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3694,6 +4389,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3707,6 +4406,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3720,6 +4423,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3733,6 +4440,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3746,6 +4457,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3759,6 +4474,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3772,6 +4491,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3785,6 +4508,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3798,6 +4525,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3811,6 +4542,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3824,6 +4559,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3837,6 +4576,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3850,6 +4593,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3863,6 +4610,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3876,6 +4627,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3889,6 +4644,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3902,6 +4661,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3915,6 +4678,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3928,6 +4695,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3941,6 +4712,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3954,6 +4729,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3967,6 +4746,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3980,6 +4763,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -3993,6 +4780,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4006,6 +4797,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4019,6 +4814,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4032,6 +4831,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4045,6 +4848,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4058,6 +4865,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4071,6 +4882,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4084,6 +4899,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4097,6 +4916,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4110,6 +4933,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4123,6 +4950,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4136,6 +4967,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4149,6 +4984,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4162,6 +5001,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4175,6 +5018,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4188,6 +5035,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4201,6 +5052,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4214,6 +5069,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4227,6 +5086,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4240,6 +5103,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4253,6 +5120,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4266,6 +5137,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4279,6 +5154,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4292,6 +5171,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4305,6 +5188,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4318,6 +5205,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4331,6 +5222,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4344,6 +5239,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4357,6 +5256,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4370,6 +5273,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4383,6 +5290,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4396,6 +5307,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4409,6 +5324,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4422,6 +5341,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4435,6 +5358,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4448,6 +5375,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4461,6 +5392,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4474,6 +5409,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4487,6 +5426,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4500,6 +5443,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4513,6 +5460,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4526,6 +5477,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4539,6 +5494,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4552,6 +5511,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4565,6 +5528,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4578,6 +5545,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4591,6 +5562,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4604,6 +5579,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4617,6 +5596,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4630,6 +5613,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4643,6 +5630,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4656,6 +5647,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4669,6 +5664,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4682,6 +5681,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4695,6 +5698,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4708,6 +5715,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4721,6 +5732,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4734,6 +5749,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4747,6 +5766,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4760,6 +5783,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4773,6 +5800,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4786,6 +5817,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4799,6 +5834,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4812,6 +5851,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4825,6 +5868,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4838,6 +5885,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4851,6 +5902,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4864,6 +5919,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4877,6 +5936,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4890,6 +5953,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4903,6 +5970,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4916,6 +5987,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4929,6 +6004,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4942,6 +6021,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4955,6 +6038,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4968,6 +6055,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4981,6 +6072,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -4994,6 +6089,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5007,6 +6106,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5020,6 +6123,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5033,6 +6140,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5046,6 +6157,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5059,6 +6174,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5072,6 +6191,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5085,6 +6208,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5098,6 +6225,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5111,6 +6242,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5124,6 +6259,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5137,6 +6276,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5150,6 +6293,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5163,6 +6310,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5176,6 +6327,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5189,6 +6344,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5202,6 +6361,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5215,6 +6378,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5228,6 +6395,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5241,6 +6412,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5254,6 +6429,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5267,6 +6446,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5280,6 +6463,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5293,6 +6480,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5306,6 +6497,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5319,6 +6514,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5332,6 +6531,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5345,6 +6548,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5358,6 +6565,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5371,6 +6582,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5384,6 +6599,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5397,6 +6616,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5410,6 +6633,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5423,6 +6650,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5436,6 +6667,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5449,6 +6684,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5462,6 +6701,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5475,6 +6718,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5488,6 +6735,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5501,6 +6752,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5514,6 +6769,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5527,6 +6786,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5540,6 +6803,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5553,6 +6820,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5566,6 +6837,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5579,6 +6854,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5592,6 +6871,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5605,6 +6888,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5618,6 +6905,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5631,6 +6922,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5644,6 +6939,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5657,6 +6956,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5670,6 +6973,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5683,6 +6990,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5696,6 +7007,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5709,6 +7024,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5722,6 +7041,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5735,6 +7058,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5748,6 +7075,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5761,6 +7092,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5774,6 +7109,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5787,6 +7126,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5800,6 +7143,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5813,6 +7160,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5826,6 +7177,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5839,6 +7194,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5852,6 +7211,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5865,6 +7228,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5878,6 +7245,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5891,6 +7262,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5904,6 +7279,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5917,6 +7296,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5930,6 +7313,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5943,6 +7330,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5956,6 +7347,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5969,6 +7364,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5982,6 +7381,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -5995,6 +7398,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6008,6 +7415,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6021,6 +7432,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6034,6 +7449,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6047,6 +7466,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6060,6 +7483,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6073,6 +7500,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6086,6 +7517,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6099,6 +7534,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6112,6 +7551,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6125,6 +7568,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6138,6 +7585,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6151,6 +7602,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6164,6 +7619,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6177,6 +7636,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6190,6 +7653,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6203,6 +7670,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6216,6 +7687,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       },
       {
@@ -6229,6 +7704,10 @@
           "pedestrian",
           "robot"
         ],
+        "segmentType": "osm-road",
+        "indoor": false,
+        "level": null,
+        "source": "openstreetmap",
         "accessAssumed": true
       }
     ],
@@ -6595,7 +8074,34 @@
       "snapDistanceMeters": 46.31,
       "matchedBuildingFeatureIds": [
         "way/1098450394"
-      ]
+      ],
+      "accessNodeId": "indoor/library/level-0/entrance",
+      "modeNodeIds": {
+        "pedestrian": "indoor/library/level-0/point-4",
+        "robot": "indoor/library/level-0/entrance"
+      },
+      "destination": {
+        "longitude": 113.4780569,
+        "latitude": 22.8923387,
+        "source": "local-routing-overlay",
+        "featureId": "local/library-level-0-main-corridor",
+        "indoor": true,
+        "level": "0",
+        "levelAssumed": true,
+        "verificationStatus": "approximate-unverified"
+      },
+      "indoorRoute": {
+        "featureId": "local/library-level-0-main-corridor",
+        "buildingFeatureId": "way/1098450394",
+        "highway": "corridor",
+        "level": "0",
+        "levelAssumed": true,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-confirmed-walkable",
+        "verificationStatus": "approximate-unverified"
+      }
     },
     "food-court": {
       "locationId": "food-court",
@@ -6900,11 +8406,15 @@
   },
   "stats": {
     "sourceRoadWays": 52,
-    "nodes": 317,
-    "edges": 332,
+    "nodes": 322,
+    "edges": 337,
     "pedestrianLargestComponentNodes": 277,
     "robotLargestComponentNodes": 277,
     "sharedRoutableComponentNodes": 277,
+    "indoorRoutes": 1,
+    "indoorNodes": 5,
+    "indoorEdges": 4,
+    "entranceConnectorEdges": 1,
     "locations": 25,
     "osmEntrances": 6,
     "taggedLocationEntrances": 1,

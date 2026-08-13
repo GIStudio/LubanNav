@@ -1,8 +1,8 @@
 # LubanNav
 
-面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供只包含建筑、水域和道路的本地 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 自动生成的 A* 路网、建筑入口吸附、AI 导航助手式对话与本地自然语言目的地解析，以及可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API。
+面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、AI 导航助手式对话与本地自然语言目的地解析，以及可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API。
 
-> 当前版本是工程演示，不是学校官方导航产品。建筑、入口、水域和道路来自 [OpenStreetMap](https://www.openstreetmap.org/way/894157108)，地图数据采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)；OSM 缺少入口时会推断建筑边界入口，导航拓扑与可通行性仍未经现场测绘，不可直接用于真实机器人运动控制。
+> 当前版本是工程演示，不是学校官方导航产品。室外建筑、入口、水域和道路来自 [OpenStreetMap](https://www.openstreetmap.org/way/894157108)，地图数据采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)；本地室内补丁会单独标明来源和核验状态。OSM 缺少入口时会推断建筑边界入口，导航拓扑与可通行性仍未经现场测绘，不可直接用于真实机器人运动控制。
 
 ## 为什么静态站点也能提供 GET API
 
@@ -20,8 +20,8 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 
 ```json
 {
-  "schemaVersion": "1.1",
-  "dataset": "hkustgz-osm-routing-v2",
+  "schemaVersion": "1.2",
+  "dataset": "hkustgz-layered-routing-v3",
   "status": "ok",
   "request": {
     "from": "main-entrance",
@@ -29,11 +29,12 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
     "mode": "pedestrian"
   },
   "summary": {
-    "distanceMeters": 942,
-    "durationSeconds": 754,
+    "distanceMeters": 993,
+    "durationSeconds": 795,
     "distanceEstimated": true,
     "roadDistanceMeters": 896,
-    "connectorDistanceMeters": 46
+    "connectorDistanceMeters": 46,
+    "indoorDistanceMeters": 51
   },
   "path": [
     {
@@ -45,11 +46,13 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
     }
   ],
   "routing": {
-    "engine": "osm-highway-a-star",
+    "engine": "layered-osm-indoor-a-star",
     "allowedHighways": ["footway", "path", "pedestrian", "service"],
+    "indoorHighways": ["corridor"],
+    "indoorFeatureIds": ["local/library-level-0-main-corridor"],
     "osmWayIds": [1192908727, 1154868989]
   },
-  "instructions": ["从主入口入口出发", "...", "抵达图书馆入口"],
+  "instructions": ["从主入口出发", "...", "沿0层室内通道前行约 51 米", "抵达图书馆馆内目的地"],
   "disclaimer": "..."
 }
 ```
@@ -111,9 +114,43 @@ npm run build
 1. 只选择 `footway`、`path`、`pedestrian`、`service`，过滤 `access=no/private` 和明确禁止步行的道路；机器人模式另外过滤 `wheelchair=no` 与明确不可通行的松软路面。
 2. 使用每条 OSM way 的原始节点 ID 将相邻坐标转成带米制距离的无向边，并保留最大的步行/机器人共同连通分量。
 3. 若建筑边界已有有效 OSM `entrance=*`，优先使用该点；若没有，则计算建筑边界上距离可通行道路节点最近的点，并标记为 `inferred-building-boundary`。
-4. 将入口绑定到最近道路节点，记录 `roadNodeId`、`snapDistanceMeters`、建筑/入口 OSM ID 与来源；A* 只在生成的 OSM 图上寻路。
+4. 将入口绑定到最近道路节点，记录 `roadNodeId`、`snapDistanceMeters`、建筑/入口 OSM ID 与来源。
+5. 把通过校验的室内入口、走廊和地点锚点接入同一张图，A* 根据模式在室外与室内边上统一搜索。
 
-当前快照生成 317 个道路节点、332 条边，其中共同连通分量有 277 个节点；25 个公开地点均有绑定。OSM 校园步行数据仍不完整，API 会把入口连接段与道路段距离分别返回，便于调用方识别较大的推断连接。
+当前快照与室内补丁生成 322 个节点、337 条边，其中 OSM 共同连通分量有 277 个节点；25 个公开地点均有绑定。API 将 OSM 道路、入口连接段与室内段距离分别返回，便于调用方识别推断部分。
+
+### 如何添加室内搜索空间
+
+OSM 推荐让建筑入口节点同时连接室内外路径，室内线性导航路径使用 `highway=corridor`、`indoor=yes` 和 `level=*`；完整楼层也可以进一步使用 [Simple Indoor Tagging](https://wiki.openstreetmap.org/wiki/Simple_Indoor_Tagging) 的 `indoor=corridor/area/room` 面要素。
+
+当前 OSM 没有港科大广州图书馆的室内要素，因此 `public/data/campus-indoor.geojson` 保存可独立审查的本地路由补丁。每条室内路径至少需要：
+
+```json
+{
+  "properties": {
+    "featureClass": "indoorPath",
+    "locationId": "library",
+    "buildingFeatureId": "way/1098450394",
+    "highway": "corridor",
+    "indoor": "yes",
+    "level": "0",
+    "modes": ["pedestrian"],
+    "verificationStatus": "approximate-unverified"
+  },
+  "geometry": {
+    "type": "LineString",
+    "coordinates": [
+      [113.4776064, 22.8925129],
+      [113.4778300, 22.8923900],
+      [113.4780569, 22.8923387]
+    ]
+  }
+}
+```
+
+生成器会拒绝入口偏差超过 3 米、室内点落到建筑轮廓外、缺少楼层或没有步行权限的补丁。未核验室内段默认只加入 `pedestrian`；只有现场验证门宽、坡度、门禁和机器人可达性后，同时设置 `"modes": ["pedestrian", "robot"]` 与 `"robotValidated": true`，才会进入机器人搜索空间。
+
+图书馆当前加入约 51 米的 0 层室内段。其可步行性来自用户确认，但几何和楼层编号仍是近似假定；步行路线进入馆内锚点，机器人路线仍止于建筑入口。
 
 ## GitHub Pages 部署
 
@@ -126,8 +163,9 @@ Vite 使用相对 `base`，因此可同时部署在用户主页和项目子路�
 ```text
 src/data/campus.js             稳定地点 ID、别名、OSM 建筑映射与模式
 public/data/campus-osm.geojson 建筑、入口、水域和道路的 OSM 快照
+public/data/campus-indoor.geojson  分层室内路径补丁与核验状态
 src/data/osm-routing.json      自动生成的 OSM 寻路图与入口绑定
-src/lib/pathfinding.js         OSM 图上的 A* 路由与机器可读响应
+src/lib/pathfinding.js         室内外统一图上的 A* 路由与机器可读响应
 src/lib/destinationParser.js   本地中英文意图/地点解析
 src/components/CampusMap.jsx   Leaflet Canvas 地图、地点和路线叠加
 src/components/ChatAssistant.jsx  对话入口

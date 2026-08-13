@@ -649,6 +649,7 @@ h2 {
 
 .legend-building,
 .legend-road,
+.legend-indoor,
 .legend-water {
   display: inline-block;
   width: 12px;
@@ -667,6 +668,13 @@ h2 {
 .legend-water {
   border-color: #23798a;
   background: #145869;
+}
+
+.legend-indoor {
+  height: 0;
+  border: 0;
+  border-top: 3px dashed var(--cyan);
+  background: none;
 }
 
 .category-filter {

@@ -3,7 +3,6 @@ import OSM_ROUTING from '../data/osm-routing.json' with { type: 'json' };
 
 const EARTH_RADIUS_METERS = 6_371_008.8;
 const ROUTING_NODE_BY_ID = new Map(OSM_ROUTING.graph.nodes.map((node) => [node.id, node]));
-const ROUTABLE_NODE_IDS = new Set(OSM_ROUTING.graph.routableNodeIds);
 
 function distanceMeters(a, b) {
   const lat1 = (a.latitude * Math.PI) / 180;
@@ -17,10 +16,9 @@ function distanceMeters(a, b) {
 }
 
 function adjacencyFor(modeId) {
-  const graph = new Map([...ROUTABLE_NODE_IDS].map((id) => [id, []]));
+  const graph = new Map(OSM_ROUTING.graph.nodes.map((node) => [node.id, []]));
   for (const edge of OSM_ROUTING.graph.edges) {
     if (!edge.modes.includes(modeId)) continue;
-    if (!ROUTABLE_NODE_IDS.has(edge.from) || !ROUTABLE_NODE_IDS.has(edge.to)) continue;
     graph.get(edge.from).push({ ...edge, node: edge.to });
     graph.get(edge.to).push({ ...edge, node: edge.from });
   }
@@ -91,14 +89,23 @@ function legacyPosition(longitude, latitude) {
   };
 }
 
-function endpointPoint(locationId, role) {
+function selectedDestination(binding, modeId) {
+  return binding.indoorRoute?.modes.includes(modeId) ? binding.destination : binding.entrance;
+}
+
+function routingNodeId(binding, modeId) {
+  return binding.modeNodeIds?.[modeId] ?? binding.roadNodeId;
+}
+
+function endpointPoint(locationId, role, modeId) {
   const location = NODE_BY_ID[locationId];
   const binding = OSM_ROUTING.locations[locationId];
-  const { longitude, latitude } = binding.entrance;
+  const destination = selectedDestination(binding, modeId);
+  const { longitude, latitude } = destination;
   return {
     id: locationId,
     name: location.name,
-    kind: 'entrance',
+    kind: destination.indoor ? 'indoor-destination' : 'entrance',
     role,
     longitude,
     latitude,
@@ -106,6 +113,11 @@ function endpointPoint(locationId, role) {
     entranceSource: binding.entrance.source,
     osmFeatureId: binding.entrance.osmFeatureId,
     osmEntranceId: binding.entrance.osmEntranceId,
+    indoor: destination.indoor === true,
+    level: destination.level ?? null,
+    levelAssumed: destination.levelAssumed ?? false,
+    source: destination.source,
+    verificationStatus: destination.verificationStatus ?? null,
   };
 }
 
@@ -113,12 +125,17 @@ function roadPoint(nodeId) {
   const node = ROUTING_NODE_BY_ID.get(nodeId);
   return {
     id: nodeId,
-    name: 'OSM 道路节点',
-    kind: 'road',
+    name: node.indoor === true ? '室内路径节点' : node.indoor === 'transition' ? '建筑入口' : 'OSM 道路节点',
+    kind: node.indoor === true ? 'indoor' : node.indoor === 'transition' ? 'entrance-transition' : 'road',
     osmNodeId: node.osmNodeId,
     longitude: node.longitude,
     latitude: node.latitude,
     ...legacyPosition(node.longitude, node.latitude),
+    indoor: node.indoor === true,
+    indoorTransition: node.indoor === 'transition',
+    level: node.level ?? null,
+    source: node.source ?? 'openstreetmap',
+    verificationStatus: node.verificationStatus ?? null,
   };
 }
 
@@ -126,35 +143,90 @@ function sameCoordinate(a, b) {
   return Math.abs(a.longitude - b.longitude) < 1e-8 && Math.abs(a.latitude - b.latitude) < 1e-8;
 }
 
-function composePath(from, to, roadNodeIds) {
-  const points = [endpointPoint(from, 'origin')];
+function composePath(from, to, modeId, roadNodeIds) {
+  const points = [endpointPoint(from, 'origin', modeId)];
   for (const nodeId of roadNodeIds) {
     const point = roadPoint(nodeId);
     if (!sameCoordinate(points.at(-1), point)) points.push(point);
   }
-  const destination = endpointPoint(to, 'destination');
+  const destination = endpointPoint(to, 'destination', modeId);
   if (sameCoordinate(points.at(-1), destination)) points.pop();
   points.push(destination);
   return points;
 }
 
-function makeInstructions(from, to, distance, edges) {
-  if (from === to) return [`已在${NODE_BY_ID[from].name}`];
-  const highwayTypes = [...new Set(edges.map((edge) => edge.highway))].join(' / ');
-  return [
-    `从${NODE_BY_ID[from].name}入口出发`,
-    `沿 OSM ${highwayTypes || '校园道路'}前行约 ${distance} 米`,
-    `抵达${NODE_BY_ID[to].name}入口`,
-  ];
+function sumEdgeDistance(edges, predicate) {
+  return edges.filter(predicate).reduce((total, edge) => total + edge.distanceMeters, 0);
 }
 
-function publicBinding(locationId) {
+function withEntrance(locationId) {
+  const name = NODE_BY_ID[locationId].name;
+  return name.endsWith('入口') ? name : `${name}入口`;
+}
+
+function makeInstructions(from, to, modeId, edges) {
+  if (from === to) return [`已在${NODE_BY_ID[from].name}`];
+  const fromDestination = selectedDestination(OSM_ROUTING.locations[from], modeId);
+  const toDestination = selectedDestination(OSM_ROUTING.locations[to], modeId);
+  const osmEdges = edges.filter((edge) => edge.segmentType === 'osm-road');
+  const fromIndoorFeatureId = OSM_ROUTING.locations[from].indoorRoute?.featureId;
+  const toIndoorFeatureId = OSM_ROUTING.locations[to].indoorRoute?.featureId;
+  const fromIndoorEdges = edges.filter(
+    (edge) => edge.indoorFeatureId === fromIndoorFeatureId,
+  );
+  const toIndoorEdges = edges.filter(
+    (edge) => edge.indoorFeatureId === toIndoorFeatureId,
+  );
+  const instructions = [
+    `从${fromDestination.indoor ? `${NODE_BY_ID[from].name}馆内目的地` : withEntrance(from)}出发`,
+  ];
+
+  if (fromDestination.indoor && fromIndoorEdges.length) {
+    instructions.push(
+      `沿${fromDestination.level ?? '当前'}层室内通道前往出口，约 ${Math.round(sumEdgeDistance(fromIndoorEdges, () => true))} 米`,
+    );
+    instructions.push(`经${withEntrance(from)}离开建筑`);
+  }
+  if (osmEdges.length) {
+    const highwayTypes = [...new Set(osmEdges.map((edge) => edge.highway))].join(' / ');
+    instructions.push(
+      `沿 OSM ${highwayTypes}前行约 ${Math.round(sumEdgeDistance(osmEdges, () => true))} 米`,
+    );
+  }
+  if (toDestination.indoor && toIndoorEdges.length) {
+    instructions.push(`经${withEntrance(to)}进入建筑`);
+    instructions.push(
+      `沿${toDestination.level ?? '当前'}层室内通道前行约 ${Math.round(sumEdgeDistance(toIndoorEdges, () => true))} 米`,
+    );
+  }
+  instructions.push(
+    `抵达${toDestination.indoor ? `${NODE_BY_ID[to].name}馆内目的地` : withEntrance(to)}`,
+  );
+  return instructions;
+}
+
+function publicBinding(locationId, modeId = null) {
   const binding = OSM_ROUTING.locations[locationId];
-  return {
+  const result = {
     entrance: binding.entrance,
+    destination: binding.destination ?? null,
     roadNodeId: binding.roadNodeId,
+    accessNodeId: binding.accessNodeId ?? null,
     snapDistanceMeters: binding.snapDistanceMeters,
+    modeNodeIds: binding.modeNodeIds ?? null,
+    indoorRoute: binding.indoorRoute ?? null,
   };
+  if (modeId) {
+    result.selectedDestination = selectedDestination(binding, modeId);
+    result.routingNodeId = routingNodeId(binding, modeId);
+    result.indoorAccess = binding.indoorRoute?.modes.includes(modeId) ?? false;
+  }
+  return result;
+}
+
+function externalConnectorDistance(binding, modeId) {
+  const nodeId = binding.modeNodeIds?.[modeId];
+  return nodeId && nodeId !== binding.roadNodeId ? 0 : binding.snapDistanceMeters;
 }
 
 export function findRoute(from, to, modeId = 'pedestrian') {
@@ -171,47 +243,72 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   const toBinding = OSM_ROUTING.locations[to];
   if (from === to) {
     return {
-      schemaVersion: '1.1',
+      schemaVersion: '1.2',
       dataset: DATASET.id,
       status: 'ok',
       request: { from, to, mode: modeId },
-      summary: { distanceMeters: 0, durationSeconds: 0, distanceEstimated: true },
-      path: [endpointPoint(from, 'origin-destination')],
-      instructions: makeInstructions(from, to, 0, []),
+      summary: {
+        distanceMeters: 0,
+        durationSeconds: 0,
+        distanceEstimated: true,
+        roadDistanceMeters: 0,
+        connectorDistanceMeters: 0,
+        indoorDistanceMeters: 0,
+      },
+      path: [endpointPoint(from, 'origin-destination', modeId)],
+      instructions: makeInstructions(from, to, modeId, []),
       routing: {
-        engine: 'osm-highway-a-star',
+        engine: 'layered-osm-indoor-a-star',
         allowedHighways: OSM_ROUTING.allowedHighways,
-        origin: publicBinding(from),
-        destination: publicBinding(to),
+        indoorHighways: OSM_ROUTING.indoorHighways,
+        origin: publicBinding(from, modeId),
+        destination: publicBinding(to, modeId),
       },
       disclaimer: DATASET.disclaimer,
     };
   }
 
-  const roadRoute = findRoadPath(fromBinding.roadNodeId, toBinding.roadNodeId, modeId);
+  const roadRoute = findRoadPath(
+    routingNodeId(fromBinding, modeId),
+    routingNodeId(toBinding, modeId),
+    modeId,
+  );
   if (!roadRoute) {
     return {
-      schemaVersion: '1.1',
+      schemaVersion: '1.2',
       dataset: DATASET.id,
       status: 'no_route',
       request: { from, to, mode: modeId },
       routing: {
-        engine: 'osm-highway-a-star',
+        engine: 'layered-osm-indoor-a-star',
         allowedHighways: OSM_ROUTING.allowedHighways,
-        origin: publicBinding(from),
-        destination: publicBinding(to),
+        indoorHighways: OSM_ROUTING.indoorHighways,
+        origin: publicBinding(from, modeId),
+        destination: publicBinding(to, modeId),
       },
       disclaimer: DATASET.disclaimer,
     };
   }
 
-  const roadDistance = roadRoute.edges.reduce((total, edge) => total + edge.distanceMeters, 0);
-  const distance = fromBinding.snapDistanceMeters + roadDistance + toBinding.snapDistanceMeters;
+  const roadDistance = sumEdgeDistance(
+    roadRoute.edges,
+    (edge) => edge.segmentType === 'osm-road',
+  );
+  const indoorDistance = sumEdgeDistance(roadRoute.edges, (edge) => edge.indoor === true);
+  const graphConnectorDistance = sumEdgeDistance(
+    roadRoute.edges,
+    (edge) => edge.segmentType === 'entrance-connector',
+  );
+  const connectorDistance =
+    graphConnectorDistance +
+    externalConnectorDistance(fromBinding, modeId) +
+    externalConnectorDistance(toBinding, modeId);
+  const distance = roadDistance + indoorDistance + connectorDistance;
   const distanceMetersRounded = Math.round(distance);
   const durationSeconds = Math.ceil(distance / mode.speedMetersPerSecond);
 
   return {
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     dataset: DATASET.id,
     status: 'ok',
     request: { from, to, mode: modeId },
@@ -220,18 +317,23 @@ export function findRoute(from, to, modeId = 'pedestrian') {
       durationSeconds,
       distanceEstimated: true,
       roadDistanceMeters: Math.round(roadDistance),
-      connectorDistanceMeters: Math.round(
-        fromBinding.snapDistanceMeters + toBinding.snapDistanceMeters,
-      ),
+      connectorDistanceMeters: Math.round(connectorDistance),
+      indoorDistanceMeters: Math.round(indoorDistance),
     },
-    path: composePath(from, to, roadRoute.nodeIds),
-    instructions: makeInstructions(from, to, distanceMetersRounded, roadRoute.edges),
+    path: composePath(from, to, modeId, roadRoute.nodeIds),
+    instructions: makeInstructions(from, to, modeId, roadRoute.edges),
     routing: {
-      engine: 'osm-highway-a-star',
+      engine: 'layered-osm-indoor-a-star',
       allowedHighways: OSM_ROUTING.allowedHighways,
-      osmWayIds: [...new Set(roadRoute.edges.map((edge) => edge.osmWayId))],
-      origin: publicBinding(from),
-      destination: publicBinding(to),
+      indoorHighways: OSM_ROUTING.indoorHighways,
+      osmWayIds: [
+        ...new Set(roadRoute.edges.map((edge) => edge.osmWayId).filter(Boolean)),
+      ],
+      indoorFeatureIds: [
+        ...new Set(roadRoute.edges.map((edge) => edge.indoorFeatureId).filter(Boolean)),
+      ],
+      origin: publicBinding(from, modeId),
+      destination: publicBinding(to, modeId),
     },
     disclaimer: DATASET.disclaimer,
   };
