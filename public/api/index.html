@@ -35,6 +35,9 @@
       <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。路线由 OSM <code>footway/path/pedestrian/service</code> 与分层室内 <code>corridor</code> 共同构图，并使用 A* 计算。</p>
       <pre>GET <a href="./v1/routes/main-entrance/library.pedestrian.json">./v1/routes/main-entrance/library.pedestrian.json</a></pre>
       <pre>GET <a href="./v1/routes/dorm-5/sports-hall.robot.json">./v1/routes/dorm-5/sports-hall.robot.json</a></pre>
+      <h2>4. 机器人 BLE 协议</h2>
+      <pre>GET <a href="./v1/robot-ble-protocol.json">./v1/robot-ble-protocol.json</a></pre>
+      <p>浏览器作为 BLE Central，通过可配置 GATT Characteristic 顺序分包下发路线；小车以通知返回 WGS84 位置、确认和状态。</p>
     </section>
 
     <section>

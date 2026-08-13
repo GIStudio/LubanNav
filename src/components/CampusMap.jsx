@@ -153,7 +153,7 @@ function indoorRoutePoints(path) {
   return path.slice(start, end);
 }
 
-export function CampusMap({ route, destination, onSelectDestination }) {
+export function CampusMap({ route, destination, robotPosition, onSelectDestination }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerLayerRef = useRef(null);
@@ -246,7 +246,32 @@ export function CampusMap({ route, destination, onSelectDestination }) {
       marker.on('click', () => onSelectDestination(location.id));
       marker.addTo(layer);
     });
-  }, [destination, onSelectDestination, route?.request.mode, selectedCategory]);
+
+    if (robotPosition) {
+      const robotMarker = L.circleMarker(
+        [robotPosition.latitude, robotPosition.longitude],
+        {
+          pane: 'locationPane',
+          radius: 9,
+          color: '#071c2c',
+          weight: 3,
+          fillColor: '#ff9d63',
+          fillOpacity: 1,
+        },
+      );
+      robotMarker
+        .bindTooltip(
+          `机器人当前位置${robotPosition.headingDegrees == null ? '' : ` · ${Math.round(robotPosition.headingDegrees)}°`}`,
+          {
+            className: 'location-tooltip robot',
+            direction: 'top',
+            offset: [0, -10],
+            permanent: true,
+          },
+        )
+        .addTo(layer);
+    }
+  }, [destination, onSelectDestination, robotPosition, route?.request.mode, selectedCategory]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -341,6 +366,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
         </div>
         <div class="legend" aria-label="地图图例">
           <span><i class="legend-line active" />推荐路径</span>
+          <span><i class="legend-robot" />机器人</span>
           <span><i class="legend-building" />建筑</span>
           <span><i class="legend-road" />道路</span>
           <span><i class="legend-indoor" />室内</span>

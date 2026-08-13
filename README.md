@@ -1,6 +1,6 @@
 # LubanNav
 
-面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、AI 导航助手式对话与本地自然语言目的地解析，以及可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API。
+面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、AI 导航助手式对话与本地自然语言目的地解析、可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API，以及浏览器通过 BLE GATT 与机器人小车进行任务和位置通信的 Web Bluetooth 控制面板。
 
 > 当前版本是工程演示，不是学校官方导航产品。室外建筑、入口、水域和道路来自 [OpenStreetMap](https://www.openstreetmap.org/way/894157108)，地图数据采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)；本地室内补丁会单独标明来源和核验状态。OSM 缺少入口时会推断建筑边界入口，导航拓扑与可通行性仍未经现场测绘，不可直接用于真实机器人运动控制。
 
@@ -11,6 +11,7 @@ GitHub Pages 不运行服务端代码。构建时，LubanNav 会为所有公开�
 ```text
 GET https://<user>.github.io/<repo>/api/v1/locations.json
 GET https://<user>.github.io/<repo>/api/v1/routing-graph.json
+GET https://<user>.github.io/<repo>/api/v1/robot-ble-protocol.json
 GET https://<user>.github.io/<repo>/api/v1/routes/main-entrance/library.pedestrian.json
 GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 ```
@@ -91,6 +92,25 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 4. 将起终点的 `connectorDistanceMeters` 计入总距离；地点入口和图节点的坐标都已内嵌，无需查询 OSM node/way。
 
 如果起点和终点都在公开地点列表中，更简单的方式是直接 GET 预计算路线 JSON；其 `segments` 已经是从入口到目的地的完整有序路径。
+
+## 浏览器连接机器人小车
+
+LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabilities/bluetooth) 让网页作为 BLE Central / GATT Client 连接机器人小车。GitHub Pages 是 HTTPS 安全上下文；设备选择仍必须由操作者点击按钮触发，浏览器不会在后台静默连接设备。
+
+推荐使用 Android Chrome，或支持 Web Bluetooth 的 macOS / Windows / ChromeOS Chromium 浏览器。小车必须提供 BLE GATT Service；传统 Bluetooth Classic RFCOMM 串口不属于 Web Bluetooth 的能力范围。
+
+使用流程：
+
+1. 在导航对象中选择“机器人”，确认路线避开未核验的室内段。
+2. 展开“GATT 与分包设置”，填写小车固件的 Service、Command/RX 和 Telemetry/TX UUID。默认值兼容 Nordic UART Service。
+3. 点击“选择并连接小车”，在浏览器设备选择器中人工选择设备。
+4. 点击“下发当前路线”。网页把路线编码为 UTF-8 JSON Lines，默认按 20 字节顺序写入；切换路线不会自动向小车发送。
+5. 小车通过 TX Notify 回传 `position`、`ack` 或 `status`。合法 WGS84 位置会显示在地图上。
+6. “STOP”会中止未完成的路线传输并优先发送 `emergency_stop`，但不能替代物理急停。
+
+固件消息、分包重组和安全边界详见 [`docs/robot-ble-protocol.md`](docs/robot-ble-protocol.md)，机器可读合约位于 `api/v1/robot-ble-protocol.json`。
+
+> 当前仓库只验证了模拟 GATT 设备的连接、分包、任务和位置消息。正式小车仍需用真实 UUID 和固件联调，并在小车端实现失联看门狗、指令去重、定位、避障、制动和实体急停。
 
 ## 本地开发
 
@@ -197,10 +217,12 @@ src/lib/pathfinding.js         室内外统一图上的 A* 路由与机器可读
 src/lib/destinationParser.js   本地中英文意图/地点解析
 src/components/CampusMap.jsx   Leaflet Canvas 地图、地点和路线叠加
 src/components/ChatAssistant.jsx  对话入口
+src/components/RobotControl.jsx     Web Bluetooth 连接、任务下发与遥测面板
 scripts/fetch-osm-campus.mjs      OSM / Overpass 快照刷新器
 scripts/lib/osm-routing.mjs       道路转图、连通分量与入口吸附算法
 scripts/generate-osm-routing.mjs  OSM 寻路图生成器
 scripts/generate-static-api.mjs   GitHub Pages 静态 GET API 生成器
+docs/robot-ble-protocol.md        BLE GATT、JSON Lines 分包与固件消息合约
 ```
 
 地点 ID 仍是稳定 API 合约；OSM way/node ID、入口来源和吸附距离是可随数据刷新变化的派生信息。真实机器人部署还需要至少增加：厘米级或满足任务要求的定位、现场可通行性校验、动态避障、门禁/电梯接口、实时封路、速度与制动安全层，以及人工急停机制。

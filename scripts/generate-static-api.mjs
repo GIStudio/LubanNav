@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DATASET, MODES, PUBLIC_LOCATIONS } from '../src/data/campus.js';
 import { findRoute, getLocationBinding, getRoutingGraph } from '../src/lib/pathfinding.js';
+import { getRobotProtocolDescriptor } from '../src/lib/robotProtocol.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const apiRoot = resolve(root, 'public/api/v1');
@@ -27,11 +28,15 @@ await writeFile(
 );
 
 await writeFile(resolve(apiRoot, 'routing-graph.json'), pretty(getRoutingGraph()));
+await writeFile(
+  resolve(apiRoot, 'robot-ble-protocol.json'),
+  pretty(getRobotProtocolDescriptor()),
+);
 
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.2',
+    schemaVersion: '1.3',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
@@ -49,6 +54,7 @@ await writeFile(
     endpoints: {
       locations: './locations.json',
       routingGraph: './routing-graph.json',
+      robotBleProtocol: './robot-ble-protocol.json',
       routeTemplate: './routes/{from}/{to}.{mode}.json',
     },
     examples: [

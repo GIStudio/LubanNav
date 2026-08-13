@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
+import { RobotControl } from './components/RobotControl.jsx';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
@@ -26,6 +27,7 @@ export function App() {
   const [mode, setMode] = useState(initialMode);
   const [messages, setMessages] = useState(DEFAULT_MESSAGES);
   const [showDetails, setShowDetails] = useState(false);
+  const [robotPosition, setRobotPosition] = useState(null);
 
   const route = useMemo(() => findRoute(from, to, mode), [from, to, mode]);
   const staticApiUrl = `./api/v1/routes/${from}/${to}.${mode}.json`;
@@ -113,7 +115,7 @@ export function App() {
         <div class="system-status">
           <span class="status-dot" />
           <span>STATIC · OFFLINE READY</span>
-          <span class="version">V0.1</span>
+          <span class="version">V0.2 · BLE</span>
         </div>
       </header>
 
@@ -187,10 +189,16 @@ export function App() {
             )}
           </section>
 
+          <RobotControl route={route} onRobotPosition={setRobotPosition} />
           <ChatAssistant messages={messages} onSend={handleQuery} route={route} />
         </aside>
 
-        <CampusMap route={route} destination={to} onSelectDestination={selectDestination} />
+        <CampusMap
+          route={route}
+          destination={to}
+          robotPosition={robotPosition}
+          onSelectDestination={selectDestination}
+        />
       </div>
 
       <footer class="footer">
