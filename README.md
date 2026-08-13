@@ -102,7 +102,7 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 使用流程：
 
 1. 在导航对象中选择“机器人”，确认路线避开未核验的室内段。
-2. 展开“GATT 与分包设置”，填写小车固件的 Service、Command/RX 和 Telemetry/TX UUID。默认值兼容 Nordic UART Service。
+2. 展开“GATT 与分包设置”，填写小车固件的 Service、Command/RX 和 Telemetry/TX UUID。设备名前缀默认为 `car7`，UUID 默认值兼容 Nordic UART Service。
 3. 点击“选择并连接小车”，在浏览器设备选择器中人工选择设备。
 4. 点击“下发当前路线”。网页把路线编码为 UTF-8 JSON Lines，默认按 20 字节顺序写入；切换路线不会自动向小车发送。
 5. 小车通过 TX Notify 回传 `position`、`ack` 或 `status`。合法 WGS84 位置会显示在地图上。
@@ -111,6 +111,12 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 固件消息、分包重组和安全边界详见 [`docs/robot-ble-protocol.md`](docs/robot-ble-protocol.md)，机器可读合约位于 `api/v1/robot-ble-protocol.json`。
 
 > 当前仓库只验证了模拟 GATT 设备的连接、分包、任务和位置消息。正式小车仍需用真实 UUID 和固件联调，并在小车端实现失联看门狗、指令去重、定位、避障、制动和实体急停。
+
+### car7 能扫描但无法连接
+
+新版面板会区分以下阶段：`device-selection`、`gatt-connect`、`primary-service`、`command-characteristic`、`telemetry-characteristic` 和 `notifications`。如果显示 `primary-service`，说明浏览器已经选中并连接 car7，但固件并不提供当前填写的 Service UUID；这不是扫描问题。
+
+请使用 Android 上的 nRF Connect 或固件源码读取 car7 的 GATT 表，然后把实际 Service、可写 RX 和支持 Notify 的 TX UUID 填入面板。如果在 nRF Connect 中只能看到 Bluetooth Classic SPP/RFCOMM，网页 Web Bluetooth 无法访问该串口，需要修改小车为 BLE GATT 固件或使用原生 Android 桥接应用。
 
 ## 本地开发
 

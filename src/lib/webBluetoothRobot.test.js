@@ -72,7 +72,7 @@ describe('WebBluetoothRobotClient', () => {
     await client.connect();
     expect(client.state).toBe('connected');
     expect(fake.telemetry.notificationsStarted).toBe(true);
-    expect(fake.bluetooth.options).toMatchObject({ acceptAllDevices: true });
+    expect(fake.bluetooth.options).toMatchObject({ filters: [{ namePrefix: 'car7' }] });
 
     const route = findRoute('dorm-5', 'library', 'robot');
     const sent = await client.sendNavigationTask(route);
@@ -130,6 +130,51 @@ describe('WebBluetoothRobotClient', () => {
       supported: false,
       secureContext: false,
     });
+  });
+
+  it('reports a missing service as a primary-service diagnostic instead of chooser cancellation', async () => {
+    const fake = fakeBluetoothStack();
+    const notFound = new Error('No Services matching UUID found in Device');
+    notFound.name = 'NotFoundError';
+    fake.device.gatt.connect = async () => {
+      fake.device.gatt.connected = true;
+      return {
+        getPrimaryService: async () => {
+          throw notFound;
+        },
+      };
+    };
+    const events = [];
+    const client = new WebBluetoothRobotClient({ bluetooth: fake.bluetooth });
+    client.subscribe((event) => events.push(event));
+
+    await expect(client.connect()).rejects.toMatchObject({
+      name: 'RobotConnectionError',
+      stage: 'primary-service',
+      causeName: 'NotFoundError',
+      context: {
+        deviceName: 'LubanBot Test',
+        uuid: DEFAULT_BLE_CONFIG.serviceUuid,
+      },
+    });
+    expect(client.state).toBe('error');
+    expect(fake.device.gatt.connected).toBe(false);
+    expect(events.at(-1)).toMatchObject({
+      type: 'state',
+      state: 'error',
+      stage: 'primary-service',
+      deviceName: 'LubanBot Test',
+    });
+  });
+
+  it('keeps an actual device chooser cancellation in the idle state', async () => {
+    const cancelled = new Error('User cancelled the requestDevice chooser');
+    cancelled.name = 'NotFoundError';
+    const client = new WebBluetoothRobotClient({
+      bluetooth: { requestDevice: async () => { throw cancelled; } },
+    });
+    await expect(client.connect()).rejects.toBe(cancelled);
+    expect(client.state).toBe('idle');
   });
 
   it('cancels a partial route and resynchronizes framing before the priority stop command', async () => {

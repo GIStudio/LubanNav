@@ -4,7 +4,7 @@ export const ROBOT_PROTOCOL_VERSION = 1;
 // Nordic UART Service-compatible defaults. They are editable in the UI because
 // the robot firmware remains the source of truth for its GATT UUIDs.
 export const DEFAULT_BLE_CONFIG = Object.freeze({
-  deviceNamePrefix: '',
+  deviceNamePrefix: 'car7',
   serviceUuid: '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
   commandCharacteristicUuid: '6e400002-b5a3-f393-e0a9-e50e24dcca9e',
   telemetryCharacteristicUuid: '6e400003-b5a3-f393-e0a9-e50e24dcca9e',
@@ -210,6 +210,18 @@ export function getRobotProtocolDescriptor() {
       encoding: 'UTF-8 JSON Lines. Concatenate characteristic writes and split on LF (0x0A).',
       defaultGatt: DEFAULT_BLE_CONFIG,
       writeOrdering: 'Sequential; never process GATT writes in parallel.',
+    },
+    diagnostics: {
+      stages: [
+        'device-selection',
+        'gatt-connect',
+        'primary-service',
+        'command-characteristic',
+        'telemetry-characteristic',
+        'notifications',
+      ],
+      note:
+        'A visible device name does not prove that the configured GATT service and characteristics exist.',
     },
     browserToRobot: {
       navigationTask: {

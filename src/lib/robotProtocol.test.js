@@ -95,15 +95,17 @@ describe('robot BLE protocol', () => {
     expect(messages[1]).toMatchObject({ type: 'ack', status: 'accepted' });
   });
 
-  it('provides open device selection by default and a firmware-readable descriptor', () => {
+  it('filters for car7 by default and provides a firmware-readable descriptor', () => {
     expect(bluetoothRequestOptions(DEFAULT_BLE_CONFIG)).toEqual({
-      acceptAllDevices: true,
+      filters: [{ namePrefix: 'car7' }],
       optionalServices: [DEFAULT_BLE_CONFIG.serviceUuid],
     });
     const filtered = bluetoothRequestOptions({ deviceNamePrefix: 'LubanBot' });
     expect(filtered.filters).toEqual([{ namePrefix: 'LubanBot' }]);
     const descriptor = getRobotProtocolDescriptor();
     expect(descriptor.transport.defaultGatt.chunkBytes).toBe(20);
+    expect(descriptor.transport.defaultGatt.deviceNamePrefix).toBe('car7');
+    expect(descriptor.diagnostics.stages).toContain('primary-service');
     expect(descriptor.browserToRobot.navigationTask.type).toBe('navigation_task');
     expect(descriptor.robotToBrowser.position.example.type).toBe('position');
   });

@@ -115,7 +115,7 @@ export function App() {
         <div class="system-status">
           <span class="status-dot" />
           <span>STATIC · OFFLINE READY</span>
-          <span class="version">V0.2 · BLE</span>
+          <span class="version">V0.2.1 · BLE</span>
         </div>
       </header>
 

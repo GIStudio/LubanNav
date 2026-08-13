@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { DEFAULT_BLE_CONFIG, normalizeBleConfig } from '../lib/robotProtocol.js';
 import { WebBluetoothRobotClient, webBluetoothSupport } from '../lib/webBluetoothRobot.js';
 
-const CONFIG_STORAGE_KEY = 'luban-nav:ble-config:v1';
+const CONFIG_STORAGE_KEY = 'luban-nav:ble-config:v2';
 
 function loadConfig() {
   try {
@@ -14,6 +14,25 @@ function loadConfig() {
 }
 
 function friendlyError(error) {
+  if (error?.name === 'RobotConnectionError') {
+    const uuid = error.context?.uuid;
+    const deviceName = error.context?.deviceName ?? 'car7';
+    if (error.stage === 'gatt-connect') {
+      return `已选择 ${deviceName}，但无法建立 BLE GATT 链路。请确认它是 BLE/GATT 设备而不是传统蓝牙 SPP，并关闭其他正在连接小车的 App。`;
+    }
+    if (error.stage === 'primary-service') {
+      return `已连接 ${deviceName}，但找不到 Service ${uuid}。这说明 car7 很可能不使用当前默认的 Nordic UART Service；请从固件或 nRF Connect 读取实际 Service UUID。`;
+    }
+    if (error.stage === 'command-characteristic') {
+      return `已找到 GATT Service，但没有可用的 Command/RX Characteristic ${uuid}。请填写 car7 实际的写入 UUID。`;
+    }
+    if (error.stage === 'telemetry-characteristic') {
+      return `已找到命令通道，但没有 Telemetry/TX Characteristic ${uuid}。请填写 car7 实际的 Notify UUID。`;
+    }
+    if (error.stage === 'notifications') {
+      return `已找到 TX Characteristic ${uuid}，但无法启用 Notify。请确认固件为该 Characteristic 开启 Notify 属性。`;
+    }
+  }
   if (error?.name === 'NotFoundError') return '已取消设备选择。';
   if (error?.name === 'SecurityError') return '浏览器拒绝了蓝牙权限，请确认使用 HTTPS 并由按钮触发连接。';
   if (error?.name === 'NetworkError') return 'GATT 连接失败，请确认小车未被其他设备占用。';
@@ -41,7 +60,12 @@ function logLabel(event) {
 export function RobotControl({ route, onRobotPosition }) {
   const support = useMemo(() => webBluetoothSupport(window), []);
   const [config, setConfig] = useState(loadConfig);
-  const [connection, setConnection] = useState({ state: 'idle', deviceName: null });
+  const [connection, setConnection] = useState({
+    state: 'idle',
+    deviceName: null,
+    stage: null,
+    error: null,
+  });
   const [position, setPosition] = useState(null);
   const [progress, setProgress] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -54,6 +78,8 @@ export function RobotControl({ route, onRobotPosition }) {
   }
   const client = clientRef.current;
   const connected = connection.state === 'connected';
+  const connectionBusy = ['selecting', 'connecting', 'discovering'].includes(connection.state);
+  const configLocked = connected || connectionBusy;
   const transferring = progress && progress.sentChunks < progress.totalChunks;
   const robotRoute = route?.request.mode === 'robot';
 
@@ -68,7 +94,12 @@ export function RobotControl({ route, onRobotPosition }) {
   useEffect(() => {
     const unsubscribe = client.subscribe((event) => {
       if (event.type === 'state') {
-        setConnection({ state: event.state, deviceName: event.deviceName });
+        setConnection({
+          state: event.state,
+          deviceName: event.deviceName,
+          stage: event.stage ?? null,
+          error: event.error ?? null,
+        });
         if (event.state === 'connected') addLog(`已连接 ${event.deviceName ?? 'BLE 小车'}`, 'success');
         if (event.state === 'disconnected') addLog('蓝牙连接已断开', 'warning');
         if (event.state === 'error' && event.error) addLog(friendlyError(event.error), 'error');
@@ -96,14 +127,14 @@ export function RobotControl({ route, onRobotPosition }) {
   }, []);
 
   useEffect(() => {
-    if (connected || connection.state === 'connecting') return;
+    if (configLocked) return;
     try {
       client.setConfig(config);
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
     } catch (error) {
       addLog(friendlyError(error), 'error');
     }
-  }, [config, connected, connection.state]);
+  }, [config, configLocked]);
 
   async function connect() {
     try {
@@ -143,6 +174,7 @@ export function RobotControl({ route, onRobotPosition }) {
     idle: '等待连接',
     selecting: '选择设备…',
     connecting: '连接 GATT…',
+    discovering: '检查服务…',
     connected: '已连接',
     disconnected: '已断开',
     error: '连接错误',
@@ -179,12 +211,20 @@ export function RobotControl({ route, onRobotPosition }) {
               <button
                 class="robot-connect-button"
                 onClick={connect}
-                disabled={connection.state === 'selecting' || connection.state === 'connecting'}
+                disabled={connectionBusy}
               >
                 选择并连接小车
               </button>
             )}
           </div>
+
+          {connection.error && (
+            <div class="robot-diagnostic" role="alert">
+              <strong>连接诊断 · {connection.stage}</strong>
+              <p>{friendlyError(connection.error)}</p>
+              <small>修改下方 GATT UUID 后重新连接；网页无法自动枚举未授权的自定义 Service。</small>
+            </div>
+          )}
 
           <div class="robot-actions">
             <button
@@ -231,7 +271,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 <input
                   value={config.deviceNamePrefix}
                   onInput={(event) => updateConfig('deviceNamePrefix', event.currentTarget.value)}
-                  disabled={connected}
+                  disabled={configLocked}
                   placeholder="例如 LubanBot"
                 />
               </label>
@@ -240,7 +280,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 <input
                   value={config.serviceUuid}
                   onInput={(event) => updateConfig('serviceUuid', event.currentTarget.value)}
-                  disabled={connected}
+                  disabled={configLocked}
                 />
               </label>
               <label>
@@ -248,7 +288,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 <input
                   value={config.commandCharacteristicUuid}
                   onInput={(event) => updateConfig('commandCharacteristicUuid', event.currentTarget.value)}
-                  disabled={connected}
+                  disabled={configLocked}
                 />
               </label>
               <label>
@@ -256,7 +296,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 <input
                   value={config.telemetryCharacteristicUuid}
                   onInput={(event) => updateConfig('telemetryCharacteristicUuid', event.currentTarget.value)}
-                  disabled={connected}
+                  disabled={configLocked}
                 />
               </label>
               <label>
@@ -267,7 +307,7 @@ export function RobotControl({ route, onRobotPosition }) {
                   max="512"
                   value={config.chunkBytes}
                   onInput={(event) => updateConfig('chunkBytes', event.currentTarget.value)}
-                  disabled={connected}
+                  disabled={configLocked}
                 />
               </label>
               <label>
@@ -278,7 +318,7 @@ export function RobotControl({ route, onRobotPosition }) {
                   max="1000"
                   value={config.interChunkDelayMs}
                   onInput={(event) => updateConfig('interChunkDelayMs', event.currentTarget.value)}
-                  disabled={connected}
+                  disabled={configLocked}
                 />
               </label>
             </div>

@@ -6,6 +6,8 @@
 
 默认采用 Nordic UART Service 兼容 UUID，网页“GATT 与分包设置”中可以修改：
 
+默认设备名前缀为 `car7`，浏览器设备选择器只显示名称以该字符串开头的设备。清空该设置可显示所有附近 BLE 设备。
+
 | 用途 | 默认 UUID | 属性 |
 | --- | --- | --- |
 | Service | `6e400001-b5a3-f393-e0a9-e50e24dcca9e` | Primary Service |
@@ -13,6 +15,8 @@
 | Telemetry / TX | `6e400003-b5a3-f393-e0a9-e50e24dcca9e` | Notify |
 
 小车应在 BLE advertisement 中包含 Service UUID，或至少允许连接后发现该服务。若固件已有自定义 GATT 表，直接在网页设置中填写三个完整 UUID。
+
+网页连接诊断依次标记 `device-selection`、`gatt-connect`、`primary-service`、`command-characteristic`、`telemetry-characteristic` 和 `notifications`。扫描到名称只证明设备可被发现；只有后三类 UUID 与固件 GATT 表一致并成功开启 Notify，通信通道才算就绪。
 
 ## 帧与分包
 

@@ -19,6 +19,17 @@ function abortError(message) {
   return error;
 }
 
+export class RobotConnectionError extends Error {
+  constructor(stage, cause, context = {}) {
+    super(cause?.message ? `${stage}: ${cause.message}` : `Bluetooth failed at ${stage}`);
+    this.name = 'RobotConnectionError';
+    this.stage = stage;
+    this.causeName = cause?.name ?? 'Error';
+    this.context = context;
+    this.cause = cause;
+  }
+}
+
 export function webBluetoothSupport(environment = globalThis) {
   const secureContext = environment.isSecureContext === true;
   const apiAvailable = typeof environment.navigator?.bluetooth?.requestDevice === 'function';
@@ -81,17 +92,29 @@ export class WebBluetoothRobotClient {
     }
     if (this.state === 'connected') return this.device;
     this.setState('selecting');
+    let stage = 'device-selection';
+    let context = {};
     try {
       // Keep requestDevice directly inside the user-triggered call chain.
       const device = await this.bluetooth.requestDevice(bluetoothRequestOptions(this.config));
       this.device = device;
       this.device.addEventListener('gattserverdisconnected', this.handleDisconnected);
+      stage = 'gatt-connect';
       this.setState('connecting');
       this.server = await device.gatt.connect();
+      stage = 'primary-service';
+      context = { uuid: this.config.serviceUuid };
+      this.setState('discovering', { stage });
       const service = await this.server.getPrimaryService(this.config.serviceUuid);
+      stage = 'command-characteristic';
+      context = { uuid: this.config.commandCharacteristicUuid };
+      this.setState('discovering', { stage });
       this.commandCharacteristic = await service.getCharacteristic(
         this.config.commandCharacteristicUuid,
       );
+      stage = 'telemetry-characteristic';
+      context = { uuid: this.config.telemetryCharacteristicUuid };
+      this.setState('discovering', { stage });
       this.telemetryCharacteristic = await service.getCharacteristic(
         this.config.telemetryCharacteristicUuid,
       );
@@ -99,16 +122,31 @@ export class WebBluetoothRobotClient {
         'characteristicvaluechanged',
         this.handleTelemetry,
       );
+      stage = 'notifications';
+      context = { uuid: this.config.telemetryCharacteristicUuid };
+      this.setState('discovering', { stage });
       await this.telemetryCharacteristic.startNotifications();
       this.setState('connected');
       return device;
-    } catch (error) {
+    } catch (cause) {
+      const cancelledSelection = stage === 'device-selection' && cause?.name === 'NotFoundError';
+      const error = cancelledSelection
+        ? cause
+        : new RobotConnectionError(stage, cause, {
+            ...context,
+            deviceName: this.device?.name ?? null,
+          });
+      const deviceName = this.device?.name ?? null;
       if (this.device?.gatt?.connected) {
         this.device.removeEventListener('gattserverdisconnected', this.handleDisconnected);
         this.device.gatt.disconnect();
       }
       this.releaseGattReferences();
-      this.setState(error?.name === 'NotFoundError' ? 'idle' : 'error', { error });
+      this.setState(cancelledSelection ? 'idle' : 'error', {
+        error,
+        stage,
+        deviceName,
+      });
       throw error;
     }
   }

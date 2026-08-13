@@ -534,6 +534,34 @@ h2 {
   white-space: nowrap;
 }
 
+.robot-diagnostic {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 157, 99, 0.46);
+  background: rgba(255, 157, 99, 0.07);
+}
+
+.robot-diagnostic strong {
+  color: var(--orange);
+  font: 800 9px/1.2 var(--mono);
+  letter-spacing: 0.04em;
+}
+
+.robot-diagnostic p {
+  margin: 8px 0 0;
+  color: #efd8c9;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.robot-diagnostic small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.5;
+}
+
 .robot-connect-button,
 .robot-secondary-button,
 .robot-send-button,
