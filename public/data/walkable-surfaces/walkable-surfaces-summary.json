@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "sourceImage": "微信图片_2026-08-13_172033_970.jpg",
+  "sourceImageSha256": "f989f29592ed5b9b3a3c98ac58a2fcb6f41afb765250676ceb24e9d9549f3a93",
+  "sourceImageSize": [
+    2351,
+    1280
+  ],
+  "processedImageSize": [
+    1176,
+    640
+  ],
+  "candidatePixelRatio": 0.610932,
+  "classificationMode": "ground-or-roof-unclassified",
+  "groundPixelRatio": null,
+  "roofPixelRatio": null,
+  "polygonCount": 14,
+  "groundPolygonCount": 0,
+  "roofPolygonCount": 0,
+  "unclassifiedPolygonCount": 14,
+  "routingEnabled": false
+}

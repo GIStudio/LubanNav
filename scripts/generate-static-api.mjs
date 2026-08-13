@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DATASET, MODES, PUBLIC_LOCATIONS } from '../src/data/campus.js';
@@ -32,11 +32,15 @@ await writeFile(
   resolve(apiRoot, 'robot-ble-protocol.json'),
   pretty(getRobotProtocolDescriptor()),
 );
+await copyFile(
+  resolve(root, 'public/data/walkable-surfaces/walkable-surfaces.image.geojson'),
+  resolve(apiRoot, 'walkable-surfaces.image.geojson'),
+);
 
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.3',
+    schemaVersion: '1.4',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
@@ -55,6 +59,7 @@ await writeFile(
       locations: './locations.json',
       routingGraph: './routing-graph.json',
       robotBleProtocol: './robot-ble-protocol.json',
+      renderWalkableSurfaceCandidates: './walkable-surfaces.image.geojson',
       routeTemplate: './routes/{from}/{to}.{mode}.json',
     },
     examples: [

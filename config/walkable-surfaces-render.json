@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "thresholds": {
+    "maxSaturation": 0.27,
+    "maxChroma": 0.24,
+    "minLuminance": 0.22
+  },
+  "excludeRegions": [],
+  "roofRegions": [],
+  "reviewState": {
+    "groundRoofClassification": "pending",
+    "imageToWgs84Registration": "pending",
+    "verticalConnections": "pending"
+  }
+}

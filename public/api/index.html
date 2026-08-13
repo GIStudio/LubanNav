@@ -38,6 +38,9 @@
       <h2>4. 机器人 BLE 协议</h2>
       <pre>GET <a href="./v1/robot-ble-protocol.json">./v1/robot-ble-protocol.json</a></pre>
       <p>浏览器作为 BLE Central，通过可配置 GATT Characteristic 顺序分包下发路线；小车以通知返回 WGS84 位置、确认和状态。</p>
+      <h2>5. 3D 俯瞰图水泥面候选</h2>
+      <pre>GET <a href="./v1/walkable-surfaces.image.geojson">./v1/walkable-surfaces.image.geojson</a></pre>
+      <p>坐标为俯瞰图归一化像素坐标，包含外部铺装、屋面和潜在立面，全部标记为 <code>routingEnabled=false</code>；完成 WGS84 配准、地面/屋顶复核和垂直连接核验前不会进入寻路图。</p>
     </section>
 
     <section>
@@ -49,6 +52,7 @@
         <li>建筑缺少 OSM 入口时，系统使用距离可通行道路节点最近的建筑边界点，并明确标记为推断入口。</li>
         <li>室内补丁公开 <code>level</code>、模式权限、数据来源和核验状态；未核验室内段默认只进入步行搜索空间。</li>
         <li>建筑、入口、水域和道路来自 OpenStreetMap，遵循 ODbL 1.0；数据仍未经现场通行性测绘。</li>
+        <li>3D 渲染图只能提供材质和平面候选，无法单独证明可达性、屋面承载、临边防护或楼层连接。</li>
         <li>真实机器人接入前必须增加定位、动态避障、权限与安全停机层。</li>
       </ul>
       <p><a href="../">← 返回地图</a> · <a href="./v1/catalog.json">查看机器可读目录</a></p>

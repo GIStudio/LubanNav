@@ -12,6 +12,7 @@ GitHub Pages 不运行服务端代码。构建时，LubanNav 会为所有公开�
 GET https://<user>.github.io/<repo>/api/v1/locations.json
 GET https://<user>.github.io/<repo>/api/v1/routing-graph.json
 GET https://<user>.github.io/<repo>/api/v1/robot-ble-protocol.json
+GET https://<user>.github.io/<repo>/api/v1/walkable-surfaces.image.geojson
 GET https://<user>.github.io/<repo>/api/v1/routes/main-entrance/library.pedestrian.json
 GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 ```
@@ -82,6 +83,8 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 
 第二种链接需要浏览器执行页面 JavaScript；需要原始 JSON 时使用上面的静态 API。
 
+`walkable-surfaces.image.geojson` 是从 3D 俯瞰渲染图提取的水泥色平面候选，坐标仍是归一化图像坐标。地面、屋顶与潜在立面尚未完成语义复核，所有要素均为 `routingEnabled=false`，不会进入当前 A* 路网。
+
 `path` 是可直接绘制的有序点列，并同时提供 WGS84 `longitude` / `latitude` 和早期客户端使用的 `x` / `y`；后者只为兼容保留，不应解释为地理坐标。`segments` 是后端导航应优先使用的有序路段，逐段给出起终点经纬度、距离、`highway`、`segmentType`、可用模式、OSM way 或室内要素来源。`geometry` 是可直接读取的 GeoJSON `LineString`。
 
 ### 无 OSM 后端如何自行寻路
@@ -136,6 +139,16 @@ npm run preview
 ```
 
 `npm run build` 会先生成 `routing-graph.json`、地点绑定和 `public/api/v1/routes/` 静态路径响应，再由 Vite 写入 `dist/`。生成文件被 Git 忽略，避免提交大量机械产物。
+
+从本地 3D 俯瞰图重新提取水泥色平面候选：
+
+```bash
+npm run extract:walkable -- \
+  --input /absolute/path/to/campus-render.jpg \
+  --output-dir artifacts/walkable-surfaces
+```
+
+脚本使用固定版本的 NumPy/Pillow，输出栅格掩膜、叠加预览、摘要和归一化图像坐标 GeoJSON。进入导航图前仍须完成 WGS84 配准、地面/屋顶/立面分类和楼梯、电梯或坡道连接核验。
 
 ## OSM 数据层
 
