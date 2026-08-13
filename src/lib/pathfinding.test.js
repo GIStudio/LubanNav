@@ -9,10 +9,20 @@ describe('findRoute', () => {
     expect(route.path[0].id).toBe('main-entrance');
     expect(route.path.at(-1).id).toBe('library');
     expect(route.path[0]).toMatchObject({
-      longitude: 113.4783197,
-      latitude: 22.8878039,
+      kind: 'entrance',
+      entranceSource: 'osm-entrance',
     });
+    expect(route.path.some((point) => point.kind === 'road')).toBe(true);
+    expect(route.path.at(-1).entranceSource).toBe('inferred-building-boundary');
     expect(route.summary.distanceMeters).toBeGreaterThan(0);
+    expect(route.summary.roadDistanceMeters).toBeGreaterThan(0);
+    expect(route.routing.engine).toBe('osm-highway-a-star');
+    expect(route.routing.allowedHighways).toEqual([
+      'footway',
+      'path',
+      'pedestrian',
+      'service',
+    ]);
     expect(route.instructions.at(-1)).toContain('图书馆');
   });
 

@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "refresh:osm": "node scripts/fetch-osm-campus.mjs",
+    "refresh:osm": "node scripts/fetch-osm-campus.mjs && npm run generate:routing",
+    "generate:routing": "node scripts/generate-osm-routing.mjs",
     "generate:api": "node scripts/generate-static-api.mjs",
-    "build": "npm run generate:api && vite build",
+    "build": "npm run generate:routing && npm run generate:api && vite build",
     "preview": "vite preview",
     "test": "vitest run"
   },

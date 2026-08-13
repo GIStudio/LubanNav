@@ -1,0 +1,6915 @@
+{
+  "schemaVersion": "2.0",
+  "dataset": "hkustgz-osm-routing-v2",
+  "generatedAt": "2026-08-13T05:57:34.212Z",
+  "source": "https://www.openstreetmap.org/way/894157108",
+  "allowedHighways": [
+    "footway",
+    "path",
+    "pedestrian",
+    "service"
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "osm-node/10057722423",
+        "osmNodeId": 10057722423,
+        "longitude": 113.4819301,
+        "latitude": 22.887114
+      },
+      {
+        "id": "osm-node/10057722424",
+        "osmNodeId": 10057722424,
+        "longitude": 113.4808905,
+        "latitude": 22.8874338
+      },
+      {
+        "id": "osm-node/10057722425",
+        "osmNodeId": 10057722425,
+        "longitude": 113.4767356,
+        "latitude": 22.8896464
+      },
+      {
+        "id": "osm-node/10057722426",
+        "osmNodeId": 10057722426,
+        "longitude": 113.47628,
+        "latitude": 22.890075
+      },
+      {
+        "id": "osm-node/10057722427",
+        "osmNodeId": 10057722427,
+        "longitude": 113.4763398,
+        "latitude": 22.8901399
+      },
+      {
+        "id": "osm-node/10057722428",
+        "osmNodeId": 10057722428,
+        "longitude": 113.4764166,
+        "latitude": 22.8901872
+      },
+      {
+        "id": "osm-node/10057722429",
+        "osmNodeId": 10057722429,
+        "longitude": 113.4765045,
+        "latitude": 22.8902134
+      },
+      {
+        "id": "osm-node/10057722430",
+        "osmNodeId": 10057722430,
+        "longitude": 113.4766865,
+        "latitude": 22.890196
+      },
+      {
+        "id": "osm-node/10057722431",
+        "osmNodeId": 10057722431,
+        "longitude": 113.4768602,
+        "latitude": 22.8897698
+      },
+      {
+        "id": "osm-node/10057722433",
+        "osmNodeId": 10057722433,
+        "longitude": 113.476648,
+        "latitude": 22.8896121
+      },
+      {
+        "id": "osm-node/10057722434",
+        "osmNodeId": 10057722434,
+        "longitude": 113.4765534,
+        "latitude": 22.889602
+      },
+      {
+        "id": "osm-node/10057722435",
+        "osmNodeId": 10057722435,
+        "longitude": 113.4768314,
+        "latitude": 22.890093
+      },
+      {
+        "id": "osm-node/10057722436",
+        "osmNodeId": 10057722436,
+        "longitude": 113.4768755,
+        "latitude": 22.8900182
+      },
+      {
+        "id": "osm-node/10057722437",
+        "osmNodeId": 10057722437,
+        "longitude": 113.4768957,
+        "latitude": 22.8899352
+      },
+      {
+        "id": "osm-node/10057722438",
+        "osmNodeId": 10057722438,
+        "longitude": 113.4768905,
+        "latitude": 22.8898502
+      },
+      {
+        "id": "osm-node/10057722439",
+        "osmNodeId": 10057722439,
+        "longitude": 113.4763804,
+        "latitude": 22.8896514
+      },
+      {
+        "id": "osm-node/10057722440",
+        "osmNodeId": 10057722440,
+        "longitude": 113.4762813,
+        "latitude": 22.8897431
+      },
+      {
+        "id": "osm-node/10057722441",
+        "osmNodeId": 10057722441,
+        "longitude": 113.476241,
+        "latitude": 22.8898246
+      },
+      {
+        "id": "osm-node/10057722442",
+        "osmNodeId": 10057722442,
+        "longitude": 113.476228,
+        "latitude": 22.8899134
+      },
+      {
+        "id": "osm-node/10057722443",
+        "osmNodeId": 10057722443,
+        "longitude": 113.4762418,
+        "latitude": 22.8899976
+      },
+      {
+        "id": "osm-node/10068169535",
+        "osmNodeId": 10068169535,
+        "longitude": 113.4845496,
+        "latitude": 22.8893451
+      },
+      {
+        "id": "osm-node/10740248511",
+        "osmNodeId": 10740248511,
+        "longitude": 113.4743502,
+        "latitude": 22.8888165
+      },
+      {
+        "id": "osm-node/10740248563",
+        "osmNodeId": 10740248563,
+        "longitude": 113.4827401,
+        "latitude": 22.8905006
+      },
+      {
+        "id": "osm-node/10740248564",
+        "osmNodeId": 10740248564,
+        "longitude": 113.4827094,
+        "latitude": 22.8904881
+      },
+      {
+        "id": "osm-node/10740248565",
+        "osmNodeId": 10740248565,
+        "longitude": 113.4826842,
+        "latitude": 22.8904676
+      },
+      {
+        "id": "osm-node/10740248566",
+        "osmNodeId": 10740248566,
+        "longitude": 113.4826671,
+        "latitude": 22.890441
+      },
+      {
+        "id": "osm-node/10740248567",
+        "osmNodeId": 10740248567,
+        "longitude": 113.4827692,
+        "latitude": 22.8903007
+      },
+      {
+        "id": "osm-node/10740248568",
+        "osmNodeId": 10740248568,
+        "longitude": 113.4827961,
+        "latitude": 22.890307
+      },
+      {
+        "id": "osm-node/10740248569",
+        "osmNodeId": 10740248569,
+        "longitude": 113.4828303,
+        "latitude": 22.8903217
+      },
+      {
+        "id": "osm-node/10740248570",
+        "osmNodeId": 10740248570,
+        "longitude": 113.4828571,
+        "latitude": 22.8903463
+      },
+      {
+        "id": "osm-node/10740248571",
+        "osmNodeId": 10740248571,
+        "longitude": 113.4828731,
+        "latitude": 22.8903778
+      },
+      {
+        "id": "osm-node/10740248572",
+        "osmNodeId": 10740248572,
+        "longitude": 113.4826596,
+        "latitude": 22.8904108
+      },
+      {
+        "id": "osm-node/10740248573",
+        "osmNodeId": 10740248573,
+        "longitude": 113.4826625,
+        "latitude": 22.8903799
+      },
+      {
+        "id": "osm-node/10740248574",
+        "osmNodeId": 10740248574,
+        "longitude": 113.4826755,
+        "latitude": 22.8903513
+      },
+      {
+        "id": "osm-node/10740248575",
+        "osmNodeId": 10740248575,
+        "longitude": 113.4826973,
+        "latitude": 22.8903278
+      },
+      {
+        "id": "osm-node/10740248576",
+        "osmNodeId": 10740248576,
+        "longitude": 113.4827259,
+        "latitude": 22.8903115
+      },
+      {
+        "id": "osm-node/10740248577",
+        "osmNodeId": 10740248577,
+        "longitude": 113.4828764,
+        "latitude": 22.8904124
+      },
+      {
+        "id": "osm-node/10740248578",
+        "osmNodeId": 10740248578,
+        "longitude": 113.4828667,
+        "latitude": 22.890446
+      },
+      {
+        "id": "osm-node/10740248579",
+        "osmNodeId": 10740248579,
+        "longitude": 113.4828451,
+        "latitude": 22.8904746
+      },
+      {
+        "id": "osm-node/10740248580",
+        "osmNodeId": 10740248580,
+        "longitude": 113.4828142,
+        "latitude": 22.8904946
+      },
+      {
+        "id": "osm-node/10740248581",
+        "osmNodeId": 10740248581,
+        "longitude": 113.4827777,
+        "latitude": 22.8905036
+      },
+      {
+        "id": "osm-node/10740248582",
+        "osmNodeId": 10740248582,
+        "longitude": 113.4830214,
+        "latitude": 22.8901943
+      },
+      {
+        "id": "osm-node/10740248583",
+        "osmNodeId": 10740248583,
+        "longitude": 113.4833835,
+        "latitude": 22.8899423
+      },
+      {
+        "id": "osm-node/10740248584",
+        "osmNodeId": 10740248584,
+        "longitude": 113.4838004,
+        "latitude": 22.8896906
+      },
+      {
+        "id": "osm-node/10740248585",
+        "osmNodeId": 10740248585,
+        "longitude": 113.484084,
+        "latitude": 22.8896221
+      },
+      {
+        "id": "osm-node/10740248586",
+        "osmNodeId": 10740248586,
+        "longitude": 113.4840293,
+        "latitude": 22.8895397
+      },
+      {
+        "id": "osm-node/10740248587",
+        "osmNodeId": 10740248587,
+        "longitude": 113.4845555,
+        "latitude": 22.8894301
+      },
+      {
+        "id": "osm-node/10740248589",
+        "osmNodeId": 10740248589,
+        "longitude": 113.4827871,
+        "latitude": 22.8909244
+      },
+      {
+        "id": "osm-node/10740248590",
+        "osmNodeId": 10740248590,
+        "longitude": 113.4827567,
+        "latitude": 22.8912508
+      },
+      {
+        "id": "osm-node/10740248591",
+        "osmNodeId": 10740248591,
+        "longitude": 113.482681,
+        "latitude": 22.8915803
+      },
+      {
+        "id": "osm-node/10740248592",
+        "osmNodeId": 10740248592,
+        "longitude": 113.4825166,
+        "latitude": 22.892047
+      },
+      {
+        "id": "osm-node/10740248593",
+        "osmNodeId": 10740248593,
+        "longitude": 113.4822609,
+        "latitude": 22.8925555
+      },
+      {
+        "id": "osm-node/10740248594",
+        "osmNodeId": 10740248594,
+        "longitude": 113.4821256,
+        "latitude": 22.8927962
+      },
+      {
+        "id": "osm-node/10740248595",
+        "osmNodeId": 10740248595,
+        "longitude": 113.4818461,
+        "latitude": 22.8932135
+      },
+      {
+        "id": "osm-node/10740248596",
+        "osmNodeId": 10740248596,
+        "longitude": 113.481612,
+        "latitude": 22.8934716
+      },
+      {
+        "id": "osm-node/10740248597",
+        "osmNodeId": 10740248597,
+        "longitude": 113.4811144,
+        "latitude": 22.8937673
+      },
+      {
+        "id": "osm-node/10740248598",
+        "osmNodeId": 10740248598,
+        "longitude": 113.4806139,
+        "latitude": 22.8940466
+      },
+      {
+        "id": "osm-node/10740248599",
+        "osmNodeId": 10740248599,
+        "longitude": 113.4804465,
+        "latitude": 22.8941136
+      },
+      {
+        "id": "osm-node/10740248600",
+        "osmNodeId": 10740248600,
+        "longitude": 113.4795273,
+        "latitude": 22.8942032
+      },
+      {
+        "id": "osm-node/10740248603",
+        "osmNodeId": 10740248603,
+        "longitude": 113.479091,
+        "latitude": 22.8874504
+      },
+      {
+        "id": "osm-node/10740248625",
+        "osmNodeId": 10740248625,
+        "longitude": 113.4768073,
+        "latitude": 22.8897001
+      },
+      {
+        "id": "osm-node/10740248634",
+        "osmNodeId": 10740248634,
+        "longitude": 113.4820452,
+        "latitude": 22.8871912
+      },
+      {
+        "id": "osm-node/10740248635",
+        "osmNodeId": 10740248635,
+        "longitude": 113.482007,
+        "latitude": 22.8871873
+      },
+      {
+        "id": "osm-node/10740248636",
+        "osmNodeId": 10740248636,
+        "longitude": 113.4819725,
+        "latitude": 22.8871718
+      },
+      {
+        "id": "osm-node/10740248637",
+        "osmNodeId": 10740248637,
+        "longitude": 113.4819917,
+        "latitude": 22.8869958
+      },
+      {
+        "id": "osm-node/10740248638",
+        "osmNodeId": 10740248638,
+        "longitude": 113.4820257,
+        "latitude": 22.8869872
+      },
+      {
+        "id": "osm-node/10740248639",
+        "osmNodeId": 10740248639,
+        "longitude": 113.4820609,
+        "latitude": 22.8869888
+      },
+      {
+        "id": "osm-node/10740248640",
+        "osmNodeId": 10740248640,
+        "longitude": 113.4820938,
+        "latitude": 22.8870005
+      },
+      {
+        "id": "osm-node/10740248641",
+        "osmNodeId": 10740248641,
+        "longitude": 113.4819458,
+        "latitude": 22.8871463
+      },
+      {
+        "id": "osm-node/10740248642",
+        "osmNodeId": 10740248642,
+        "longitude": 113.4819273,
+        "latitude": 22.8870787
+      },
+      {
+        "id": "osm-node/10740248643",
+        "osmNodeId": 10740248643,
+        "longitude": 113.4819377,
+        "latitude": 22.8870446
+      },
+      {
+        "id": "osm-node/10740248644",
+        "osmNodeId": 10740248644,
+        "longitude": 113.48196,
+        "latitude": 22.8870158
+      },
+      {
+        "id": "osm-node/10740248645",
+        "osmNodeId": 10740248645,
+        "longitude": 113.4821211,
+        "latitude": 22.8870211
+      },
+      {
+        "id": "osm-node/10740248646",
+        "osmNodeId": 10740248646,
+        "longitude": 113.4821405,
+        "latitude": 22.8870501
+      },
+      {
+        "id": "osm-node/10740248647",
+        "osmNodeId": 10740248647,
+        "longitude": 113.4821486,
+        "latitude": 22.88708
+      },
+      {
+        "id": "osm-node/10740248648",
+        "osmNodeId": 10740248648,
+        "longitude": 113.4821461,
+        "latitude": 22.8871124
+      },
+      {
+        "id": "osm-node/10740248649",
+        "osmNodeId": 10740248649,
+        "longitude": 113.4821327,
+        "latitude": 22.8871424
+      },
+      {
+        "id": "osm-node/10740248650",
+        "osmNodeId": 10740248650,
+        "longitude": 113.4821097,
+        "latitude": 22.8871671
+      },
+      {
+        "id": "osm-node/10740248651",
+        "osmNodeId": 10740248651,
+        "longitude": 113.4820796,
+        "latitude": 22.8871839
+      },
+      {
+        "id": "osm-node/10740248652",
+        "osmNodeId": 10740248652,
+        "longitude": 113.4826885,
+        "latitude": 22.8894581
+      },
+      {
+        "id": "osm-node/10740248653",
+        "osmNodeId": 10740248653,
+        "longitude": 113.4825192,
+        "latitude": 22.8885756
+      },
+      {
+        "id": "osm-node/10740248754",
+        "osmNodeId": 10740248754,
+        "longitude": 113.4820196,
+        "latitude": 22.8910481
+      },
+      {
+        "id": "osm-node/10740248755",
+        "osmNodeId": 10740248755,
+        "longitude": 113.4818291,
+        "latitude": 22.8912005
+      },
+      {
+        "id": "osm-node/10740248756",
+        "osmNodeId": 10740248756,
+        "longitude": 113.4799748,
+        "latitude": 22.8922111
+      },
+      {
+        "id": "osm-node/10740248757",
+        "osmNodeId": 10740248757,
+        "longitude": 113.4779896,
+        "latitude": 22.8889606
+      },
+      {
+        "id": "osm-node/10740248758",
+        "osmNodeId": 10740248758,
+        "longitude": 113.4782779,
+        "latitude": 22.8893593
+      },
+      {
+        "id": "osm-node/10740248759",
+        "osmNodeId": 10740248759,
+        "longitude": 113.4785937,
+        "latitude": 22.8896634
+      },
+      {
+        "id": "osm-node/10740248760",
+        "osmNodeId": 10740248760,
+        "longitude": 113.4790479,
+        "latitude": 22.8901468
+      },
+      {
+        "id": "osm-node/10740248761",
+        "osmNodeId": 10740248761,
+        "longitude": 113.4793293,
+        "latitude": 22.8905662
+      },
+      {
+        "id": "osm-node/10740248762",
+        "osmNodeId": 10740248762,
+        "longitude": 113.4795123,
+        "latitude": 22.8909091
+      },
+      {
+        "id": "osm-node/10740248763",
+        "osmNodeId": 10740248763,
+        "longitude": 113.4796666,
+        "latitude": 22.8913334
+      },
+      {
+        "id": "osm-node/10740248764",
+        "osmNodeId": 10740248764,
+        "longitude": 113.4797462,
+        "latitude": 22.8916397
+      },
+      {
+        "id": "osm-node/10740248765",
+        "osmNodeId": 10740248765,
+        "longitude": 113.4798389,
+        "latitude": 22.8919328
+      },
+      {
+        "id": "osm-node/10740248766",
+        "osmNodeId": 10740248766,
+        "longitude": 113.4804477,
+        "latitude": 22.8929586
+      },
+      {
+        "id": "osm-node/10740248767",
+        "osmNodeId": 10740248767,
+        "longitude": 113.4818525,
+        "latitude": 22.8878931
+      },
+      {
+        "id": "osm-node/10740248768",
+        "osmNodeId": 10740248768,
+        "longitude": 113.4822742,
+        "latitude": 22.8877767
+      },
+      {
+        "id": "osm-node/10740248769",
+        "osmNodeId": 10740248769,
+        "longitude": 113.4815869,
+        "latitude": 22.8908858
+      },
+      {
+        "id": "osm-node/10740248770",
+        "osmNodeId": 10740248770,
+        "longitude": 113.4809862,
+        "latitude": 22.8904333
+      },
+      {
+        "id": "osm-node/10740248771",
+        "osmNodeId": 10740248771,
+        "longitude": 113.480726,
+        "latitude": 22.8900627
+      },
+      {
+        "id": "osm-node/10740248772",
+        "osmNodeId": 10740248772,
+        "longitude": 113.4800101,
+        "latitude": 22.8888903
+      },
+      {
+        "id": "osm-node/10740248773",
+        "osmNodeId": 10740248773,
+        "longitude": 113.480505,
+        "latitude": 22.8897203
+      },
+      {
+        "id": "osm-node/10740248774",
+        "osmNodeId": 10740248774,
+        "longitude": 113.4813536,
+        "latitude": 22.8894153
+      },
+      {
+        "id": "osm-node/10740248775",
+        "osmNodeId": 10740248775,
+        "longitude": 113.4816219,
+        "latitude": 22.8892917
+      },
+      {
+        "id": "osm-node/10740248776",
+        "osmNodeId": 10740248776,
+        "longitude": 113.4820081,
+        "latitude": 22.8890298
+      },
+      {
+        "id": "osm-node/10740248777",
+        "osmNodeId": 10740248777,
+        "longitude": 113.4823139,
+        "latitude": 22.8887827
+      },
+      {
+        "id": "osm-node/10740248778",
+        "osmNodeId": 10740248778,
+        "longitude": 113.4749324,
+        "latitude": 22.8906098
+      },
+      {
+        "id": "osm-node/10740248779",
+        "osmNodeId": 10740248779,
+        "longitude": 113.4751595,
+        "latitude": 22.8909845
+      },
+      {
+        "id": "osm-node/10740248780",
+        "osmNodeId": 10740248780,
+        "longitude": 113.4753403,
+        "latitude": 22.8913745
+      },
+      {
+        "id": "osm-node/10740248781",
+        "osmNodeId": 10740248781,
+        "longitude": 113.4754137,
+        "latitude": 22.8915754
+      },
+      {
+        "id": "osm-node/10740248782",
+        "osmNodeId": 10740248782,
+        "longitude": 113.4756141,
+        "latitude": 22.892122
+      },
+      {
+        "id": "osm-node/10740248783",
+        "osmNodeId": 10740248783,
+        "longitude": 113.4757982,
+        "latitude": 22.892446
+      },
+      {
+        "id": "osm-node/10740248784",
+        "osmNodeId": 10740248784,
+        "longitude": 113.4761466,
+        "latitude": 22.8928904
+      },
+      {
+        "id": "osm-node/10740248785",
+        "osmNodeId": 10740248785,
+        "longitude": 113.4766521,
+        "latitude": 22.8933498
+      },
+      {
+        "id": "osm-node/10740248786",
+        "osmNodeId": 10740248786,
+        "longitude": 113.4769219,
+        "latitude": 22.8936394
+      },
+      {
+        "id": "osm-node/10740248787",
+        "osmNodeId": 10740248787,
+        "longitude": 113.4770169,
+        "latitude": 22.8937799
+      },
+      {
+        "id": "osm-node/10740248788",
+        "osmNodeId": 10740248788,
+        "longitude": 113.4774092,
+        "latitude": 22.8943888
+      },
+      {
+        "id": "osm-node/10740248789",
+        "osmNodeId": 10740248789,
+        "longitude": 113.4814397,
+        "latitude": 22.8924369
+      },
+      {
+        "id": "osm-node/10740248790",
+        "osmNodeId": 10740248790,
+        "longitude": 113.4815949,
+        "latitude": 22.8923917
+      },
+      {
+        "id": "osm-node/10740248791",
+        "osmNodeId": 10740248791,
+        "longitude": 113.4817736,
+        "latitude": 22.8923836
+      },
+      {
+        "id": "osm-node/10740248792",
+        "osmNodeId": 10740248792,
+        "longitude": 113.481912,
+        "latitude": 22.8924053
+      },
+      {
+        "id": "osm-node/10740248793",
+        "osmNodeId": 10740248793,
+        "longitude": 113.4825147,
+        "latitude": 22.8926873
+      },
+      {
+        "id": "osm-node/10740248794",
+        "osmNodeId": 10740248794,
+        "longitude": 113.4826152,
+        "latitude": 22.8927415
+      },
+      {
+        "id": "osm-node/10740248795",
+        "osmNodeId": 10740248795,
+        "longitude": 113.4827953,
+        "latitude": 22.8928772
+      },
+      {
+        "id": "osm-node/10740248796",
+        "osmNodeId": 10740248796,
+        "longitude": 113.4829412,
+        "latitude": 22.8930441
+      },
+      {
+        "id": "osm-node/10740248797",
+        "osmNodeId": 10740248797,
+        "longitude": 113.4836012,
+        "latitude": 22.8942696
+      },
+      {
+        "id": "osm-node/10740248816",
+        "osmNodeId": 10740248816,
+        "longitude": 113.4775325,
+        "latitude": 22.8881229
+      },
+      {
+        "id": "osm-node/10740248820",
+        "osmNodeId": 10740248820,
+        "longitude": 113.4777563,
+        "latitude": 22.8885946
+      },
+      {
+        "id": "osm-node/10763132989",
+        "osmNodeId": 10763132989,
+        "longitude": 113.4776815,
+        "latitude": 22.8883663
+      },
+      {
+        "id": "osm-node/10775856871",
+        "osmNodeId": 10775856871,
+        "longitude": 113.478078,
+        "latitude": 22.8890969
+      },
+      {
+        "id": "osm-node/10775856872",
+        "osmNodeId": 10775856872,
+        "longitude": 113.4781607,
+        "latitude": 22.8892159
+      },
+      {
+        "id": "osm-node/10775856873",
+        "osmNodeId": 10775856873,
+        "longitude": 113.4784296,
+        "latitude": 22.8895171
+      },
+      {
+        "id": "osm-node/10775856874",
+        "osmNodeId": 10775856874,
+        "longitude": 113.4789551,
+        "latitude": 22.8894445
+      },
+      {
+        "id": "osm-node/10775856875",
+        "osmNodeId": 10775856875,
+        "longitude": 113.4787845,
+        "latitude": 22.8898456
+      },
+      {
+        "id": "osm-node/10775856876",
+        "osmNodeId": 10775856876,
+        "longitude": 113.4789246,
+        "latitude": 22.8899965
+      },
+      {
+        "id": "osm-node/10775856877",
+        "osmNodeId": 10775856877,
+        "longitude": 113.4791942,
+        "latitude": 22.8903464
+      },
+      {
+        "id": "osm-node/10775856878",
+        "osmNodeId": 10775856878,
+        "longitude": 113.4794177,
+        "latitude": 22.8907221
+      },
+      {
+        "id": "osm-node/10775856879",
+        "osmNodeId": 10775856879,
+        "longitude": 113.4795959,
+        "latitude": 22.891123
+      },
+      {
+        "id": "osm-node/10775856880",
+        "osmNodeId": 10775856880,
+        "longitude": 113.479787,
+        "latitude": 22.8917877
+      },
+      {
+        "id": "osm-node/10775856881",
+        "osmNodeId": 10775856881,
+        "longitude": 113.4799017,
+        "latitude": 22.8920741
+      },
+      {
+        "id": "osm-node/10775856882",
+        "osmNodeId": 10775856882,
+        "longitude": 113.4800359,
+        "latitude": 22.8923099
+      },
+      {
+        "id": "osm-node/10775856883",
+        "osmNodeId": 10775856883,
+        "longitude": 113.4803381,
+        "latitude": 22.8927994
+      },
+      {
+        "id": "osm-node/10775856884",
+        "osmNodeId": 10775856884,
+        "longitude": 113.4803575,
+        "latitude": 22.8930148
+      },
+      {
+        "id": "osm-node/10775856885",
+        "osmNodeId": 10775856885,
+        "longitude": 113.4806504,
+        "latitude": 22.8928493
+      },
+      {
+        "id": "osm-node/10775856886",
+        "osmNodeId": 10775856886,
+        "longitude": 113.4803636,
+        "latitude": 22.89102
+      },
+      {
+        "id": "osm-node/10775856887",
+        "osmNodeId": 10775856887,
+        "longitude": 113.4803101,
+        "latitude": 22.8898281
+      },
+      {
+        "id": "osm-node/10775856892",
+        "osmNodeId": 10775856892,
+        "longitude": 113.480582,
+        "latitude": 22.8913551
+      },
+      {
+        "id": "osm-node/10775863241",
+        "osmNodeId": 10775863241,
+        "longitude": 113.4775035,
+        "latitude": 22.8887291
+      },
+      {
+        "id": "osm-node/10775863246",
+        "osmNodeId": 10775863246,
+        "longitude": 113.482071,
+        "latitude": 22.886314
+      },
+      {
+        "id": "osm-node/10775863247",
+        "osmNodeId": 10775863247,
+        "longitude": 113.4820398,
+        "latitude": 22.88623
+      },
+      {
+        "id": "osm-node/10775863248",
+        "osmNodeId": 10775863248,
+        "longitude": 113.4820119,
+        "latitude": 22.8861998
+      },
+      {
+        "id": "osm-node/10775863249",
+        "osmNodeId": 10775863249,
+        "longitude": 113.4819806,
+        "latitude": 22.8861754
+      },
+      {
+        "id": "osm-node/10775863250",
+        "osmNodeId": 10775863250,
+        "longitude": 113.4819314,
+        "latitude": 22.8861602
+      },
+      {
+        "id": "osm-node/10775863251",
+        "osmNodeId": 10775863251,
+        "longitude": 113.4818606,
+        "latitude": 22.8861677
+      },
+      {
+        "id": "osm-node/10775863252",
+        "osmNodeId": 10775863252,
+        "longitude": 113.4817267,
+        "latitude": 22.8862282
+      },
+      {
+        "id": "osm-node/10775863253",
+        "osmNodeId": 10775863253,
+        "longitude": 113.4816202,
+        "latitude": 22.8862964
+      },
+      {
+        "id": "osm-node/10775863254",
+        "osmNodeId": 10775863254,
+        "longitude": 113.4815216,
+        "latitude": 22.8863347
+      },
+      {
+        "id": "osm-node/10775863255",
+        "osmNodeId": 10775863255,
+        "longitude": 113.4814632,
+        "latitude": 22.886325
+      },
+      {
+        "id": "osm-node/10775863256",
+        "osmNodeId": 10775863256,
+        "longitude": 113.4814215,
+        "latitude": 22.8863073
+      },
+      {
+        "id": "osm-node/10775863257",
+        "osmNodeId": 10775863257,
+        "longitude": 113.4813826,
+        "latitude": 22.8862598
+      },
+      {
+        "id": "osm-node/10775863258",
+        "osmNodeId": 10775863258,
+        "longitude": 113.481307,
+        "latitude": 22.886135
+      },
+      {
+        "id": "osm-node/10775863259",
+        "osmNodeId": 10775863259,
+        "longitude": 113.4764188,
+        "latitude": 22.8896317
+      },
+      {
+        "id": "osm-node/10775863267",
+        "osmNodeId": 10775863267,
+        "longitude": 113.4807681,
+        "latitude": 22.8917898
+      },
+      {
+        "id": "osm-node/10775863268",
+        "osmNodeId": 10775863268,
+        "longitude": 113.4812258,
+        "latitude": 22.8925392
+      },
+      {
+        "id": "osm-node/10775863276",
+        "osmNodeId": 10775863276,
+        "longitude": 113.4774574,
+        "latitude": 22.8944626
+      },
+      {
+        "id": "osm-node/10775863277",
+        "osmNodeId": 10775863277,
+        "longitude": 113.4775225,
+        "latitude": 22.8944983
+      },
+      {
+        "id": "osm-node/10775863278",
+        "osmNodeId": 10775863278,
+        "longitude": 113.4776086,
+        "latitude": 22.8944852
+      },
+      {
+        "id": "osm-node/10775863280",
+        "osmNodeId": 10775863280,
+        "longitude": 113.4804995,
+        "latitude": 22.893053
+      },
+      {
+        "id": "osm-node/10775863281",
+        "osmNodeId": 10775863281,
+        "longitude": 113.4805493,
+        "latitude": 22.8931548
+      },
+      {
+        "id": "osm-node/10775863282",
+        "osmNodeId": 10775863282,
+        "longitude": 113.4806259,
+        "latitude": 22.8933062
+      },
+      {
+        "id": "osm-node/10775863283",
+        "osmNodeId": 10775863283,
+        "longitude": 113.4807047,
+        "latitude": 22.8934553
+      },
+      {
+        "id": "osm-node/10775863284",
+        "osmNodeId": 10775863284,
+        "longitude": 113.4809308,
+        "latitude": 22.893864
+      },
+      {
+        "id": "osm-node/10775863285",
+        "osmNodeId": 10775863285,
+        "longitude": 113.4800537,
+        "latitude": 22.8889589
+      },
+      {
+        "id": "osm-node/10775863286",
+        "osmNodeId": 10775863286,
+        "longitude": 113.4802275,
+        "latitude": 22.8888627
+      },
+      {
+        "id": "osm-node/10775863287",
+        "osmNodeId": 10775863287,
+        "longitude": 113.4803254,
+        "latitude": 22.8888158
+      },
+      {
+        "id": "osm-node/10775863288",
+        "osmNodeId": 10775863288,
+        "longitude": 113.4804748,
+        "latitude": 22.8887626
+      },
+      {
+        "id": "osm-node/10775863289",
+        "osmNodeId": 10775863289,
+        "longitude": 113.4805718,
+        "latitude": 22.8887442
+      },
+      {
+        "id": "osm-node/10775863290",
+        "osmNodeId": 10775863290,
+        "longitude": 113.4806812,
+        "latitude": 22.8887214
+      },
+      {
+        "id": "osm-node/10775863291",
+        "osmNodeId": 10775863291,
+        "longitude": 113.4808068,
+        "latitude": 22.8886853
+      },
+      {
+        "id": "osm-node/10775863292",
+        "osmNodeId": 10775863292,
+        "longitude": 113.4809993,
+        "latitude": 22.8886207
+      },
+      {
+        "id": "osm-node/10775863293",
+        "osmNodeId": 10775863293,
+        "longitude": 113.4811811,
+        "latitude": 22.8885412
+      },
+      {
+        "id": "osm-node/10775863294",
+        "osmNodeId": 10775863294,
+        "longitude": 113.4812997,
+        "latitude": 22.8884653
+      },
+      {
+        "id": "osm-node/10775863295",
+        "osmNodeId": 10775863295,
+        "longitude": 113.4813937,
+        "latitude": 22.888378
+      },
+      {
+        "id": "osm-node/10775863296",
+        "osmNodeId": 10775863296,
+        "longitude": 113.4814684,
+        "latitude": 22.8882538
+      },
+      {
+        "id": "osm-node/10775863297",
+        "osmNodeId": 10775863297,
+        "longitude": 113.4815293,
+        "latitude": 22.888068
+      },
+      {
+        "id": "osm-node/10775863302",
+        "osmNodeId": 10775863302,
+        "longitude": 113.4735861,
+        "latitude": 22.8953335
+      },
+      {
+        "id": "osm-node/10775863303",
+        "osmNodeId": 10775863303,
+        "longitude": 113.4739369,
+        "latitude": 22.895303
+      },
+      {
+        "id": "osm-node/10775863304",
+        "osmNodeId": 10775863304,
+        "longitude": 113.4741643,
+        "latitude": 22.8952678
+      },
+      {
+        "id": "osm-node/10775863305",
+        "osmNodeId": 10775863305,
+        "longitude": 113.4744114,
+        "latitude": 22.8952146
+      },
+      {
+        "id": "osm-node/10775863306",
+        "osmNodeId": 10775863306,
+        "longitude": 113.4747113,
+        "latitude": 22.8951117
+      },
+      {
+        "id": "osm-node/10775863307",
+        "osmNodeId": 10775863307,
+        "longitude": 113.4749929,
+        "latitude": 22.8949843
+      },
+      {
+        "id": "osm-node/10775863308",
+        "osmNodeId": 10775863308,
+        "longitude": 113.4752281,
+        "latitude": 22.8948579
+      },
+      {
+        "id": "osm-node/10775863309",
+        "osmNodeId": 10775863309,
+        "longitude": 113.4755652,
+        "latitude": 22.8946371
+      },
+      {
+        "id": "osm-node/10775863310",
+        "osmNodeId": 10775863310,
+        "longitude": 113.4759642,
+        "latitude": 22.8943754
+      },
+      {
+        "id": "osm-node/10775863311",
+        "osmNodeId": 10775863311,
+        "longitude": 113.4763215,
+        "latitude": 22.8941656
+      },
+      {
+        "id": "osm-node/10775863312",
+        "osmNodeId": 10775863312,
+        "longitude": 113.4766157,
+        "latitude": 22.8940079
+      },
+      {
+        "id": "osm-node/10775863313",
+        "osmNodeId": 10775863313,
+        "longitude": 113.4768387,
+        "latitude": 22.8938885
+      },
+      {
+        "id": "osm-node/10775863314",
+        "osmNodeId": 10775863314,
+        "longitude": 113.4752555,
+        "latitude": 22.8911773
+      },
+      {
+        "id": "osm-node/10775863315",
+        "osmNodeId": 10775863315,
+        "longitude": 113.4755375,
+        "latitude": 22.8919532
+      },
+      {
+        "id": "osm-node/10775863316",
+        "osmNodeId": 10775863316,
+        "longitude": 113.4757011,
+        "latitude": 22.8922864
+      },
+      {
+        "id": "osm-node/10775863317",
+        "osmNodeId": 10775863317,
+        "longitude": 113.4759051,
+        "latitude": 22.8926002
+      },
+      {
+        "id": "osm-node/10775863318",
+        "osmNodeId": 10775863318,
+        "longitude": 113.4764227,
+        "latitude": 22.8931533
+      },
+      {
+        "id": "osm-node/10775863319",
+        "osmNodeId": 10775863319,
+        "longitude": 113.477272,
+        "latitude": 22.8927931
+      },
+      {
+        "id": "osm-node/11073090121",
+        "osmNodeId": 11073090121,
+        "longitude": 113.4847866,
+        "latitude": 22.8893392
+      },
+      {
+        "id": "osm-node/11073090122",
+        "osmNodeId": 11073090122,
+        "longitude": 113.4847709,
+        "latitude": 22.889255
+      },
+      {
+        "id": "osm-node/11073090124",
+        "osmNodeId": 11073090124,
+        "longitude": 113.4777151,
+        "latitude": 22.8885208
+      },
+      {
+        "id": "osm-node/11073090125",
+        "osmNodeId": 11073090125,
+        "longitude": 113.477586,
+        "latitude": 22.8884048
+      },
+      {
+        "id": "osm-node/11073090126",
+        "osmNodeId": 11073090126,
+        "longitude": 113.4774299,
+        "latitude": 22.8881743
+      },
+      {
+        "id": "osm-node/11073090127",
+        "osmNodeId": 11073090127,
+        "longitude": 113.477641,
+        "latitude": 22.8884714
+      },
+      {
+        "id": "osm-node/11073090128",
+        "osmNodeId": 11073090128,
+        "longitude": 113.4777049,
+        "latitude": 22.8884435
+      },
+      {
+        "id": "osm-node/11073090129",
+        "osmNodeId": 11073090129,
+        "longitude": 113.4771746,
+        "latitude": 22.8891762
+      },
+      {
+        "id": "osm-node/11073090130",
+        "osmNodeId": 11073090130,
+        "longitude": 113.4810922,
+        "latitude": 22.8873718
+      },
+      {
+        "id": "osm-node/11073090131",
+        "osmNodeId": 11073090131,
+        "longitude": 113.4806692,
+        "latitude": 22.8875341
+      },
+      {
+        "id": "osm-node/11073090132",
+        "osmNodeId": 11073090132,
+        "longitude": 113.4772272,
+        "latitude": 22.888874
+      },
+      {
+        "id": "osm-node/11073090133",
+        "osmNodeId": 11073090133,
+        "longitude": 113.4771138,
+        "latitude": 22.8889351
+      },
+      {
+        "id": "osm-node/11073090134",
+        "osmNodeId": 11073090134,
+        "longitude": 113.4770818,
+        "latitude": 22.8889903
+      },
+      {
+        "id": "osm-node/11073090135",
+        "osmNodeId": 11073090135,
+        "longitude": 113.4770818,
+        "latitude": 22.8890258
+      },
+      {
+        "id": "osm-node/11073090136",
+        "osmNodeId": 11073090136,
+        "longitude": 113.4771259,
+        "latitude": 22.8891147
+      },
+      {
+        "id": "osm-node/11073090137",
+        "osmNodeId": 11073090137,
+        "longitude": 113.477092,
+        "latitude": 22.888959
+      },
+      {
+        "id": "osm-node/11073090138",
+        "osmNodeId": 11073090138,
+        "longitude": 113.4770914,
+        "latitude": 22.8890574
+      },
+      {
+        "id": "osm-node/11073090139",
+        "osmNodeId": 11073090139,
+        "longitude": 113.4775655,
+        "latitude": 22.8944952
+      },
+      {
+        "id": "osm-node/11073090140",
+        "osmNodeId": 11073090140,
+        "longitude": 113.4774865,
+        "latitude": 22.894483
+      },
+      {
+        "id": "osm-node/11073090141",
+        "osmNodeId": 11073090141,
+        "longitude": 113.4792024,
+        "latitude": 22.8936417
+      },
+      {
+        "id": "osm-node/11073090142",
+        "osmNodeId": 11073090142,
+        "longitude": 113.4827825,
+        "latitude": 22.8907191
+      },
+      {
+        "id": "osm-node/11073090143",
+        "osmNodeId": 11073090143,
+        "longitude": 113.4827612,
+        "latitude": 22.8906465
+      },
+      {
+        "id": "osm-node/11073090144",
+        "osmNodeId": 11073090144,
+        "longitude": 113.4826979,
+        "latitude": 22.8906069
+      },
+      {
+        "id": "osm-node/11073090145",
+        "osmNodeId": 11073090145,
+        "longitude": 113.4826156,
+        "latitude": 22.8905872
+      },
+      {
+        "id": "osm-node/11073090146",
+        "osmNodeId": 11073090146,
+        "longitude": 113.4825296,
+        "latitude": 22.8906026
+      },
+      {
+        "id": "osm-node/11073090147",
+        "osmNodeId": 11073090147,
+        "longitude": 113.482747,
+        "latitude": 22.890079
+      },
+      {
+        "id": "osm-node/11073090148",
+        "osmNodeId": 11073090148,
+        "longitude": 113.4827955,
+        "latitude": 22.8901449
+      },
+      {
+        "id": "osm-node/11073090149",
+        "osmNodeId": 11073090149,
+        "longitude": 113.4828217,
+        "latitude": 22.8901741
+      },
+      {
+        "id": "osm-node/11073090150",
+        "osmNodeId": 11073090150,
+        "longitude": 113.4828589,
+        "latitude": 22.8901969
+      },
+      {
+        "id": "osm-node/11073090151",
+        "osmNodeId": 11073090151,
+        "longitude": 113.4829237,
+        "latitude": 22.8902058
+      },
+      {
+        "id": "osm-node/11073090152",
+        "osmNodeId": 11073090152,
+        "longitude": 113.4829892,
+        "latitude": 22.890202
+      },
+      {
+        "id": "osm-node/11073090153",
+        "osmNodeId": 11073090153,
+        "longitude": 113.4758826,
+        "latitude": 22.8900799
+      },
+      {
+        "id": "osm-node/11073090156",
+        "osmNodeId": 11073090156,
+        "longitude": 113.4835017,
+        "latitude": 22.8940849
+      },
+      {
+        "id": "osm-node/11073090157",
+        "osmNodeId": 11073090157,
+        "longitude": 113.4805337,
+        "latitude": 22.8940838
+      },
+      {
+        "id": "osm-node/11073090158",
+        "osmNodeId": 11073090158,
+        "longitude": 113.4817735,
+        "latitude": 22.893321
+      },
+      {
+        "id": "osm-node/11073090159",
+        "osmNodeId": 11073090159,
+        "longitude": 113.4815086,
+        "latitude": 22.8935535
+      },
+      {
+        "id": "osm-node/11073090160",
+        "osmNodeId": 11073090160,
+        "longitude": 113.4760055,
+        "latitude": 22.8889333
+      },
+      {
+        "id": "osm-node/11073090161",
+        "osmNodeId": 11073090161,
+        "longitude": 113.4764596,
+        "latitude": 22.8896168
+      },
+      {
+        "id": "osm-node/11073090162",
+        "osmNodeId": 11073090162,
+        "longitude": 113.4758975,
+        "latitude": 22.8889906
+      },
+      {
+        "id": "osm-node/11073090163",
+        "osmNodeId": 11073090163,
+        "longitude": 113.4763453,
+        "latitude": 22.8896756
+      },
+      {
+        "id": "osm-node/11073090164",
+        "osmNodeId": 11073090164,
+        "longitude": 113.4760112,
+        "latitude": 22.8891642
+      },
+      {
+        "id": "osm-node/11073090165",
+        "osmNodeId": 11073090165,
+        "longitude": 113.4761253,
+        "latitude": 22.889114
+      },
+      {
+        "id": "osm-node/11073090198",
+        "osmNodeId": 11073090198,
+        "longitude": 113.4742141,
+        "latitude": 22.8887572
+      },
+      {
+        "id": "osm-node/11073090199",
+        "osmNodeId": 11073090199,
+        "longitude": 113.4741759,
+        "latitude": 22.888745
+      },
+      {
+        "id": "osm-node/11073090200",
+        "osmNodeId": 11073090200,
+        "longitude": 113.4741491,
+        "latitude": 22.8887411
+      },
+      {
+        "id": "osm-node/11073090201",
+        "osmNodeId": 11073090201,
+        "longitude": 113.4740376,
+        "latitude": 22.8887866
+      },
+      {
+        "id": "osm-node/11073090202",
+        "osmNodeId": 11073090202,
+        "longitude": 113.4736975,
+        "latitude": 22.8889244
+      },
+      {
+        "id": "osm-node/11073090203",
+        "osmNodeId": 11073090203,
+        "longitude": 113.4734506,
+        "latitude": 22.8890219
+      },
+      {
+        "id": "osm-node/11073090204",
+        "osmNodeId": 11073090204,
+        "longitude": 113.4754756,
+        "latitude": 22.8917797
+      },
+      {
+        "id": "osm-node/11073095006",
+        "osmNodeId": 11073095006,
+        "longitude": 113.4750528,
+        "latitude": 22.8907967
+      },
+      {
+        "id": "osm-node/12804948602",
+        "osmNodeId": 12804948602,
+        "longitude": 113.4742533,
+        "latitude": 22.8887743
+      },
+      {
+        "id": "osm-node/12821543352",
+        "osmNodeId": 12821543352,
+        "longitude": 113.4795035,
+        "latitude": 22.8881547
+      },
+      {
+        "id": "osm-node/12821543353",
+        "osmNodeId": 12821543353,
+        "longitude": 113.4790124,
+        "latitude": 22.8873261
+      },
+      {
+        "id": "osm-node/12821543360",
+        "osmNodeId": 12821543360,
+        "longitude": 113.4795294,
+        "latitude": 22.8942763
+      },
+      {
+        "id": "osm-node/12821543361",
+        "osmNodeId": 12821543361,
+        "longitude": 113.4796423,
+        "latitude": 22.8945459
+      },
+      {
+        "id": "osm-node/12821543362",
+        "osmNodeId": 12821543362,
+        "longitude": 113.4799141,
+        "latitude": 22.8947173
+      },
+      {
+        "id": "osm-node/12821543363",
+        "osmNodeId": 12821543363,
+        "longitude": 113.4800902,
+        "latitude": 22.8947183
+      },
+      {
+        "id": "osm-node/12821543364",
+        "osmNodeId": 12821543364,
+        "longitude": 113.4802781,
+        "latitude": 22.8946721
+      },
+      {
+        "id": "osm-node/12821543365",
+        "osmNodeId": 12821543365,
+        "longitude": 113.4806653,
+        "latitude": 22.8946466
+      },
+      {
+        "id": "osm-node/12821543366",
+        "osmNodeId": 12821543366,
+        "longitude": 113.4808938,
+        "latitude": 22.8945843
+      },
+      {
+        "id": "osm-node/12821543367",
+        "osmNodeId": 12821543367,
+        "longitude": 113.4810021,
+        "latitude": 22.8944752
+      },
+      {
+        "id": "osm-node/12821543368",
+        "osmNodeId": 12821543368,
+        "longitude": 113.481219,
+        "latitude": 22.8941706
+      },
+      {
+        "id": "osm-node/12821543369",
+        "osmNodeId": 12821543369,
+        "longitude": 113.4813591,
+        "latitude": 22.8939813
+      },
+      {
+        "id": "osm-node/12821543370",
+        "osmNodeId": 12821543370,
+        "longitude": 113.4814899,
+        "latitude": 22.8938007
+      },
+      {
+        "id": "osm-node/12821543371",
+        "osmNodeId": 12821543371,
+        "longitude": 113.4763913,
+        "latitude": 22.8899585
+      },
+      {
+        "id": "osm-node/12821543372",
+        "osmNodeId": 12821543372,
+        "longitude": 113.4763855,
+        "latitude": 22.889899
+      },
+      {
+        "id": "osm-node/12821543373",
+        "osmNodeId": 12821543373,
+        "longitude": 113.4764021,
+        "latitude": 22.8898413
+      },
+      {
+        "id": "osm-node/12821543374",
+        "osmNodeId": 12821543374,
+        "longitude": 113.4766783,
+        "latitude": 22.8897725
+      },
+      {
+        "id": "osm-node/12821543375",
+        "osmNodeId": 12821543375,
+        "longitude": 113.4767242,
+        "latitude": 22.8898146
+      },
+      {
+        "id": "osm-node/12821543376",
+        "osmNodeId": 12821543376,
+        "longitude": 113.4767518,
+        "latitude": 22.8898687
+      },
+      {
+        "id": "osm-node/12821543377",
+        "osmNodeId": 12821543377,
+        "longitude": 113.4767576,
+        "latitude": 22.8899282
+      },
+      {
+        "id": "osm-node/12821543378",
+        "osmNodeId": 12821543378,
+        "longitude": 113.4764392,
+        "latitude": 22.8897923
+      },
+      {
+        "id": "osm-node/12821543379",
+        "osmNodeId": 12821543379,
+        "longitude": 113.4764922,
+        "latitude": 22.8897579
+      },
+      {
+        "id": "osm-node/12821543380",
+        "osmNodeId": 12821543380,
+        "longitude": 113.4765548,
+        "latitude": 22.8897423
+      },
+      {
+        "id": "osm-node/12821543382",
+        "osmNodeId": 12821543382,
+        "longitude": 113.4766194,
+        "latitude": 22.8897474
+      },
+      {
+        "id": "osm-node/12821543383",
+        "osmNodeId": 12821543383,
+        "longitude": 113.4767409,
+        "latitude": 22.8899859
+      },
+      {
+        "id": "osm-node/12821543384",
+        "osmNodeId": 12821543384,
+        "longitude": 113.4767039,
+        "latitude": 22.8900349
+      },
+      {
+        "id": "osm-node/12821543385",
+        "osmNodeId": 12821543385,
+        "longitude": 113.4766508,
+        "latitude": 22.8900693
+      },
+      {
+        "id": "osm-node/12821543386",
+        "osmNodeId": 12821543386,
+        "longitude": 113.4765883,
+        "latitude": 22.8900849
+      },
+      {
+        "id": "osm-node/12821543387",
+        "osmNodeId": 12821543387,
+        "longitude": 113.4765236,
+        "latitude": 22.8900799
+      },
+      {
+        "id": "osm-node/12821543388",
+        "osmNodeId": 12821543388,
+        "longitude": 113.4764648,
+        "latitude": 22.8900547
+      },
+      {
+        "id": "osm-node/12821543389",
+        "osmNodeId": 12821543389,
+        "longitude": 113.4764189,
+        "latitude": 22.8900126
+      },
+      {
+        "id": "osm-node/13909951898",
+        "osmNodeId": 13909951898,
+        "longitude": 113.482873,
+        "latitude": 22.8929571
+      },
+      {
+        "id": "osm-node/13909951899",
+        "osmNodeId": 13909951899,
+        "longitude": 113.4827091,
+        "latitude": 22.892805
+      },
+      {
+        "id": "osm-node/13909959262",
+        "osmNodeId": 13909959262,
+        "longitude": 113.4767668,
+        "latitude": 22.8901538
+      },
+      {
+        "id": "osm-node/13909959263",
+        "osmNodeId": 13909959263,
+        "longitude": 113.4765968,
+        "latitude": 22.8902164
+      },
+      {
+        "id": "osm-node/13909959264",
+        "osmNodeId": 13909959264,
+        "longitude": 113.4762806,
+        "latitude": 22.8930255
+      },
+      {
+        "id": "osm-node/13909959265",
+        "osmNodeId": 13909959265,
+        "longitude": 113.4760213,
+        "latitude": 22.8927485
+      },
+      {
+        "id": "osm-node/13909959266",
+        "osmNodeId": 13909959266,
+        "longitude": 113.4795467,
+        "latitude": 22.8941345
+      },
+      {
+        "id": "osm-node/13909959267",
+        "osmNodeId": 13909959267,
+        "longitude": 113.4795572,
+        "latitude": 22.8940641
+      },
+      {
+        "id": "osm-node/13909959268",
+        "osmNodeId": 13909959268,
+        "longitude": 113.4795585,
+        "latitude": 22.8939932
+      },
+      {
+        "id": "osm-node/13909959269",
+        "osmNodeId": 13909959269,
+        "longitude": 113.4795328,
+        "latitude": 22.8938496
+      },
+      {
+        "id": "osm-node/13909959270",
+        "osmNodeId": 13909959270,
+        "longitude": 113.4795508,
+        "latitude": 22.8939225
+      },
+      {
+        "id": "osm-node/13909959271",
+        "osmNodeId": 13909959271,
+        "longitude": 113.4795052,
+        "latitude": 22.8937792
+      },
+      {
+        "id": "osm-node/13909959272",
+        "osmNodeId": 13909959272,
+        "longitude": 113.4793592,
+        "latitude": 22.8935566
+      },
+      {
+        "id": "osm-node/13909959273",
+        "osmNodeId": 13909959273,
+        "longitude": 113.4809544,
+        "latitude": 22.8945351
+      },
+      {
+        "id": "osm-node/13909959274",
+        "osmNodeId": 13909959274,
+        "longitude": 113.4808232,
+        "latitude": 22.8946202
+      },
+      {
+        "id": "osm-node/13909959275",
+        "osmNodeId": 13909959275,
+        "longitude": 113.4807458,
+        "latitude": 22.8946413
+      },
+      {
+        "id": "osm-node/13909959276",
+        "osmNodeId": 13909959276,
+        "longitude": 113.4804708,
+        "latitude": 22.8946481
+      },
+      {
+        "id": "osm-node/13909959277",
+        "osmNodeId": 13909959277,
+        "longitude": 113.4800021,
+        "latitude": 22.8947266
+      },
+      {
+        "id": "osm-node/13909959278",
+        "osmNodeId": 13909959278,
+        "longitude": 113.4797546,
+        "latitude": 22.8946484
+      },
+      {
+        "id": "osm-node/13909959279",
+        "osmNodeId": 13909959279,
+        "longitude": 113.4796941,
+        "latitude": 22.8946013
+      },
+      {
+        "id": "osm-node/13909959280",
+        "osmNodeId": 13909959280,
+        "longitude": 113.4795992,
+        "latitude": 22.8944845
+      },
+      {
+        "id": "osm-node/13909959281",
+        "osmNodeId": 13909959281,
+        "longitude": 113.4795657,
+        "latitude": 22.8944183
+      },
+      {
+        "id": "osm-node/13909959282",
+        "osmNodeId": 13909959282,
+        "longitude": 113.4798303,
+        "latitude": 22.8946908
+      },
+      {
+        "id": "osm-node/13909959283",
+        "osmNodeId": 13909959283,
+        "longitude": 113.4795422,
+        "latitude": 22.8943484
+      },
+      {
+        "id": "osm-node/13909959485",
+        "osmNodeId": 13909959485,
+        "longitude": 113.4804883,
+        "latitude": 22.890951
+      },
+      {
+        "id": "osm-node/13909959486",
+        "osmNodeId": 13909959486,
+        "longitude": 113.4806131,
+        "latitude": 22.890882
+      },
+      {
+        "id": "osm-node/13909959487",
+        "osmNodeId": 13909959487,
+        "longitude": 113.4807378,
+        "latitude": 22.8908129
+      },
+      {
+        "id": "osm-node/13909959488",
+        "osmNodeId": 13909959488,
+        "longitude": 113.4809563,
+        "latitude": 22.891148
+      },
+      {
+        "id": "osm-node/13909959489",
+        "osmNodeId": 13909959489,
+        "longitude": 113.4808315,
+        "latitude": 22.891217
+      },
+      {
+        "id": "osm-node/13909959490",
+        "osmNodeId": 13909959490,
+        "longitude": 113.4807068,
+        "latitude": 22.8912861
+      },
+      {
+        "id": "osm-node/13909959491",
+        "osmNodeId": 13909959491,
+        "longitude": 113.4811137,
+        "latitude": 22.8910609
+      },
+      {
+        "id": "osm-node/13909959492",
+        "osmNodeId": 13909959492,
+        "longitude": 113.4808953,
+        "latitude": 22.8907258
+      },
+      {
+        "id": "osm-node/4809858136",
+        "osmNodeId": 4809858136,
+        "longitude": 113.4730765,
+        "latitude": 22.8890957
+      }
+    ],
+    "edges": [
+      {
+        "id": "way/1098450445/0",
+        "from": "osm-node/10057722423",
+        "to": "osm-node/11073090130",
+        "distanceMeters": 90.495,
+        "highway": "service",
+        "osmWayId": 1098450445,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450445/1",
+        "from": "osm-node/11073090130",
+        "to": "osm-node/10057722424",
+        "distanceMeters": 21.782,
+        "highway": "service",
+        "osmWayId": 1098450445,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450445/2",
+        "from": "osm-node/10057722424",
+        "to": "osm-node/11073090131",
+        "distanceMeters": 25.265,
+        "highway": "service",
+        "osmWayId": 1098450445,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450445/3",
+        "from": "osm-node/11073090131",
+        "to": "osm-node/12821543352",
+        "distanceMeters": 137.92,
+        "highway": "service",
+        "osmWayId": 1098450445,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450445/4",
+        "from": "osm-node/12821543352",
+        "to": "osm-node/10740248757",
+        "distanceMeters": 179.113,
+        "highway": "service",
+        "osmWayId": 1098450445,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450445/5",
+        "from": "osm-node/10740248757",
+        "to": "osm-node/10057722425",
+        "distanceMeters": 149.388,
+        "highway": "service",
+        "osmWayId": 1098450445,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/0",
+        "from": "osm-node/10057722440",
+        "to": "osm-node/10057722441",
+        "distanceMeters": 9.958,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/1",
+        "from": "osm-node/10057722441",
+        "to": "osm-node/10057722442",
+        "distanceMeters": 9.964,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/10",
+        "from": "osm-node/13909959262",
+        "to": "osm-node/10057722435",
+        "distanceMeters": 9.46,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/11",
+        "from": "osm-node/10057722435",
+        "to": "osm-node/10057722436",
+        "distanceMeters": 9.465,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/12",
+        "from": "osm-node/10057722436",
+        "to": "osm-node/10057722437",
+        "distanceMeters": 9.458,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/13",
+        "from": "osm-node/10057722437",
+        "to": "osm-node/10057722438",
+        "distanceMeters": 9.467,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/14",
+        "from": "osm-node/10057722438",
+        "to": "osm-node/10057722431",
+        "distanceMeters": 9.464,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/15",
+        "from": "osm-node/10057722431",
+        "to": "osm-node/10740248625",
+        "distanceMeters": 9.457,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/16",
+        "from": "osm-node/10740248625",
+        "to": "osm-node/10057722425",
+        "distanceMeters": 9.466,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/17",
+        "from": "osm-node/10057722425",
+        "to": "osm-node/10057722433",
+        "distanceMeters": 9.751,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/18",
+        "from": "osm-node/10057722433",
+        "to": "osm-node/10057722434",
+        "distanceMeters": 9.756,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/19",
+        "from": "osm-node/10057722434",
+        "to": "osm-node/11073090161",
+        "distanceMeters": 9.749,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/2",
+        "from": "osm-node/10057722442",
+        "to": "osm-node/10057722443",
+        "distanceMeters": 9.469,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/20",
+        "from": "osm-node/11073090161",
+        "to": "osm-node/10775863259",
+        "distanceMeters": 4.496,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/21",
+        "from": "osm-node/10775863259",
+        "to": "osm-node/10057722439",
+        "distanceMeters": 4.502,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/22",
+        "from": "osm-node/10057722439",
+        "to": "osm-node/11073090163",
+        "distanceMeters": 4.491,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/23",
+        "from": "osm-node/11073090163",
+        "to": "osm-node/10057722440",
+        "distanceMeters": 9.966,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/3",
+        "from": "osm-node/10057722443",
+        "to": "osm-node/10057722426",
+        "distanceMeters": 9.454,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/4",
+        "from": "osm-node/10057722426",
+        "to": "osm-node/10057722427",
+        "distanceMeters": 9.466,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/5",
+        "from": "osm-node/10057722427",
+        "to": "osm-node/10057722428",
+        "distanceMeters": 9.463,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/6",
+        "from": "osm-node/10057722428",
+        "to": "osm-node/10057722429",
+        "distanceMeters": 9.464,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/7",
+        "from": "osm-node/10057722429",
+        "to": "osm-node/13909959263",
+        "distanceMeters": 9.461,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/8",
+        "from": "osm-node/13909959263",
+        "to": "osm-node/10057722430",
+        "distanceMeters": 9.465,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1098450446/9",
+        "from": "osm-node/10057722430",
+        "to": "osm-node/13909959262",
+        "distanceMeters": 9.47,
+        "highway": "service",
+        "osmWayId": 1098450446,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/0",
+        "from": "osm-node/10740248577",
+        "to": "osm-node/10740248578",
+        "distanceMeters": 3.866,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/1",
+        "from": "osm-node/10740248578",
+        "to": "osm-node/10740248579",
+        "distanceMeters": 3.874,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/10",
+        "from": "osm-node/10740248573",
+        "to": "osm-node/10740248574",
+        "distanceMeters": 3.448,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/11",
+        "from": "osm-node/10740248574",
+        "to": "osm-node/10740248575",
+        "distanceMeters": 3.437,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/12",
+        "from": "osm-node/10740248575",
+        "to": "osm-node/10740248576",
+        "distanceMeters": 3.445,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/13",
+        "from": "osm-node/10740248576",
+        "to": "osm-node/10740248567",
+        "distanceMeters": 4.595,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/14",
+        "from": "osm-node/10740248567",
+        "to": "osm-node/10740248568",
+        "distanceMeters": 2.843,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/15",
+        "from": "osm-node/10740248568",
+        "to": "osm-node/10740248569",
+        "distanceMeters": 3.866,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/16",
+        "from": "osm-node/10740248569",
+        "to": "osm-node/10740248570",
+        "distanceMeters": 3.875,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/17",
+        "from": "osm-node/10740248570",
+        "to": "osm-node/10740248571",
+        "distanceMeters": 3.867,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/18",
+        "from": "osm-node/10740248571",
+        "to": "osm-node/10740248577",
+        "distanceMeters": 3.862,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/2",
+        "from": "osm-node/10740248579",
+        "to": "osm-node/10740248580",
+        "distanceMeters": 3.868,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/3",
+        "from": "osm-node/10740248580",
+        "to": "osm-node/10740248581",
+        "distanceMeters": 3.871,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/4",
+        "from": "osm-node/10740248581",
+        "to": "osm-node/10740248563",
+        "distanceMeters": 3.866,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/5",
+        "from": "osm-node/10740248563",
+        "to": "osm-node/10740248564",
+        "distanceMeters": 3.438,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/6",
+        "from": "osm-node/10740248564",
+        "to": "osm-node/10740248565",
+        "distanceMeters": 3.444,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/7",
+        "from": "osm-node/10740248565",
+        "to": "osm-node/10740248566",
+        "distanceMeters": 3.438,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/8",
+        "from": "osm-node/10740248566",
+        "to": "osm-node/10740248572",
+        "distanceMeters": 3.445,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868946/9",
+        "from": "osm-node/10740248572",
+        "to": "osm-node/10740248573",
+        "distanceMeters": 3.449,
+        "highway": "service",
+        "osmWayId": 1154868946,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868947/0",
+        "from": "osm-node/10740248583",
+        "to": "osm-node/10740248584",
+        "distanceMeters": 51.061,
+        "highway": "service",
+        "osmWayId": 1154868947,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868948/0",
+        "from": "osm-node/11073090121",
+        "to": "osm-node/10740248587",
+        "distanceMeters": 25.741,
+        "highway": "service",
+        "osmWayId": 1154868948,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868948/1",
+        "from": "osm-node/10740248587",
+        "to": "osm-node/10740248585",
+        "distanceMeters": 52.808,
+        "highway": "service",
+        "osmWayId": 1154868948,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868948/2",
+        "from": "osm-node/10740248585",
+        "to": "osm-node/10740248584",
+        "distanceMeters": 30.034,
+        "highway": "service",
+        "osmWayId": 1154868948,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868949/0",
+        "from": "osm-node/10740248584",
+        "to": "osm-node/10740248586",
+        "distanceMeters": 28.833,
+        "highway": "service",
+        "osmWayId": 1154868949,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868949/1",
+        "from": "osm-node/10740248586",
+        "to": "osm-node/10068169535",
+        "distanceMeters": 57.524,
+        "highway": "service",
+        "osmWayId": 1154868949,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868949/2",
+        "from": "osm-node/10068169535",
+        "to": "osm-node/11073090122",
+        "distanceMeters": 24.785,
+        "highway": "service",
+        "osmWayId": 1154868949,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868950/0",
+        "from": "osm-node/10740248582",
+        "to": "osm-node/10740248583",
+        "distanceMeters": 46.487,
+        "highway": "service",
+        "osmWayId": 1154868950,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868951/0",
+        "from": "osm-node/10740248570",
+        "to": "osm-node/10740248582",
+        "distanceMeters": 23.852,
+        "highway": "service",
+        "osmWayId": 1154868951,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/0",
+        "from": "osm-node/10740248581",
+        "to": "osm-node/11073090142",
+        "distanceMeters": 23.968,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/1",
+        "from": "osm-node/11073090142",
+        "to": "osm-node/10740248589",
+        "distanceMeters": 22.833,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/10",
+        "from": "osm-node/10740248596",
+        "to": "osm-node/11073090159",
+        "distanceMeters": 13.969,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/11",
+        "from": "osm-node/11073090159",
+        "to": "osm-node/10740248597",
+        "distanceMeters": 46.859,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/12",
+        "from": "osm-node/10740248597",
+        "to": "osm-node/10775863284",
+        "distanceMeters": 21.664,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/13",
+        "from": "osm-node/10775863284",
+        "to": "osm-node/10740248598",
+        "distanceMeters": 38.289,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/14",
+        "from": "osm-node/10740248598",
+        "to": "osm-node/11073090157",
+        "distanceMeters": 9.198,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/15",
+        "from": "osm-node/11073090157",
+        "to": "osm-node/10740248599",
+        "distanceMeters": 9.527,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/16",
+        "from": "osm-node/10740248599",
+        "to": "osm-node/10740248600",
+        "distanceMeters": 94.685,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/2",
+        "from": "osm-node/10740248589",
+        "to": "osm-node/10740248590",
+        "distanceMeters": 36.427,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/3",
+        "from": "osm-node/10740248590",
+        "to": "osm-node/10740248591",
+        "distanceMeters": 37.45,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/4",
+        "from": "osm-node/10740248591",
+        "to": "osm-node/10740248592",
+        "distanceMeters": 54.559,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/5",
+        "from": "osm-node/10740248592",
+        "to": "osm-node/10740248593",
+        "distanceMeters": 62.315,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/6",
+        "from": "osm-node/10740248593",
+        "to": "osm-node/10740248594",
+        "distanceMeters": 30.14,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/7",
+        "from": "osm-node/10740248594",
+        "to": "osm-node/10740248595",
+        "distanceMeters": 54.524,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/8",
+        "from": "osm-node/10740248595",
+        "to": "osm-node/11073090158",
+        "distanceMeters": 14.078,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868952/9",
+        "from": "osm-node/11073090158",
+        "to": "osm-node/10740248596",
+        "distanceMeters": 23.54,
+        "highway": "service",
+        "osmWayId": 1154868952,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/0",
+        "from": "osm-node/10740248645",
+        "to": "osm-node/10740248646",
+        "distanceMeters": 3.788,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/1",
+        "from": "osm-node/10740248646",
+        "to": "osm-node/10740248647",
+        "distanceMeters": 3.427,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/10",
+        "from": "osm-node/10740248641",
+        "to": "osm-node/10057722423",
+        "distanceMeters": 3.935,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/11",
+        "from": "osm-node/10057722423",
+        "to": "osm-node/10740248642",
+        "distanceMeters": 3.936,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/12",
+        "from": "osm-node/10740248642",
+        "to": "osm-node/10740248643",
+        "distanceMeters": 3.939,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/13",
+        "from": "osm-node/10740248643",
+        "to": "osm-node/10740248644",
+        "distanceMeters": 3.934,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/14",
+        "from": "osm-node/10740248644",
+        "to": "osm-node/10740248637",
+        "distanceMeters": 3.936,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/15",
+        "from": "osm-node/10740248637",
+        "to": "osm-node/10740248638",
+        "distanceMeters": 3.612,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/16",
+        "from": "osm-node/10740248638",
+        "to": "osm-node/10740248639",
+        "distanceMeters": 3.61,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/17",
+        "from": "osm-node/10740248639",
+        "to": "osm-node/10740248640",
+        "distanceMeters": 3.613,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/18",
+        "from": "osm-node/10740248640",
+        "to": "osm-node/10740248645",
+        "distanceMeters": 3.615,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/2",
+        "from": "osm-node/10740248647",
+        "to": "osm-node/10740248648",
+        "distanceMeters": 3.612,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/3",
+        "from": "osm-node/10740248648",
+        "to": "osm-node/10740248649",
+        "distanceMeters": 3.607,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/4",
+        "from": "osm-node/10740248649",
+        "to": "osm-node/10740248650",
+        "distanceMeters": 3.619,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/5",
+        "from": "osm-node/10740248650",
+        "to": "osm-node/10740248651",
+        "distanceMeters": 3.605,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/6",
+        "from": "osm-node/10740248651",
+        "to": "osm-node/10740248634",
+        "distanceMeters": 3.616,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/7",
+        "from": "osm-node/10740248634",
+        "to": "osm-node/10740248635",
+        "distanceMeters": 3.937,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/8",
+        "from": "osm-node/10740248635",
+        "to": "osm-node/10740248636",
+        "distanceMeters": 3.932,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868954/9",
+        "from": "osm-node/10740248636",
+        "to": "osm-node/10740248641",
+        "distanceMeters": 3.94,
+        "highway": "service",
+        "osmWayId": 1154868954,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868955/0",
+        "from": "osm-node/10740248567",
+        "to": "osm-node/11073090147",
+        "distanceMeters": 24.757,
+        "highway": "service",
+        "osmWayId": 1154868955,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868955/1",
+        "from": "osm-node/11073090147",
+        "to": "osm-node/10740248652",
+        "distanceMeters": 69.301,
+        "highway": "service",
+        "osmWayId": 1154868955,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868955/2",
+        "from": "osm-node/10740248652",
+        "to": "osm-node/10740248653",
+        "distanceMeters": 99.65,
+        "highway": "service",
+        "osmWayId": 1154868955,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868955/3",
+        "from": "osm-node/10740248653",
+        "to": "osm-node/10740248768",
+        "distanceMeters": 92.311,
+        "highway": "service",
+        "osmWayId": 1154868955,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868955/4",
+        "from": "osm-node/10740248768",
+        "to": "osm-node/10740248651",
+        "distanceMeters": 68.865,
+        "highway": "service",
+        "osmWayId": 1154868955,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868978/0",
+        "from": "osm-node/10740248565",
+        "to": "osm-node/11073090146",
+        "distanceMeters": 21.821,
+        "highway": "service",
+        "osmWayId": 1154868978,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868978/1",
+        "from": "osm-node/11073090146",
+        "to": "osm-node/10740248754",
+        "distanceMeters": 71.995,
+        "highway": "service",
+        "osmWayId": 1154868978,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868978/2",
+        "from": "osm-node/10740248754",
+        "to": "osm-node/10740248755",
+        "distanceMeters": 25.845,
+        "highway": "service",
+        "osmWayId": 1154868978,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868978/3",
+        "from": "osm-node/10740248755",
+        "to": "osm-node/10775863267",
+        "distanceMeters": 126.912,
+        "highway": "service",
+        "osmWayId": 1154868978,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868978/4",
+        "from": "osm-node/10775863267",
+        "to": "osm-node/10740248756",
+        "distanceMeters": 93.8,
+        "highway": "service",
+        "osmWayId": 1154868978,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/0",
+        "from": "osm-node/10740248757",
+        "to": "osm-node/10775856871",
+        "distanceMeters": 17.655,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/1",
+        "from": "osm-node/10775856871",
+        "to": "osm-node/10775856872",
+        "distanceMeters": 15.712,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/10",
+        "from": "osm-node/10740248761",
+        "to": "osm-node/10775856878",
+        "distanceMeters": 19.558,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/11",
+        "from": "osm-node/10775856878",
+        "to": "osm-node/10740248762",
+        "distanceMeters": 22.941,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/12",
+        "from": "osm-node/10740248762",
+        "to": "osm-node/10775856879",
+        "distanceMeters": 25.279,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/13",
+        "from": "osm-node/10775856879",
+        "to": "osm-node/10740248763",
+        "distanceMeters": 24.491,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/14",
+        "from": "osm-node/10740248763",
+        "to": "osm-node/10740248764",
+        "distanceMeters": 35.022,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/15",
+        "from": "osm-node/10740248764",
+        "to": "osm-node/10775856880",
+        "distanceMeters": 16.979,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/16",
+        "from": "osm-node/10775856880",
+        "to": "osm-node/10740248765",
+        "distanceMeters": 16.988,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/17",
+        "from": "osm-node/10740248765",
+        "to": "osm-node/10775856881",
+        "distanceMeters": 16.978,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/18",
+        "from": "osm-node/10775856881",
+        "to": "osm-node/10740248756",
+        "distanceMeters": 16.975,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/19",
+        "from": "osm-node/10740248756",
+        "to": "osm-node/10775856882",
+        "distanceMeters": 12.644,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/2",
+        "from": "osm-node/10775856872",
+        "to": "osm-node/10740248758",
+        "distanceMeters": 19.96,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/20",
+        "from": "osm-node/10775856882",
+        "to": "osm-node/10775856883",
+        "distanceMeters": 62.617,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/21",
+        "from": "osm-node/10775856883",
+        "to": "osm-node/10740248766",
+        "distanceMeters": 20.962,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/3",
+        "from": "osm-node/10740248758",
+        "to": "osm-node/10775856873",
+        "distanceMeters": 23.439,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/4",
+        "from": "osm-node/10775856873",
+        "to": "osm-node/10740248759",
+        "distanceMeters": 23.393,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/5",
+        "from": "osm-node/10740248759",
+        "to": "osm-node/10775856875",
+        "distanceMeters": 28.151,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/6",
+        "from": "osm-node/10775856875",
+        "to": "osm-node/10775856876",
+        "distanceMeters": 22.08,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/7",
+        "from": "osm-node/10775856876",
+        "to": "osm-node/10740248760",
+        "distanceMeters": 20.949,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/8",
+        "from": "osm-node/10740248760",
+        "to": "osm-node/10775856877",
+        "distanceMeters": 26.781,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868979/9",
+        "from": "osm-node/10775856877",
+        "to": "osm-node/10740248761",
+        "distanceMeters": 28.087,
+        "highway": "service",
+        "osmWayId": 1154868979,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868980/0",
+        "from": "osm-node/10740248759",
+        "to": "osm-node/10775856874",
+        "distanceMeters": 44.306,
+        "highway": "service",
+        "osmWayId": 1154868980,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868980/1",
+        "from": "osm-node/10775856874",
+        "to": "osm-node/10740248772",
+        "distanceMeters": 124.408,
+        "highway": "service",
+        "osmWayId": 1154868980,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868980/2",
+        "from": "osm-node/10740248772",
+        "to": "osm-node/10775863297",
+        "distanceMeters": 180.5,
+        "highway": "service",
+        "osmWayId": 1154868980,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868980/3",
+        "from": "osm-node/10775863297",
+        "to": "osm-node/10740248767",
+        "distanceMeters": 38.398,
+        "highway": "service",
+        "osmWayId": 1154868980,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868980/4",
+        "from": "osm-node/10740248767",
+        "to": "osm-node/10740248768",
+        "distanceMeters": 45.096,
+        "highway": "service",
+        "osmWayId": 1154868980,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868981/0",
+        "from": "osm-node/10740248754",
+        "to": "osm-node/10740248769",
+        "distanceMeters": 47.858,
+        "highway": "service",
+        "osmWayId": 1154868981,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868981/1",
+        "from": "osm-node/10740248769",
+        "to": "osm-node/10740248770",
+        "distanceMeters": 79.487,
+        "highway": "service",
+        "osmWayId": 1154868981,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868981/2",
+        "from": "osm-node/10740248770",
+        "to": "osm-node/10740248771",
+        "distanceMeters": 49.078,
+        "highway": "service",
+        "osmWayId": 1154868981,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868981/3",
+        "from": "osm-node/10740248771",
+        "to": "osm-node/10740248773",
+        "distanceMeters": 44.296,
+        "highway": "service",
+        "osmWayId": 1154868981,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868981/4",
+        "from": "osm-node/10740248773",
+        "to": "osm-node/10775863285",
+        "distanceMeters": 96.464,
+        "highway": "service",
+        "osmWayId": 1154868981,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868981/5",
+        "from": "osm-node/10775863285",
+        "to": "osm-node/10740248772",
+        "distanceMeters": 8.839,
+        "highway": "service",
+        "osmWayId": 1154868981,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868982/0",
+        "from": "osm-node/10740248773",
+        "to": "osm-node/10740248774",
+        "distanceMeters": 93.311,
+        "highway": "service",
+        "osmWayId": 1154868982,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868982/1",
+        "from": "osm-node/10740248774",
+        "to": "osm-node/10740248775",
+        "distanceMeters": 30.729,
+        "highway": "service",
+        "osmWayId": 1154868982,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868982/2",
+        "from": "osm-node/10740248775",
+        "to": "osm-node/10740248776",
+        "distanceMeters": 49.125,
+        "highway": "service",
+        "osmWayId": 1154868982,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868982/3",
+        "from": "osm-node/10740248776",
+        "to": "osm-node/10740248777",
+        "distanceMeters": 41.669,
+        "highway": "service",
+        "osmWayId": 1154868982,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868982/4",
+        "from": "osm-node/10740248777",
+        "to": "osm-node/10740248653",
+        "distanceMeters": 31.187,
+        "highway": "service",
+        "osmWayId": 1154868982,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868983/0",
+        "from": "osm-node/10057722442",
+        "to": "osm-node/11073090153",
+        "distanceMeters": 39.933,
+        "highway": "service",
+        "osmWayId": 1154868983,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868983/1",
+        "from": "osm-node/11073090153",
+        "to": "osm-node/10740248778",
+        "distanceMeters": 113.782,
+        "highway": "service",
+        "osmWayId": 1154868983,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/0",
+        "from": "osm-node/10740248778",
+        "to": "osm-node/11073095006",
+        "distanceMeters": 24.167,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/1",
+        "from": "osm-node/11073095006",
+        "to": "osm-node/10740248779",
+        "distanceMeters": 23.57,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/10",
+        "from": "osm-node/10740248783",
+        "to": "osm-node/10775863317",
+        "distanceMeters": 20.345,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/11",
+        "from": "osm-node/10775863317",
+        "to": "osm-node/13909959265",
+        "distanceMeters": 20.337,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/12",
+        "from": "osm-node/13909959265",
+        "to": "osm-node/10740248784",
+        "distanceMeters": 20.34,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/13",
+        "from": "osm-node/10740248784",
+        "to": "osm-node/13909959264",
+        "distanceMeters": 20.349,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/14",
+        "from": "osm-node/13909959264",
+        "to": "osm-node/10775863318",
+        "distanceMeters": 20.343,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/15",
+        "from": "osm-node/10775863318",
+        "to": "osm-node/10740248785",
+        "distanceMeters": 32.088,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/16",
+        "from": "osm-node/10740248785",
+        "to": "osm-node/10740248786",
+        "distanceMeters": 42.436,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/17",
+        "from": "osm-node/10740248786",
+        "to": "osm-node/10740248787",
+        "distanceMeters": 18.406,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/18",
+        "from": "osm-node/10740248787",
+        "to": "osm-node/10740248788",
+        "distanceMeters": 78.734,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/2",
+        "from": "osm-node/10740248779",
+        "to": "osm-node/10775863314",
+        "distanceMeters": 23.586,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/3",
+        "from": "osm-node/10775863314",
+        "to": "osm-node/10740248780",
+        "distanceMeters": 23.586,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/4",
+        "from": "osm-node/10740248780",
+        "to": "osm-node/10740248781",
+        "distanceMeters": 23.571,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/5",
+        "from": "osm-node/10740248781",
+        "to": "osm-node/11073090204",
+        "distanceMeters": 23.586,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/6",
+        "from": "osm-node/11073090204",
+        "to": "osm-node/10775863315",
+        "distanceMeters": 20.308,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/7",
+        "from": "osm-node/10775863315",
+        "to": "osm-node/10740248782",
+        "distanceMeters": 20.344,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/8",
+        "from": "osm-node/10740248782",
+        "to": "osm-node/10775863316",
+        "distanceMeters": 20.337,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868984/9",
+        "from": "osm-node/10775863316",
+        "to": "osm-node/10740248783",
+        "distanceMeters": 20.344,
+        "highway": "service",
+        "osmWayId": 1154868984,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/0",
+        "from": "osm-node/10740248788",
+        "to": "osm-node/10775863276",
+        "distanceMeters": 9.577,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/1",
+        "from": "osm-node/10775863276",
+        "to": "osm-node/11073090140",
+        "distanceMeters": 3.746,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/10",
+        "from": "osm-node/10775856885",
+        "to": "osm-node/10775863268",
+        "distanceMeters": 68.287,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/11",
+        "from": "osm-node/10775863268",
+        "to": "osm-node/10740248789",
+        "distanceMeters": 24.688,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/12",
+        "from": "osm-node/10740248789",
+        "to": "osm-node/10740248790",
+        "distanceMeters": 16.674,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/13",
+        "from": "osm-node/10740248790",
+        "to": "osm-node/10740248791",
+        "distanceMeters": 18.328,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/14",
+        "from": "osm-node/10740248791",
+        "to": "osm-node/10740248792",
+        "distanceMeters": 14.381,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/15",
+        "from": "osm-node/10740248792",
+        "to": "osm-node/10740248593",
+        "distanceMeters": 39.45,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/16",
+        "from": "osm-node/10740248593",
+        "to": "osm-node/10740248793",
+        "distanceMeters": 29.845,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/2",
+        "from": "osm-node/11073090140",
+        "to": "osm-node/10775863277",
+        "distanceMeters": 4.061,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/3",
+        "from": "osm-node/10775863277",
+        "to": "osm-node/11073090139",
+        "distanceMeters": 4.418,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/4",
+        "from": "osm-node/11073090139",
+        "to": "osm-node/10775863278",
+        "distanceMeters": 4.553,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/5",
+        "from": "osm-node/10775863278",
+        "to": "osm-node/11073090141",
+        "distanceMeters": 188.286,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/6",
+        "from": "osm-node/11073090141",
+        "to": "osm-node/13909959272",
+        "distanceMeters": 18.642,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/7",
+        "from": "osm-node/13909959272",
+        "to": "osm-node/10775856884",
+        "distanceMeters": 118.689,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/8",
+        "from": "osm-node/10775856884",
+        "to": "osm-node/10740248766",
+        "distanceMeters": 11.155,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868985/9",
+        "from": "osm-node/10740248766",
+        "to": "osm-node/10775856885",
+        "distanceMeters": 24.059,
+        "highway": "service",
+        "osmWayId": 1154868985,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868986/0",
+        "from": "osm-node/10740248796",
+        "to": "osm-node/11073090156",
+        "distanceMeters": 129.191,
+        "highway": "service",
+        "osmWayId": 1154868986,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868986/1",
+        "from": "osm-node/11073090156",
+        "to": "osm-node/10740248797",
+        "distanceMeters": 22.928,
+        "highway": "service",
+        "osmWayId": 1154868986,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868987/0",
+        "from": "osm-node/10740248793",
+        "to": "osm-node/10740248794",
+        "distanceMeters": 11.929,
+        "highway": "service",
+        "osmWayId": 1154868987,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868987/1",
+        "from": "osm-node/10740248794",
+        "to": "osm-node/13909951899",
+        "distanceMeters": 11.932,
+        "highway": "service",
+        "osmWayId": 1154868987,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868987/2",
+        "from": "osm-node/13909951899",
+        "to": "osm-node/10740248795",
+        "distanceMeters": 11.934,
+        "highway": "service",
+        "osmWayId": 1154868987,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868987/3",
+        "from": "osm-node/10740248795",
+        "to": "osm-node/13909951898",
+        "distanceMeters": 11.928,
+        "highway": "service",
+        "osmWayId": 1154868987,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868987/4",
+        "from": "osm-node/13909951898",
+        "to": "osm-node/10740248796",
+        "distanceMeters": 11.933,
+        "highway": "service",
+        "osmWayId": 1154868987,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868989/0",
+        "from": "osm-node/10740248757",
+        "to": "osm-node/10740248820",
+        "distanceMeters": 47.196,
+        "highway": "service",
+        "osmWayId": 1154868989,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1154868989/1",
+        "from": "osm-node/10740248820",
+        "to": "osm-node/11073090124",
+        "distanceMeters": 9.228,
+        "highway": "service",
+        "osmWayId": 1154868989,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733821/0",
+        "from": "osm-node/10740248773",
+        "to": "osm-node/10775856887",
+        "distanceMeters": 23.287,
+        "highway": "service",
+        "osmWayId": 1158733821,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733821/1",
+        "from": "osm-node/10775856887",
+        "to": "osm-node/13909959492",
+        "distanceMeters": 116.437,
+        "highway": "service",
+        "osmWayId": 1158733821,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733821/2",
+        "from": "osm-node/13909959492",
+        "to": "osm-node/13909959491",
+        "distanceMeters": 43.462,
+        "highway": "service",
+        "osmWayId": 1158733821,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733822/0",
+        "from": "osm-node/13909959489",
+        "to": "osm-node/13909959486",
+        "distanceMeters": 43.452,
+        "highway": "service",
+        "osmWayId": 1158733822,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733823/0",
+        "from": "osm-node/13909959490",
+        "to": "osm-node/13909959485",
+        "distanceMeters": 43.467,
+        "highway": "service",
+        "osmWayId": 1158733823,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733824/0",
+        "from": "osm-node/10775856892",
+        "to": "osm-node/13909959490",
+        "distanceMeters": 14.91,
+        "highway": "service",
+        "osmWayId": 1158733824,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733824/1",
+        "from": "osm-node/13909959490",
+        "to": "osm-node/13909959489",
+        "distanceMeters": 14.907,
+        "highway": "service",
+        "osmWayId": 1158733824,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733824/2",
+        "from": "osm-node/13909959489",
+        "to": "osm-node/13909959488",
+        "distanceMeters": 14.91,
+        "highway": "service",
+        "osmWayId": 1158733824,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/0",
+        "from": "osm-node/10775863246",
+        "to": "osm-node/10775863247",
+        "distanceMeters": 9.872,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/1",
+        "from": "osm-node/10775863247",
+        "to": "osm-node/10775863248",
+        "distanceMeters": 4.41,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/10",
+        "from": "osm-node/10775863256",
+        "to": "osm-node/10775863257",
+        "distanceMeters": 6.616,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/2",
+        "from": "osm-node/10775863248",
+        "to": "osm-node/10775863249",
+        "distanceMeters": 4.2,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/3",
+        "from": "osm-node/10775863249",
+        "to": "osm-node/10775863250",
+        "distanceMeters": 5.316,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/4",
+        "from": "osm-node/10775863250",
+        "to": "osm-node/10775863251",
+        "distanceMeters": 7.301,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/5",
+        "from": "osm-node/10775863251",
+        "to": "osm-node/10775863252",
+        "distanceMeters": 15.278,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/6",
+        "from": "osm-node/10775863252",
+        "to": "osm-node/10775863253",
+        "distanceMeters": 13.287,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/7",
+        "from": "osm-node/10775863253",
+        "to": "osm-node/10775863254",
+        "distanceMeters": 10.962,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/8",
+        "from": "osm-node/10775863254",
+        "to": "osm-node/10775863255",
+        "distanceMeters": 6.079,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733826/9",
+        "from": "osm-node/10775863255",
+        "to": "osm-node/10775863256",
+        "distanceMeters": 4.703,
+        "highway": "service",
+        "osmWayId": 1158733826,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733827/0",
+        "from": "osm-node/10775863267",
+        "to": "osm-node/10775863268",
+        "distanceMeters": 95.614,
+        "highway": "service",
+        "osmWayId": 1158733827,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733829/0",
+        "from": "osm-node/10740248766",
+        "to": "osm-node/10775863280",
+        "distanceMeters": 11.762,
+        "highway": "service",
+        "osmWayId": 1158733829,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733829/1",
+        "from": "osm-node/10775863280",
+        "to": "osm-node/10775863281",
+        "distanceMeters": 12.416,
+        "highway": "service",
+        "osmWayId": 1158733829,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733829/2",
+        "from": "osm-node/10775863281",
+        "to": "osm-node/10775863282",
+        "distanceMeters": 18.574,
+        "highway": "service",
+        "osmWayId": 1158733829,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733829/3",
+        "from": "osm-node/10775863282",
+        "to": "osm-node/10775863283",
+        "distanceMeters": 18.44,
+        "highway": "service",
+        "osmWayId": 1158733829,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733829/4",
+        "from": "osm-node/10775863283",
+        "to": "osm-node/10775863284",
+        "distanceMeters": 51.007,
+        "highway": "service",
+        "osmWayId": 1158733829,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/0",
+        "from": "osm-node/10775863285",
+        "to": "osm-node/10775863286",
+        "distanceMeters": 20.77,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/1",
+        "from": "osm-node/10775863286",
+        "to": "osm-node/10775863287",
+        "distanceMeters": 11.304,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/10",
+        "from": "osm-node/10775863295",
+        "to": "osm-node/10775863296",
+        "distanceMeters": 15.789,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/11",
+        "from": "osm-node/10775863296",
+        "to": "osm-node/10775863297",
+        "distanceMeters": 21.581,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/2",
+        "from": "osm-node/10775863287",
+        "to": "osm-node/10775863288",
+        "distanceMeters": 16.408,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/3",
+        "from": "osm-node/10775863288",
+        "to": "osm-node/10775863289",
+        "distanceMeters": 10.145,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/4",
+        "from": "osm-node/10775863289",
+        "to": "osm-node/10775863290",
+        "distanceMeters": 11.49,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/5",
+        "from": "osm-node/10775863290",
+        "to": "osm-node/10775863291",
+        "distanceMeters": 13.478,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/6",
+        "from": "osm-node/10775863291",
+        "to": "osm-node/10775863292",
+        "distanceMeters": 20.987,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/7",
+        "from": "osm-node/10775863292",
+        "to": "osm-node/10775863293",
+        "distanceMeters": 20.615,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/8",
+        "from": "osm-node/10775863293",
+        "to": "osm-node/10775863294",
+        "distanceMeters": 14.793,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733830/9",
+        "from": "osm-node/10775863294",
+        "to": "osm-node/10775863295",
+        "distanceMeters": 13.673,
+        "highway": "footway",
+        "osmWayId": 1158733830,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/0",
+        "from": "osm-node/10775863302",
+        "to": "osm-node/10775863303",
+        "distanceMeters": 36.094,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/1",
+        "from": "osm-node/10775863303",
+        "to": "osm-node/10775863304",
+        "distanceMeters": 23.62,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/10",
+        "from": "osm-node/10775863312",
+        "to": "osm-node/10775863313",
+        "distanceMeters": 26.421,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/11",
+        "from": "osm-node/10775863313",
+        "to": "osm-node/10740248787",
+        "distanceMeters": 21.887,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/2",
+        "from": "osm-node/10775863304",
+        "to": "osm-node/10775863305",
+        "distanceMeters": 25.994,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/3",
+        "from": "osm-node/10775863305",
+        "to": "osm-node/10775863306",
+        "distanceMeters": 32.782,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/4",
+        "from": "osm-node/10775863306",
+        "to": "osm-node/10775863307",
+        "distanceMeters": 32.137,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/5",
+        "from": "osm-node/10775863307",
+        "to": "osm-node/10775863308",
+        "distanceMeters": 27.893,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/6",
+        "from": "osm-node/10775863308",
+        "to": "osm-node/10775863309",
+        "distanceMeters": 42.37,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/7",
+        "from": "osm-node/10775863309",
+        "to": "osm-node/10775863310",
+        "distanceMeters": 50.173,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/8",
+        "from": "osm-node/10775863310",
+        "to": "osm-node/10775863311",
+        "distanceMeters": 43.403,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733833/9",
+        "from": "osm-node/10775863311",
+        "to": "osm-node/10775863312",
+        "distanceMeters": 34.867,
+        "highway": "service",
+        "osmWayId": 1158733833,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1158733834/0",
+        "from": "osm-node/10740248785",
+        "to": "osm-node/10775863319",
+        "distanceMeters": 88.68,
+        "highway": "service",
+        "osmWayId": 1158733834,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908727/0",
+        "from": "osm-node/10740248816",
+        "to": "osm-node/10763132989",
+        "distanceMeters": 31.072,
+        "highway": "service",
+        "osmWayId": 1192908727,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908727/1",
+        "from": "osm-node/10763132989",
+        "to": "osm-node/11073090128",
+        "distanceMeters": 8.913,
+        "highway": "service",
+        "osmWayId": 1192908727,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908727/2",
+        "from": "osm-node/11073090128",
+        "to": "osm-node/11073090124",
+        "distanceMeters": 8.659,
+        "highway": "service",
+        "osmWayId": 1192908727,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908728/0",
+        "from": "osm-node/11073090124",
+        "to": "osm-node/11073090127",
+        "distanceMeters": 9.37,
+        "highway": "service",
+        "osmWayId": 1192908728,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908728/1",
+        "from": "osm-node/11073090127",
+        "to": "osm-node/11073090125",
+        "distanceMeters": 9.305,
+        "highway": "service",
+        "osmWayId": 1192908728,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908728/2",
+        "from": "osm-node/11073090125",
+        "to": "osm-node/11073090126",
+        "distanceMeters": 30.21,
+        "highway": "service",
+        "osmWayId": 1192908728,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/0",
+        "from": "osm-node/11073090129",
+        "to": "osm-node/11073090136",
+        "distanceMeters": 8.465,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/1",
+        "from": "osm-node/11073090136",
+        "to": "osm-node/11073090138",
+        "distanceMeters": 7.286,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/2",
+        "from": "osm-node/11073090138",
+        "to": "osm-node/11073090135",
+        "distanceMeters": 3.649,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/3",
+        "from": "osm-node/11073090135",
+        "to": "osm-node/11073090134",
+        "distanceMeters": 3.947,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/4",
+        "from": "osm-node/11073090134",
+        "to": "osm-node/11073090137",
+        "distanceMeters": 3.634,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/5",
+        "from": "osm-node/11073090137",
+        "to": "osm-node/11073090133",
+        "distanceMeters": 3.471,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/6",
+        "from": "osm-node/11073090133",
+        "to": "osm-node/11073090132",
+        "distanceMeters": 13.458,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/7",
+        "from": "osm-node/11073090132",
+        "to": "osm-node/10775863241",
+        "distanceMeters": 32.569,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908729/8",
+        "from": "osm-node/10775863241",
+        "to": "osm-node/10740248820",
+        "distanceMeters": 29.905,
+        "highway": "service",
+        "osmWayId": 1192908729,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908730/0",
+        "from": "osm-node/11073090142",
+        "to": "osm-node/11073090143",
+        "distanceMeters": 8.362,
+        "highway": "service",
+        "osmWayId": 1192908730,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908730/1",
+        "from": "osm-node/11073090143",
+        "to": "osm-node/11073090144",
+        "distanceMeters": 7.838,
+        "highway": "service",
+        "osmWayId": 1192908730,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908730/2",
+        "from": "osm-node/11073090144",
+        "to": "osm-node/11073090145",
+        "distanceMeters": 8.711,
+        "highway": "service",
+        "osmWayId": 1192908730,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908730/3",
+        "from": "osm-node/11073090145",
+        "to": "osm-node/11073090146",
+        "distanceMeters": 8.975,
+        "highway": "service",
+        "osmWayId": 1192908730,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908731/0",
+        "from": "osm-node/11073090147",
+        "to": "osm-node/11073090148",
+        "distanceMeters": 8.853,
+        "highway": "service",
+        "osmWayId": 1192908731,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908731/1",
+        "from": "osm-node/11073090148",
+        "to": "osm-node/11073090149",
+        "distanceMeters": 4.213,
+        "highway": "service",
+        "osmWayId": 1192908731,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908731/2",
+        "from": "osm-node/11073090149",
+        "to": "osm-node/11073090150",
+        "distanceMeters": 4.577,
+        "highway": "service",
+        "osmWayId": 1192908731,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908731/3",
+        "from": "osm-node/11073090150",
+        "to": "osm-node/11073090151",
+        "distanceMeters": 6.711,
+        "highway": "service",
+        "osmWayId": 1192908731,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908731/4",
+        "from": "osm-node/11073090151",
+        "to": "osm-node/11073090152",
+        "distanceMeters": 6.723,
+        "highway": "service",
+        "osmWayId": 1192908731,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908731/5",
+        "from": "osm-node/11073090152",
+        "to": "osm-node/10740248582",
+        "distanceMeters": 3.408,
+        "highway": "service",
+        "osmWayId": 1192908731,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908733/0",
+        "from": "osm-node/11073090160",
+        "to": "osm-node/11073090165",
+        "distanceMeters": 23.544,
+        "highway": "footway",
+        "osmWayId": 1192908733,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908733/1",
+        "from": "osm-node/11073090165",
+        "to": "osm-node/11073090161",
+        "distanceMeters": 65.563,
+        "highway": "footway",
+        "osmWayId": 1192908733,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908734/0",
+        "from": "osm-node/11073090162",
+        "to": "osm-node/11073090164",
+        "distanceMeters": 22.545,
+        "highway": "footway",
+        "osmWayId": 1192908734,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908734/1",
+        "from": "osm-node/11073090164",
+        "to": "osm-node/11073090163",
+        "distanceMeters": 66.37,
+        "highway": "footway",
+        "osmWayId": 1192908734,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908740/0",
+        "from": "osm-node/11073090198",
+        "to": "osm-node/11073090199",
+        "distanceMeters": 4.142,
+        "highway": "path",
+        "osmWayId": 1192908740,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908740/1",
+        "from": "osm-node/11073090199",
+        "to": "osm-node/11073090200",
+        "distanceMeters": 2.779,
+        "highway": "path",
+        "osmWayId": 1192908740,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908740/2",
+        "from": "osm-node/11073090200",
+        "to": "osm-node/11073090201",
+        "distanceMeters": 12.492,
+        "highway": "path",
+        "osmWayId": 1192908740,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908740/3",
+        "from": "osm-node/11073090201",
+        "to": "osm-node/11073090202",
+        "distanceMeters": 38.06,
+        "highway": "path",
+        "osmWayId": 1192908740,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908740/4",
+        "from": "osm-node/11073090202",
+        "to": "osm-node/11073090203",
+        "distanceMeters": 27.518,
+        "highway": "path",
+        "osmWayId": 1192908740,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1192908740/5",
+        "from": "osm-node/11073090203",
+        "to": "osm-node/4809858136",
+        "distanceMeters": 39.191,
+        "highway": "path",
+        "osmWayId": 1192908740,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1383063344/0",
+        "from": "osm-node/10740248511",
+        "to": "osm-node/12804948602",
+        "distanceMeters": 10.98,
+        "highway": "service",
+        "osmWayId": 1383063344,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828043/0",
+        "from": "osm-node/12821543352",
+        "to": "osm-node/10740248603",
+        "distanceMeters": 88.988,
+        "highway": "service",
+        "osmWayId": 1384828043,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828043/1",
+        "from": "osm-node/10740248603",
+        "to": "osm-node/12821543353",
+        "distanceMeters": 15.996,
+        "highway": "service",
+        "osmWayId": 1384828043,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828046/0",
+        "from": "osm-node/10775863257",
+        "to": "osm-node/10775863258",
+        "distanceMeters": 15.892,
+        "highway": "service",
+        "osmWayId": 1384828046,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/0",
+        "from": "osm-node/10740248600",
+        "to": "osm-node/12821543360",
+        "distanceMeters": 8.131,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/1",
+        "from": "osm-node/12821543360",
+        "to": "osm-node/13909959283",
+        "distanceMeters": 8.124,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/10",
+        "from": "osm-node/13909959277",
+        "to": "osm-node/12821543363",
+        "distanceMeters": 9.072,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/11",
+        "from": "osm-node/12821543363",
+        "to": "osm-node/12821543364",
+        "distanceMeters": 19.921,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/12",
+        "from": "osm-node/12821543364",
+        "to": "osm-node/13909959276",
+        "distanceMeters": 19.919,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/13",
+        "from": "osm-node/13909959276",
+        "to": "osm-node/12821543365",
+        "distanceMeters": 19.924,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/14",
+        "from": "osm-node/12821543365",
+        "to": "osm-node/13909959275",
+        "distanceMeters": 8.267,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/15",
+        "from": "osm-node/13909959275",
+        "to": "osm-node/13909959274",
+        "distanceMeters": 8.268,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/16",
+        "from": "osm-node/13909959274",
+        "to": "osm-node/12821543366",
+        "distanceMeters": 8.261,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/17",
+        "from": "osm-node/12821543366",
+        "to": "osm-node/13909959273",
+        "distanceMeters": 8.274,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/18",
+        "from": "osm-node/13909959273",
+        "to": "osm-node/12821543367",
+        "distanceMeters": 8.261,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/19",
+        "from": "osm-node/12821543367",
+        "to": "osm-node/12821543368",
+        "distanceMeters": 40.507,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/2",
+        "from": "osm-node/13909959283",
+        "to": "osm-node/13909959281",
+        "distanceMeters": 8.137,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/20",
+        "from": "osm-node/12821543368",
+        "to": "osm-node/12821543369",
+        "distanceMeters": 25.476,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/21",
+        "from": "osm-node/12821543369",
+        "to": "osm-node/12821543370",
+        "distanceMeters": 24.141,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/22",
+        "from": "osm-node/12821543370",
+        "to": "osm-node/10740248596",
+        "distanceMeters": 38.673,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/3",
+        "from": "osm-node/13909959281",
+        "to": "osm-node/13909959280",
+        "distanceMeters": 8.122,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/4",
+        "from": "osm-node/13909959280",
+        "to": "osm-node/12821543361",
+        "distanceMeters": 8.13,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/5",
+        "from": "osm-node/12821543361",
+        "to": "osm-node/13909959279",
+        "distanceMeters": 8.13,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/6",
+        "from": "osm-node/13909959279",
+        "to": "osm-node/13909959278",
+        "distanceMeters": 8.114,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/7",
+        "from": "osm-node/13909959278",
+        "to": "osm-node/13909959282",
+        "distanceMeters": 9.075,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/8",
+        "from": "osm-node/13909959282",
+        "to": "osm-node/12821543362",
+        "distanceMeters": 9.076,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828047/9",
+        "from": "osm-node/12821543362",
+        "to": "osm-node/13909959277",
+        "distanceMeters": 9.073,
+        "highway": "service",
+        "osmWayId": 1384828047,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/0",
+        "from": "osm-node/12821543383",
+        "to": "osm-node/12821543384",
+        "distanceMeters": 6.637,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/1",
+        "from": "osm-node/12821543384",
+        "to": "osm-node/12821543385",
+        "distanceMeters": 6.65,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/10",
+        "from": "osm-node/12821543378",
+        "to": "osm-node/12821543379",
+        "distanceMeters": 6.641,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/11",
+        "from": "osm-node/12821543379",
+        "to": "osm-node/12821543380",
+        "distanceMeters": 6.643,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/12",
+        "from": "osm-node/12821543380",
+        "to": "osm-node/12821543382",
+        "distanceMeters": 6.642,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/13",
+        "from": "osm-node/12821543382",
+        "to": "osm-node/12821543374",
+        "distanceMeters": 6.648,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/14",
+        "from": "osm-node/12821543374",
+        "to": "osm-node/12821543375",
+        "distanceMeters": 6.635,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/15",
+        "from": "osm-node/12821543375",
+        "to": "osm-node/12821543376",
+        "distanceMeters": 6.647,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/16",
+        "from": "osm-node/12821543376",
+        "to": "osm-node/12821543377",
+        "distanceMeters": 6.643,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/17",
+        "from": "osm-node/12821543377",
+        "to": "osm-node/12821543383",
+        "distanceMeters": 6.64,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/2",
+        "from": "osm-node/12821543385",
+        "to": "osm-node/12821543386",
+        "distanceMeters": 6.633,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/3",
+        "from": "osm-node/12821543386",
+        "to": "osm-node/12821543387",
+        "distanceMeters": 6.651,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/4",
+        "from": "osm-node/12821543387",
+        "to": "osm-node/12821543388",
+        "distanceMeters": 6.643,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/5",
+        "from": "osm-node/12821543388",
+        "to": "osm-node/12821543389",
+        "distanceMeters": 6.635,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/6",
+        "from": "osm-node/12821543389",
+        "to": "osm-node/12821543371",
+        "distanceMeters": 6.647,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/7",
+        "from": "osm-node/12821543371",
+        "to": "osm-node/12821543372",
+        "distanceMeters": 6.643,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/8",
+        "from": "osm-node/12821543372",
+        "to": "osm-node/12821543373",
+        "distanceMeters": 6.637,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1384828048/9",
+        "from": "osm-node/12821543373",
+        "to": "osm-node/12821543378",
+        "distanceMeters": 6.643,
+        "highway": "pedestrian",
+        "osmWayId": 1384828048,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/0",
+        "from": "osm-node/13909959272",
+        "to": "osm-node/13909959271",
+        "distanceMeters": 28.919,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/1",
+        "from": "osm-node/13909959271",
+        "to": "osm-node/13909959269",
+        "distanceMeters": 8.323,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/2",
+        "from": "osm-node/13909959269",
+        "to": "osm-node/13909959270",
+        "distanceMeters": 8.313,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/3",
+        "from": "osm-node/13909959270",
+        "to": "osm-node/13909959268",
+        "distanceMeters": 7.901,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/4",
+        "from": "osm-node/13909959268",
+        "to": "osm-node/13909959267",
+        "distanceMeters": 7.885,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/5",
+        "from": "osm-node/13909959267",
+        "to": "osm-node/13909959266",
+        "distanceMeters": 7.902,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136015/6",
+        "from": "osm-node/13909959266",
+        "to": "osm-node/10740248600",
+        "distanceMeters": 7.893,
+        "highway": "service",
+        "osmWayId": 1526136015,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136026/0",
+        "from": "osm-node/13909959488",
+        "to": "osm-node/13909959487",
+        "distanceMeters": 43.467,
+        "highway": "service",
+        "osmWayId": 1526136026,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136027/0",
+        "from": "osm-node/10775856886",
+        "to": "osm-node/10775856892",
+        "distanceMeters": 43.462,
+        "highway": "service",
+        "osmWayId": 1526136027,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136028/0",
+        "from": "osm-node/13909959492",
+        "to": "osm-node/13909959487",
+        "distanceMeters": 18.818,
+        "highway": "service",
+        "osmWayId": 1526136028,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136028/1",
+        "from": "osm-node/13909959487",
+        "to": "osm-node/13909959486",
+        "distanceMeters": 14.907,
+        "highway": "service",
+        "osmWayId": 1526136028,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136028/2",
+        "from": "osm-node/13909959486",
+        "to": "osm-node/13909959485",
+        "distanceMeters": 14.91,
+        "highway": "service",
+        "osmWayId": 1526136028,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      },
+      {
+        "id": "way/1526136028/3",
+        "from": "osm-node/13909959485",
+        "to": "osm-node/10775856886",
+        "distanceMeters": 14.901,
+        "highway": "service",
+        "osmWayId": 1526136028,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "accessAssumed": true
+      }
+    ],
+    "routableNodeIds": [
+      "osm-node/10057722423",
+      "osm-node/10057722424",
+      "osm-node/10057722425",
+      "osm-node/10057722426",
+      "osm-node/10057722427",
+      "osm-node/10057722428",
+      "osm-node/10057722429",
+      "osm-node/10057722430",
+      "osm-node/10057722431",
+      "osm-node/10057722433",
+      "osm-node/10057722434",
+      "osm-node/10057722435",
+      "osm-node/10057722436",
+      "osm-node/10057722437",
+      "osm-node/10057722438",
+      "osm-node/10057722439",
+      "osm-node/10057722440",
+      "osm-node/10057722441",
+      "osm-node/10057722442",
+      "osm-node/10057722443",
+      "osm-node/10068169535",
+      "osm-node/10740248563",
+      "osm-node/10740248564",
+      "osm-node/10740248565",
+      "osm-node/10740248566",
+      "osm-node/10740248567",
+      "osm-node/10740248568",
+      "osm-node/10740248569",
+      "osm-node/10740248570",
+      "osm-node/10740248571",
+      "osm-node/10740248572",
+      "osm-node/10740248573",
+      "osm-node/10740248574",
+      "osm-node/10740248575",
+      "osm-node/10740248576",
+      "osm-node/10740248577",
+      "osm-node/10740248578",
+      "osm-node/10740248579",
+      "osm-node/10740248580",
+      "osm-node/10740248581",
+      "osm-node/10740248582",
+      "osm-node/10740248583",
+      "osm-node/10740248584",
+      "osm-node/10740248585",
+      "osm-node/10740248586",
+      "osm-node/10740248587",
+      "osm-node/10740248589",
+      "osm-node/10740248590",
+      "osm-node/10740248591",
+      "osm-node/10740248592",
+      "osm-node/10740248593",
+      "osm-node/10740248594",
+      "osm-node/10740248595",
+      "osm-node/10740248596",
+      "osm-node/10740248597",
+      "osm-node/10740248598",
+      "osm-node/10740248599",
+      "osm-node/10740248600",
+      "osm-node/10740248603",
+      "osm-node/10740248625",
+      "osm-node/10740248634",
+      "osm-node/10740248635",
+      "osm-node/10740248636",
+      "osm-node/10740248637",
+      "osm-node/10740248638",
+      "osm-node/10740248639",
+      "osm-node/10740248640",
+      "osm-node/10740248641",
+      "osm-node/10740248642",
+      "osm-node/10740248643",
+      "osm-node/10740248644",
+      "osm-node/10740248645",
+      "osm-node/10740248646",
+      "osm-node/10740248647",
+      "osm-node/10740248648",
+      "osm-node/10740248649",
+      "osm-node/10740248650",
+      "osm-node/10740248651",
+      "osm-node/10740248652",
+      "osm-node/10740248653",
+      "osm-node/10740248754",
+      "osm-node/10740248755",
+      "osm-node/10740248756",
+      "osm-node/10740248757",
+      "osm-node/10740248758",
+      "osm-node/10740248759",
+      "osm-node/10740248760",
+      "osm-node/10740248761",
+      "osm-node/10740248762",
+      "osm-node/10740248763",
+      "osm-node/10740248764",
+      "osm-node/10740248765",
+      "osm-node/10740248766",
+      "osm-node/10740248767",
+      "osm-node/10740248768",
+      "osm-node/10740248769",
+      "osm-node/10740248770",
+      "osm-node/10740248771",
+      "osm-node/10740248772",
+      "osm-node/10740248773",
+      "osm-node/10740248774",
+      "osm-node/10740248775",
+      "osm-node/10740248776",
+      "osm-node/10740248777",
+      "osm-node/10740248778",
+      "osm-node/10740248779",
+      "osm-node/10740248780",
+      "osm-node/10740248781",
+      "osm-node/10740248782",
+      "osm-node/10740248783",
+      "osm-node/10740248784",
+      "osm-node/10740248785",
+      "osm-node/10740248786",
+      "osm-node/10740248787",
+      "osm-node/10740248788",
+      "osm-node/10740248789",
+      "osm-node/10740248790",
+      "osm-node/10740248791",
+      "osm-node/10740248792",
+      "osm-node/10740248793",
+      "osm-node/10740248794",
+      "osm-node/10740248795",
+      "osm-node/10740248796",
+      "osm-node/10740248797",
+      "osm-node/10740248816",
+      "osm-node/10740248820",
+      "osm-node/10763132989",
+      "osm-node/10775856871",
+      "osm-node/10775856872",
+      "osm-node/10775856873",
+      "osm-node/10775856874",
+      "osm-node/10775856875",
+      "osm-node/10775856876",
+      "osm-node/10775856877",
+      "osm-node/10775856878",
+      "osm-node/10775856879",
+      "osm-node/10775856880",
+      "osm-node/10775856881",
+      "osm-node/10775856882",
+      "osm-node/10775856883",
+      "osm-node/10775856884",
+      "osm-node/10775856885",
+      "osm-node/10775856886",
+      "osm-node/10775856887",
+      "osm-node/10775856892",
+      "osm-node/10775863241",
+      "osm-node/10775863259",
+      "osm-node/10775863267",
+      "osm-node/10775863268",
+      "osm-node/10775863276",
+      "osm-node/10775863277",
+      "osm-node/10775863278",
+      "osm-node/10775863280",
+      "osm-node/10775863281",
+      "osm-node/10775863282",
+      "osm-node/10775863283",
+      "osm-node/10775863284",
+      "osm-node/10775863285",
+      "osm-node/10775863286",
+      "osm-node/10775863287",
+      "osm-node/10775863288",
+      "osm-node/10775863289",
+      "osm-node/10775863290",
+      "osm-node/10775863291",
+      "osm-node/10775863292",
+      "osm-node/10775863293",
+      "osm-node/10775863294",
+      "osm-node/10775863295",
+      "osm-node/10775863296",
+      "osm-node/10775863297",
+      "osm-node/10775863302",
+      "osm-node/10775863303",
+      "osm-node/10775863304",
+      "osm-node/10775863305",
+      "osm-node/10775863306",
+      "osm-node/10775863307",
+      "osm-node/10775863308",
+      "osm-node/10775863309",
+      "osm-node/10775863310",
+      "osm-node/10775863311",
+      "osm-node/10775863312",
+      "osm-node/10775863313",
+      "osm-node/10775863314",
+      "osm-node/10775863315",
+      "osm-node/10775863316",
+      "osm-node/10775863317",
+      "osm-node/10775863318",
+      "osm-node/10775863319",
+      "osm-node/11073090121",
+      "osm-node/11073090122",
+      "osm-node/11073090124",
+      "osm-node/11073090125",
+      "osm-node/11073090126",
+      "osm-node/11073090127",
+      "osm-node/11073090128",
+      "osm-node/11073090129",
+      "osm-node/11073090130",
+      "osm-node/11073090131",
+      "osm-node/11073090132",
+      "osm-node/11073090133",
+      "osm-node/11073090134",
+      "osm-node/11073090135",
+      "osm-node/11073090136",
+      "osm-node/11073090137",
+      "osm-node/11073090138",
+      "osm-node/11073090139",
+      "osm-node/11073090140",
+      "osm-node/11073090141",
+      "osm-node/11073090142",
+      "osm-node/11073090143",
+      "osm-node/11073090144",
+      "osm-node/11073090145",
+      "osm-node/11073090146",
+      "osm-node/11073090147",
+      "osm-node/11073090148",
+      "osm-node/11073090149",
+      "osm-node/11073090150",
+      "osm-node/11073090151",
+      "osm-node/11073090152",
+      "osm-node/11073090153",
+      "osm-node/11073090156",
+      "osm-node/11073090157",
+      "osm-node/11073090158",
+      "osm-node/11073090159",
+      "osm-node/11073090160",
+      "osm-node/11073090161",
+      "osm-node/11073090162",
+      "osm-node/11073090163",
+      "osm-node/11073090164",
+      "osm-node/11073090165",
+      "osm-node/11073090204",
+      "osm-node/11073095006",
+      "osm-node/12821543352",
+      "osm-node/12821543353",
+      "osm-node/12821543360",
+      "osm-node/12821543361",
+      "osm-node/12821543362",
+      "osm-node/12821543363",
+      "osm-node/12821543364",
+      "osm-node/12821543365",
+      "osm-node/12821543366",
+      "osm-node/12821543367",
+      "osm-node/12821543368",
+      "osm-node/12821543369",
+      "osm-node/12821543370",
+      "osm-node/13909951898",
+      "osm-node/13909951899",
+      "osm-node/13909959262",
+      "osm-node/13909959263",
+      "osm-node/13909959264",
+      "osm-node/13909959265",
+      "osm-node/13909959266",
+      "osm-node/13909959267",
+      "osm-node/13909959268",
+      "osm-node/13909959269",
+      "osm-node/13909959270",
+      "osm-node/13909959271",
+      "osm-node/13909959272",
+      "osm-node/13909959273",
+      "osm-node/13909959274",
+      "osm-node/13909959275",
+      "osm-node/13909959276",
+      "osm-node/13909959277",
+      "osm-node/13909959278",
+      "osm-node/13909959279",
+      "osm-node/13909959280",
+      "osm-node/13909959281",
+      "osm-node/13909959282",
+      "osm-node/13909959283",
+      "osm-node/13909959485",
+      "osm-node/13909959486",
+      "osm-node/13909959487",
+      "osm-node/13909959488",
+      "osm-node/13909959489",
+      "osm-node/13909959490",
+      "osm-node/13909959491",
+      "osm-node/13909959492"
+    ]
+  },
+  "locations": {
+    "main-entrance": {
+      "locationId": "main-entrance",
+      "entrance": {
+        "longitude": 113.4776815,
+        "latitude": 22.8883663,
+        "source": "osm-entrance",
+        "osmFeatureId": null,
+        "osmEntranceId": "node/10763132989"
+      },
+      "roadNodeId": "osm-node/10763132989",
+      "snapDistanceMeters": 0,
+      "matchedBuildingFeatureIds": []
+    },
+    "administration": {
+      "locationId": "administration",
+      "entrance": {
+        "longitude": 113.4769013,
+        "latitude": 22.8901318,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1154868988",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10057722435",
+      "snapDistanceMeters": 8.36,
+      "matchedBuildingFeatureIds": [
+        "way/1154868988"
+      ]
+    },
+    "activity-center": {
+      "locationId": "activity-center",
+      "entrance": {
+        "longitude": 113.4779604,
+        "latitude": 22.889185,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450388",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775856871",
+      "snapDistanceMeters": 15.53,
+      "matchedBuildingFeatureIds": [
+        "way/1098450388"
+      ]
+    },
+    "west-concourse": {
+      "locationId": "west-concourse",
+      "entrance": {
+        "longitude": 113.47664,
+        "latitude": 22.89094,
+        "source": "location-coordinate",
+        "osmFeatureId": null,
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/13909959263",
+      "snapDistanceMeters": 80.58,
+      "matchedBuildingFeatureIds": []
+    },
+    "east-concourse": {
+      "locationId": "east-concourse",
+      "entrance": {
+        "longitude": 113.4782,
+        "latitude": 22.89015,
+        "source": "location-coordinate",
+        "osmFeatureId": null,
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248759",
+      "snapDistanceMeters": 67.48,
+      "matchedBuildingFeatureIds": []
+    },
+    "library": {
+      "locationId": "library",
+      "entrance": {
+        "longitude": 113.4776064,
+        "latitude": 22.8925129,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450394",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775863319",
+      "snapDistanceMeters": 46.31,
+      "matchedBuildingFeatureIds": [
+        "way/1098450394"
+      ]
+    },
+    "food-court": {
+      "locationId": "food-court",
+      "entrance": {
+        "longitude": 113.4780496,
+        "latitude": 22.8917561,
+        "source": "location-coordinate",
+        "osmFeatureId": null,
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775863319",
+      "snapDistanceMeters": 140.15,
+      "matchedBuildingFeatureIds": []
+    },
+    "lecture-halls": {
+      "locationId": "lecture-halls",
+      "entrance": {
+        "longitude": 113.4770501,
+        "latitude": 22.8910343,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "relation/14632285",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10057722430",
+      "snapDistanceMeters": 100.38,
+      "matchedBuildingFeatureIds": [
+        "relation/14632285"
+      ]
+    },
+    "w1": {
+      "locationId": "w1",
+      "entrance": {
+        "longitude": 113.4756036,
+        "latitude": 22.8915241,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1096048403",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248781",
+      "snapDistanceMeters": 20.27,
+      "matchedBuildingFeatureIds": [
+        "way/1096048403"
+      ]
+    },
+    "w2": {
+      "locationId": "w2",
+      "entrance": {
+        "longitude": 113.4757517,
+        "latitude": 22.8918934,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1096048404",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775863315",
+      "snapDistanceMeters": 22.93,
+      "matchedBuildingFeatureIds": [
+        "way/1096048404"
+      ]
+    },
+    "w3": {
+      "locationId": "w3",
+      "entrance": {
+        "longitude": 113.4762122,
+        "latitude": 22.8926187,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450398",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/13909959265",
+      "snapDistanceMeters": 24.31,
+      "matchedBuildingFeatureIds": [
+        "way/1098450398"
+      ]
+    },
+    "w4": {
+      "locationId": "w4",
+      "entrance": {
+        "longitude": 113.4764373,
+        "latitude": 22.8928715,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450397",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/13909959264",
+      "snapDistanceMeters": 23.48,
+      "matchedBuildingFeatureIds": [
+        "way/1098450397"
+      ]
+    },
+    "e1": {
+      "locationId": "e1",
+      "entrance": {
+        "longitude": 113.4786726,
+        "latitude": 22.8899481,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450389",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775856875",
+      "snapDistanceMeters": 16.17,
+      "matchedBuildingFeatureIds": [
+        "way/1098450389"
+      ]
+    },
+    "e2": {
+      "locationId": "e2",
+      "entrance": {
+        "longitude": 113.4790594,
+        "latitude": 22.8903998,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1096049211",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775856877",
+      "snapDistanceMeters": 15.03,
+      "matchedBuildingFeatureIds": [
+        "way/1096049211"
+      ]
+    },
+    "e3": {
+      "locationId": "e3",
+      "entrance": {
+        "longitude": 113.4793107,
+        "latitude": 22.8907989,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1096049213",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775856878",
+      "snapDistanceMeters": 13.89,
+      "matchedBuildingFeatureIds": [
+        "way/1096049213"
+      ]
+    },
+    "e4": {
+      "locationId": "e4",
+      "entrance": {
+        "longitude": 113.4795455,
+        "latitude": 22.8913602,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1096049212",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248763",
+      "snapDistanceMeters": 12.76,
+      "matchedBuildingFeatureIds": [
+        "way/1096049212"
+      ]
+    },
+    "south-residences": {
+      "locationId": "south-residences",
+      "entrance": {
+        "longitude": 113.4815046,
+        "latitude": 22.888028,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450435",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775863297",
+      "snapDistanceMeters": 5.12,
+      "matchedBuildingFeatureIds": [
+        "way/1098450403",
+        "way/1526136018",
+        "way/1098450437",
+        "way/1098450438",
+        "way/1526136017",
+        "way/1098450439",
+        "way/1098450440",
+        "way/1098450434",
+        "way/1098450435",
+        "way/1098450436",
+        "way/1098450441",
+        "way/1098450442",
+        "way/1098450443"
+      ]
+    },
+    "dorm-1": {
+      "locationId": "dorm-1",
+      "entrance": {
+        "longitude": 113.4783569,
+        "latitude": 22.8892968,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450403",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248758",
+      "snapDistanceMeters": 10.67,
+      "matchedBuildingFeatureIds": [
+        "way/1098450403",
+        "way/1526136018"
+      ]
+    },
+    "dorm-2": {
+      "locationId": "dorm-2",
+      "entrance": {
+        "longitude": 113.4778836,
+        "latitude": 22.8885453,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450437",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248820",
+      "snapDistanceMeters": 14.15,
+      "matchedBuildingFeatureIds": [
+        "way/1098450437",
+        "way/1098450438"
+      ]
+    },
+    "dorm-3": {
+      "locationId": "dorm-3",
+      "entrance": {
+        "longitude": 113.4802412,
+        "latitude": 22.8886791,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1526136017",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775863287",
+      "snapDistanceMeters": 17.48,
+      "matchedBuildingFeatureIds": [
+        "way/1526136017"
+      ]
+    },
+    "dorm-4": {
+      "locationId": "dorm-4",
+      "entrance": {
+        "longitude": 113.4795368,
+        "latitude": 22.8878998,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450439",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/12821543352",
+      "snapDistanceMeters": 28.55,
+      "matchedBuildingFeatureIds": [
+        "way/1098450439",
+        "way/1098450440"
+      ]
+    },
+    "dorm-5": {
+      "locationId": "dorm-5",
+      "entrance": {
+        "longitude": 113.4815046,
+        "latitude": 22.888028,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450435",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10775863297",
+      "snapDistanceMeters": 5.12,
+      "matchedBuildingFeatureIds": [
+        "way/1098450434",
+        "way/1098450435",
+        "way/1098450436"
+      ]
+    },
+    "dorm-6": {
+      "locationId": "dorm-6",
+      "entrance": {
+        "longitude": 113.4806599,
+        "latitude": 22.8874017,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450441",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/11073090131",
+      "snapDistanceMeters": 14.75,
+      "matchedBuildingFeatureIds": [
+        "way/1098450441",
+        "way/1098450442",
+        "way/1098450443"
+      ]
+    },
+    "sports-hall": {
+      "locationId": "sports-hall",
+      "entrance": {
+        "longitude": 113.4813422,
+        "latitude": 22.889393,
+        "source": "inferred-building-boundary",
+        "osmFeatureId": "way/1098450410",
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248774",
+      "snapDistanceMeters": 2.74,
+      "matchedBuildingFeatureIds": [
+        "way/1098450410"
+      ]
+    },
+    "stadium": {
+      "locationId": "stadium",
+      "entrance": {
+        "longitude": 113.4819696,
+        "latitude": 22.890055,
+        "source": "location-coordinate",
+        "osmFeatureId": null,
+        "osmEntranceId": null
+      },
+      "roadNodeId": "osm-node/10740248574",
+      "snapDistanceMeters": 79.46,
+      "matchedBuildingFeatureIds": []
+    }
+  },
+  "stats": {
+    "sourceRoadWays": 52,
+    "nodes": 317,
+    "edges": 332,
+    "pedestrianLargestComponentNodes": 277,
+    "robotLargestComponentNodes": 277,
+    "sharedRoutableComponentNodes": 277,
+    "locations": 25,
+    "osmEntrances": 6,
+    "taggedLocationEntrances": 1,
+    "inferredBuildingEntrances": 20,
+    "coordinateAnchors": 4,
+    "maximumSnapDistanceMeters": 140.15
+  }
+}

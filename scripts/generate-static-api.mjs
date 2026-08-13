@@ -2,7 +2,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DATASET, MODES, PUBLIC_LOCATIONS } from '../src/data/campus.js';
-import { findRoute } from '../src/lib/pathfinding.js';
+import { findRoute, getLocationBinding } from '../src/lib/pathfinding.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const apiRoot = resolve(root, 'public/api/v1');
@@ -18,6 +18,7 @@ const locations = PUBLIC_LOCATIONS.map(({ id, name, en, category, aliases }) => 
   en,
   category,
   aliases,
+  routing: getLocationBinding(id),
 }));
 
 await writeFile(
@@ -31,6 +32,11 @@ await writeFile(
     schemaVersion: '1.0',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
+    routing: {
+      engine: 'osm-highway-a-star',
+      allowedHighways: ['footway', 'path', 'pedestrian', 'service'],
+      entranceFallback: 'nearest building-boundary point to the routable graph',
+    },
     endpoints: {
       locations: './locations.json',
       routeTemplate: './routes/{from}/{to}.{mode}.json',

@@ -28,7 +28,7 @@
       <pre>GET <a href="./v1/locations.json">./v1/locations.json</a></pre>
       <h2>2. 查询路径</h2>
       <pre>GET ./v1/routes/{from}/{to}.{mode}.json</pre>
-      <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。</p>
+      <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。路线由 OSM <code>footway/path/pedestrian/service</code> 自动生成，并使用 A* 计算。</p>
       <pre>GET <a href="./v1/routes/main-entrance/library.pedestrian.json">./v1/routes/main-entrance/library.pedestrian.json</a></pre>
       <pre>GET <a href="./v1/routes/dorm-5/sports-hall.robot.json">./v1/routes/dorm-5/sports-hall.robot.json</a></pre>
     </section>
@@ -37,8 +37,9 @@
       <h2>响应边界</h2>
       <ul>
         <li>HTTP 200 表示该预生成组合存在；未知 ID 返回 GitHub Pages 的 404。</li>
-        <li>响应同时包含 WGS84 经纬度和旧版局部坐标；导航拓扑、距离和部分地点坐标仍为演示估算。</li>
-        <li>建筑、水域和道路底图来自 OpenStreetMap，遵循 ODbL 1.0。</li>
+        <li>响应同时包含 WGS84 经纬度和旧版局部坐标，并公开入口来源、吸附道路节点、连接段距离与经过的 OSM way。</li>
+        <li>建筑缺少 OSM 入口时，系统使用距离可通行道路节点最近的建筑边界点，并明确标记为推断入口。</li>
+        <li>建筑、入口、水域和道路来自 OpenStreetMap，遵循 ODbL 1.0；数据仍未经现场通行性测绘。</li>
         <li>真实机器人接入前必须增加定位、动态避障、权限与安全停机层。</li>
       </ul>
       <p><a href="../">← 返回地图</a> · <a href="./v1/catalog.json">查看机器可读目录</a></p>

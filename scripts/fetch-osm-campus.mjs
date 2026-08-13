@@ -19,6 +19,8 @@ const query = `[out:json][timeout:90];
   way["natural"="water"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
   relation["natural"="water"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
   way["waterway"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  node["entrance"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+  node["routing:entrance"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
 );
 out geom;`;
 
@@ -53,6 +55,7 @@ async function fetchOverpass() {
 }
 
 function classify(tags = {}) {
+  if (tags.entrance || tags['routing:entrance']) return 'entrance';
   if (tags.building) return 'building';
   if (tags.natural === 'water' || tags.water) return 'water';
   if (tags.waterway) return 'waterway';
@@ -102,11 +105,29 @@ function propertiesFor(element, featureClass) {
     'bridge',
     'tunnel',
     'layer',
+    'entrance',
+    'routing:entrance',
+    'wheelchair',
+    'level',
   ];
   for (const key of keptTags) {
     if (tags[key] !== undefined) properties[key] = tags[key];
   }
   return properties;
+}
+
+function featureFromNode(element, featureClass) {
+  if (featureClass !== 'entrance' || element.lon === undefined || element.lat === undefined) {
+    return null;
+  }
+  const coordinates = [element.lon, element.lat];
+  if (!isInside(coordinates)) return null;
+  return {
+    type: 'Feature',
+    id: `${element.type}/${element.id}`,
+    properties: propertiesFor(element, featureClass),
+    geometry: { type: 'Point', coordinates },
+  };
 }
 
 function featureFromWay(element, featureClass) {
@@ -117,7 +138,10 @@ function featureFromWay(element, featureClass) {
   return {
     type: 'Feature',
     id: `${element.type}/${element.id}`,
-    properties: propertiesFor(element, featureClass),
+    properties: {
+      ...propertiesFor(element, featureClass),
+      ...(featureClass === 'road' && element.nodes ? { osmNodeIds: element.nodes } : {}),
+    },
     geometry: polygon
       ? { type: 'Polygon', coordinates: [closeRing(coordinates)] }
       : { type: 'LineString', coordinates },
@@ -147,6 +171,7 @@ export function convertOverpass(payload, metadata = {}) {
     .map((element) => {
       const featureClass = classify(element.tags);
       if (!featureClass) return null;
+      if (element.type === 'node') return featureFromNode(element, featureClass);
       return element.type === 'relation'
         ? featureFromRelation(element, featureClass)
         : featureFromWay(element, featureClass);
@@ -179,6 +204,14 @@ const source = inputPath
       endpoint: 'local-input',
     }
   : await fetchOverpass();
+const entrancesInputPath = getArgument('--entrances-input');
+if (entrancesInputPath) {
+  const entrancePayload = JSON.parse(await readFile(resolve(entrancesInputPath), 'utf8'));
+  const existing = new Set(source.payload.elements.map((element) => `${element.type}/${element.id}`));
+  source.payload.elements.push(
+    ...entrancePayload.elements.filter((element) => !existing.has(`${element.type}/${element.id}`)),
+  );
+}
 const geojson = convertOverpass(source.payload, { endpoint: source.endpoint });
 
 await mkdir(dirname(outputPath), { recursive: true });

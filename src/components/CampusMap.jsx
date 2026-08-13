@@ -2,6 +2,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { CAMPUS_BOUNDS, NODE_BY_ID, PUBLIC_LOCATIONS } from '../data/campus.js';
+import { getLocationBinding } from '../lib/pathfinding.js';
 
 const CATEGORY_LABELS = {
   entrance: '入口',
@@ -109,6 +110,8 @@ function addOsmLayers(map, data) {
 }
 
 function locationLatLng(location) {
+  const binding = getLocationBinding(location.id);
+  if (binding) return [binding.entrance.latitude, binding.entrance.longitude];
   return [location.latitude, location.longitude];
 }
 
@@ -296,7 +299,7 @@ export function CampusMap({ route, destination, onSelectDestination }) {
         >
           © OpenStreetMap contributors · ODbL
         </a>
-        <div class="map-note">OSM 实际几何 · 路径仍为演示估算</div>
+        <div class="map-note">OSM 实际路网 · 缺失入口使用边界推断</div>
         <div class="zoom-controls" aria-label="地图缩放">
           <button onClick={() => mapRef.current?.zoomIn()} aria-label="放大地图">＋</button>
           <button onClick={resetView} aria-label="显示完整校园">{zoom.toFixed(1)}</button>

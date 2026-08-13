@@ -10,7 +10,7 @@ describe('campus OSM snapshot', () => {
     const classes = new Set(
       osmData.features.map((feature) => feature.properties.featureClass),
     );
-    expect(classes).toEqual(new Set(['building', 'road', 'water', 'waterway']));
+    expect(classes).toEqual(new Set(['building', 'entrance', 'road', 'water', 'waterway']));
   });
 
   it('has useful campus coverage', () => {
@@ -20,9 +20,22 @@ describe('campus OSM snapshot', () => {
       return summary;
     }, {});
     expect(counts.building).toBeGreaterThanOrEqual(40);
+    expect(counts.entrance).toBeGreaterThanOrEqual(1);
     expect(counts.road).toBeGreaterThanOrEqual(60);
     expect(counts.water).toBeGreaterThanOrEqual(1);
     expect(counts.waterway).toBeGreaterThanOrEqual(1);
+  });
+
+  it('preserves OSM node ids required to reconstruct highway topology', () => {
+    const routableRoads = osmData.features.filter(
+      (feature) =>
+        feature.properties.featureClass === 'road' &&
+        ['footway', 'path', 'pedestrian', 'service'].includes(feature.properties.highway),
+    );
+    expect(routableRoads.length).toBeGreaterThanOrEqual(40);
+    for (const road of routableRoads) {
+      expect(road.properties.osmNodeIds).toHaveLength(road.geometry.coordinates.length);
+    }
   });
 
   it('carries OSM attribution and WGS84 bounds', () => {

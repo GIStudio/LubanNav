@@ -1,6 +1,6 @@
 export const DATASET = {
-  id: 'hkustgz-osm-navigation-v1',
-  name: 'HKUST(GZ) OSM-backed navigation graph',
+  id: 'hkustgz-osm-routing-v2',
+  name: 'HKUST(GZ) OSM highway routing graph',
   version: '2026-08-13',
   coordinateSystem: 'WGS84 with legacy local coordinates',
   sourceUrl: 'https://www.openstreetmap.org/way/894157108',
@@ -8,7 +8,7 @@ export const DATASET = {
   mapAttribution: '© OpenStreetMap contributors',
   mapLicense: 'ODbL-1.0',
   disclaimer:
-    '建筑、水域和道路来自 OpenStreetMap；导航拓扑、距离与部分地点坐标仍为演示估算，未经现场测绘，不可用于真实机器人运动控制。',
+    '建筑、入口与道路来自 OpenStreetMap；路线由 footway/path/pedestrian/service 自动生成。OSM 入口缺失时使用推断建筑边界点，数据未经现场测绘，不可直接控制真实机器人。',
 };
 
 export const CAMPUS_BOUNDS = [
@@ -42,18 +42,6 @@ const GEO_COORDINATES = {
   'dorm-6': [113.4812714, 22.8868343],
   'sports-hall': [113.4813014, 22.8887634],
   stadium: [113.4819696, 22.890055],
-  'academic-south': [113.47743, 22.89032],
-  'academic-center': [113.4775, 22.89086],
-  'west-mid': [113.47655, 22.89176],
-  'west-north': [113.477, 22.89218],
-  'east-mid': [113.4785, 22.89104],
-  'east-north': [113.47834, 22.89186],
-  'east-crossing': [113.47867, 22.88923],
-  'residence-west': [113.47915, 22.88862],
-  'residence-center': [113.48014, 22.88788],
-  'residence-east': [113.4812, 22.88753],
-  'sports-junction': [113.48078, 22.88906],
-  'stadium-junction': [113.48142, 22.88963],
 };
 
 function geographicPosition(id) {
@@ -70,18 +58,6 @@ const publicNode = (id, name, en, x, y, category, aliases = []) => ({
   category,
   aliases,
   public: true,
-  ...geographicPosition(id),
-});
-
-const waypoint = (id, x, y) => ({
-  id,
-  name: '路径节点',
-  en: 'Waypoint',
-  x,
-  y,
-  category: 'waypoint',
-  aliases: [],
-  public: false,
   ...geographicPosition(id),
 });
 
@@ -183,79 +159,47 @@ export const NODES = [
     '田径场',
     'stadium',
   ]),
-  waypoint('academic-south', 365, 485),
-  waypoint('academic-center', 365, 380),
-  waypoint('west-mid', 235, 305),
-  waypoint('west-north', 270, 220),
-  waypoint('east-mid', 500, 305),
-  waypoint('east-north', 465, 220),
-  waypoint('east-crossing', 625, 485),
-  waypoint('residence-west', 690, 500),
-  waypoint('residence-center', 840, 610),
-  waypoint('residence-east', 980, 610),
-  waypoint('sports-junction', 800, 430),
-  waypoint('stadium-junction', 820, 275),
 ];
 
 export const PUBLIC_LOCATIONS = NODES.filter((node) => node.public);
 export const NODE_BY_ID = Object.fromEntries(NODES.map((node) => [node.id, node]));
 
-const edge = (from, to, distance, options = {}) => ({
-  from,
-  to,
-  distance,
-  accessible: options.accessible ?? true,
-  covered: options.covered ?? false,
-  kind: options.kind ?? 'walkway',
-});
-
-export const EDGES = [
-  edge('main-entrance', 'administration', 145),
-  edge('main-entrance', 'activity-center', 205),
-  edge('administration', 'activity-center', 165, { covered: true }),
-  edge('administration', 'academic-south', 92, { covered: true }),
-  edge('activity-center', 'academic-south', 150, { covered: true }),
-  edge('academic-south', 'west-concourse', 116, { covered: true }),
-  edge('academic-south', 'east-concourse', 116, { covered: true }),
-  edge('academic-south', 'academic-center', 105, { covered: true }),
-  edge('academic-center', 'lecture-halls', 76, { covered: true }),
-  edge('lecture-halls', 'food-court', 85, { covered: true }),
-  edge('food-court', 'library', 85, { covered: true }),
-  edge('west-concourse', 'w1', 95, { covered: true }),
-  edge('west-concourse', 'w2', 124, { covered: true }),
-  edge('west-concourse', 'west-mid', 116, { covered: true }),
-  edge('west-mid', 'w2', 88, { covered: true }),
-  edge('west-mid', 'w3', 83, { covered: true }),
-  edge('west-mid', 'west-north', 92, { covered: true }),
-  edge('west-north', 'w3', 121, { covered: true }),
-  edge('west-north', 'w4', 88, { covered: true }),
-  edge('west-north', 'library', 108, { covered: true }),
-  edge('east-concourse', 'e1', 95, { covered: true }),
-  edge('east-concourse', 'e2', 124, { covered: true }),
-  edge('east-concourse', 'east-mid', 116, { covered: true }),
-  edge('east-mid', 'e2', 88, { covered: true }),
-  edge('east-mid', 'e3', 83, { covered: true }),
-  edge('east-mid', 'east-north', 92, { covered: true }),
-  edge('east-north', 'e3', 121, { covered: true }),
-  edge('east-north', 'e4', 88, { covered: true }),
-  edge('east-north', 'library', 108, { covered: true }),
-  edge('activity-center', 'east-crossing', 152),
-  edge('east-crossing', 'residence-west', 88),
-  edge('residence-west', 'dorm-1', 46),
-  edge('residence-west', 'south-residences', 115),
-  edge('south-residences', 'dorm-3', 58),
-  edge('south-residences', 'sports-junction', 81),
-  edge('sports-junction', 'sports-hall', 85),
-  edge('sports-junction', 'stadium-junction', 157),
-  edge('stadium-junction', 'stadium', 144),
-  edge('dorm-1', 'residence-center', 162),
-  edge('dorm-2', 'residence-center', 132),
-  edge('dorm-3', 'residence-center', 59),
-  edge('dorm-4', 'residence-center', 66),
-  edge('residence-center', 'residence-east', 140),
-  edge('dorm-5', 'residence-east', 71),
-  edge('dorm-6', 'residence-east', 74),
-];
+export const LOCATION_OSM_FEATURES = {
+  administration: ['way/1154868988'],
+  'activity-center': ['way/1098450388'],
+  library: ['way/1098450394'],
+  'lecture-halls': ['relation/14632285'],
+  w1: ['way/1096048403'],
+  w2: ['way/1096048404'],
+  w3: ['way/1098450398'],
+  w4: ['way/1098450397'],
+  e1: ['way/1098450389'],
+  e2: ['way/1096049211'],
+  e3: ['way/1096049213'],
+  e4: ['way/1096049212'],
+  'south-residences': [
+    'way/1098450403',
+    'way/1526136018',
+    'way/1098450437',
+    'way/1098450438',
+    'way/1526136017',
+    'way/1098450439',
+    'way/1098450440',
+    'way/1098450434',
+    'way/1098450435',
+    'way/1098450436',
+    'way/1098450441',
+    'way/1098450442',
+    'way/1098450443',
+  ],
+  'dorm-1': ['way/1098450403', 'way/1526136018'],
+  'dorm-2': ['way/1098450437', 'way/1098450438'],
+  'dorm-3': ['way/1526136017'],
+  'dorm-4': ['way/1098450439', 'way/1098450440'],
+  'dorm-5': ['way/1098450434', 'way/1098450435', 'way/1098450436'],
+  'dorm-6': ['way/1098450441', 'way/1098450442', 'way/1098450443'],
+  'sports-hall': ['way/1098450410'],
+};
 
 export const MODES = {
   pedestrian: {
