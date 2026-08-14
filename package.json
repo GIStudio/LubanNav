@@ -9,6 +9,7 @@
     "generate:routing": "node scripts/generate-osm-routing.mjs",
     "generate:api": "node scripts/generate-static-api.mjs",
     "extract:walkable": "uv run --script scripts/extract-walkable-surfaces.py --config config/walkable-surfaces-render.json",
+    "register:walkable": "uv run --script scripts/register-walkable-surfaces.py --image-surfaces public/data/walkable-surfaces/walkable-surfaces.image.geojson --osm public/data/campus-osm.geojson --config config/eight-building-registration.json",
     "build": "npm run generate:routing && npm run generate:api && vite build",
     "preview": "vite preview",
     "test": "vitest run"

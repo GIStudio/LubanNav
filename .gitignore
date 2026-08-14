@@ -6,6 +6,8 @@ public/api/v1/catalog.json
 public/api/v1/routing-graph.json
 public/api/v1/robot-ble-protocol.json
 public/api/v1/walkable-surfaces.image.geojson
+public/api/v1/walkable-surfaces.wgs84.geojson
+public/api/v1/walkable-registration-report.json
 .DS_Store
 playwright-report/
 test-results/

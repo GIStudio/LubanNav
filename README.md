@@ -13,6 +13,8 @@ GET https://<user>.github.io/<repo>/api/v1/locations.json
 GET https://<user>.github.io/<repo>/api/v1/routing-graph.json
 GET https://<user>.github.io/<repo>/api/v1/robot-ble-protocol.json
 GET https://<user>.github.io/<repo>/api/v1/walkable-surfaces.image.geojson
+GET https://<user>.github.io/<repo>/api/v1/walkable-surfaces.wgs84.geojson
+GET https://<user>.github.io/<repo>/api/v1/walkable-registration-report.json
 GET https://<user>.github.io/<repo>/api/v1/routes/main-entrance/library.pedestrian.json
 GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 ```
@@ -83,7 +85,7 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 
 第二种链接需要浏览器执行页面 JavaScript；需要原始 JSON 时使用上面的静态 API。
 
-`walkable-surfaces.image.geojson` 是从 3D 俯瞰渲染图提取的水泥色平面候选，坐标仍是归一化图像坐标。地面、屋顶与潜在立面尚未完成语义复核，所有要素均为 `routingEnabled=false`，不会进入当前 A* 路网。
+`walkable-surfaces.image.geojson` 是从 3D 俯瞰渲染图提取的水泥色平面候选；`walkable-surfaces.wgs84.geojson` 使用 OSM 的 E1–E4、W1–W4 八栋楼作为控制对象完成初始 WGS84 配准。地面、屋顶与潜在立面尚未完成语义复核，所有要素均为 `routingEnabled=false`，不会进入当前 A* 路网。
 
 `path` 是可直接绘制的有序点列，并同时提供 WGS84 `longitude` / `latitude` 和早期客户端使用的 `x` / `y`；后者只为兼容保留，不应解释为地理坐标。`segments` 是后端导航应优先使用的有序路段，逐段给出起终点经纬度、距离、`highway`、`segmentType`、可用模式、OSM way 或室内要素来源。`geometry` 是可直接读取的 GeoJSON `LineString`。
 
@@ -148,7 +150,17 @@ npm run extract:walkable -- \
   --output-dir artifacts/walkable-surfaces
 ```
 
-脚本使用固定版本的 NumPy/Pillow，输出栅格掩膜、叠加预览、摘要和归一化图像坐标 GeoJSON。进入导航图前仍须完成 WGS84 配准、地面/屋顶/立面分类和楼梯、电梯或坡道连接核验。
+脚本使用固定版本的 NumPy/Pillow，输出栅格掩膜、叠加预览、摘要和归一化图像坐标 GeoJSON。进入导航图前仍须复核 WGS84 控制点、完成地面/屋顶/立面分类，并核验楼梯、电梯或坡道连接。
+
+使用八栋核心教学楼将候选面配准到 WGS84：
+
+```bash
+npm run register:walkable -- \
+  --image /absolute/path/to/campus-render.jpg \
+  --output-dir artifacts/walkable-surfaces-registration
+```
+
+配准报告记录每栋楼的拟合残差、反投影像素残差和留一验证残差。数值通过只表示八栋楼控制点足以支持初始几何配准，不表示候选面已经具备通行资格。
 
 ## OSM 数据层
 

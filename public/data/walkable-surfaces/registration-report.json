@@ -1,0 +1,180 @@
+{
+  "schemaVersion": "1.0",
+  "model": "projective-homography",
+  "status": "accepted-review-pending",
+  "sourceImage": "微信图片_2026-08-13_172033_970.jpg",
+  "sourceImageSha256": "f989f29592ed5b9b3a3c98ac58a2fcb6f41afb765250676ceb24e9d9549f3a93",
+  "referenceLongitudeLatitude": [
+    113.4775553,
+    22.8914104
+  ],
+  "imageSize": [
+    2351,
+    1280
+  ],
+  "homographyImageNormalizedToLocalMeters": [
+    [
+      608.702207485,
+      -188.8823669,
+      -301.133670047
+    ],
+    [
+      -357.928367392,
+      -334.222971805,
+      380.624137662
+    ],
+    [
+      -0.471212725,
+      0.066082433,
+      1.0
+    ]
+  ],
+  "metrics": {
+    "fitRmseMeters": 6.265,
+    "fitMaxResidualMeters": 12.355,
+    "reprojectionRmsePixels": 17.001,
+    "reprojectionMaxResidualPixels": 35.786,
+    "leaveOneOutRmseMeters": 13.609,
+    "leaveOneOutMaxResidualMeters": 24.082
+  },
+  "acceptance": {
+    "maxFitResidualMeters": 15,
+    "maxLeaveOneOutResidualMeters": 45
+  },
+  "controls": [
+    {
+      "building": "W4",
+      "image": [
+        1195,
+        392
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1098450397",
+      "targetCentroid": [
+        113.4769677,
+        22.8925368
+      ],
+      "fitResidualMeters": 3.43,
+      "reprojectionResidualPixels": 9.122,
+      "leaveOneOutResidualMeters": 8.552
+    },
+    {
+      "building": "W3",
+      "image": [
+        1190,
+        502
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1098450398",
+      "targetCentroid": [
+        113.4767488,
+        22.8922287
+      ],
+      "fitResidualMeters": 4.407,
+      "reprojectionResidualPixels": 11.519,
+      "leaveOneOutResidualMeters": 6.647
+    },
+    {
+      "building": "W2",
+      "image": [
+        1188,
+        655
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1096048404",
+      "targetCentroid": [
+        113.4763307,
+        22.8917207
+      ],
+      "fitResidualMeters": 12.355,
+      "reprojectionResidualPixels": 35.786,
+      "leaveOneOutResidualMeters": 17.096
+    },
+    {
+      "building": "W1",
+      "image": [
+        1197,
+        787
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1096048403",
+      "targetCentroid": [
+        113.4763136,
+        22.8913047
+      ],
+      "fitResidualMeters": 7.287,
+      "reprojectionResidualPixels": 21.151,
+      "leaveOneOutResidualMeters": 24.082
+    },
+    {
+      "building": "E4",
+      "image": [
+        1747,
+        410
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1096049212",
+      "targetCentroid": [
+        113.47885,
+        22.8915146
+      ],
+      "fitResidualMeters": 2.378,
+      "reprojectionResidualPixels": 4.909,
+      "leaveOneOutResidualMeters": 7.451
+    },
+    {
+      "building": "E3",
+      "image": [
+        1755,
+        512
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1096049213",
+      "targetCentroid": [
+        113.4786836,
+        22.8910847
+      ],
+      "fitResidualMeters": 6.011,
+      "reprojectionResidualPixels": 13.279,
+      "leaveOneOutResidualMeters": 8.926
+    },
+    {
+      "building": "E2",
+      "image": [
+        1765,
+        660
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1096049211",
+      "targetCentroid": [
+        113.4784192,
+        22.8906114
+      ],
+      "fitResidualMeters": 2.723,
+      "reprojectionResidualPixels": 5.978,
+      "leaveOneOutResidualMeters": 4.131
+    },
+    {
+      "building": "E1",
+      "image": [
+        1762,
+        772
+      ],
+      "evidence": "manual-roof-centroid",
+      "osmFeatureId": "way/1098450389",
+      "targetCentroid": [
+        113.4781288,
+        22.8902819
+      ],
+      "fitResidualMeters": 5.279,
+      "reprojectionResidualPixels": 11.499,
+      "leaveOneOutResidualMeters": 18.434
+    }
+  ],
+  "limitations": [
+    "Manual roof centroids require visual review.",
+    "A single rendered view cannot distinguish roofs, ground planes and facades with full reliability.",
+    "Registration does not establish walkability or vertical connectivity."
+  ],
+  "routingEnabled": false
+}

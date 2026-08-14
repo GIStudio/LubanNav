@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "model": "projective-homography",
+  "sourceImageSha256": "f989f29592ed5b9b3a3c98ac58a2fcb6f41afb765250676ceb24e9d9549f3a93",
+  "controlPointCoordinateSpace": "source-image-pixels",
+  "targetCoordinateSpace": "OSM-WGS84-building-centroid",
+  "controlPoints": [
+    { "building": "W4", "image": [1195, 392], "evidence": "manual-roof-centroid" },
+    { "building": "W3", "image": [1190, 502], "evidence": "manual-roof-centroid" },
+    { "building": "W2", "image": [1188, 655], "evidence": "manual-roof-centroid" },
+    { "building": "W1", "image": [1197, 787], "evidence": "manual-roof-centroid" },
+    { "building": "E4", "image": [1747, 410], "evidence": "manual-roof-centroid" },
+    { "building": "E3", "image": [1755, 512], "evidence": "manual-roof-centroid" },
+    { "building": "E2", "image": [1765, 660], "evidence": "manual-roof-centroid" },
+    { "building": "E1", "image": [1762, 772], "evidence": "manual-roof-centroid" }
+  ],
+  "acceptance": {
+    "maxFitResidualMeters": 15,
+    "maxLeaveOneOutResidualMeters": 45
+  },
+  "reviewState": {
+    "controlPointCentroids": "initial-manual-review-required",
+    "buildingOutlineOverlay": "generated-for-visual-review",
+    "routing": "disabled"
+  }
+}

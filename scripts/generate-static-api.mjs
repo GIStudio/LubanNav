@@ -36,11 +36,19 @@ await copyFile(
   resolve(root, 'public/data/walkable-surfaces/walkable-surfaces.image.geojson'),
   resolve(apiRoot, 'walkable-surfaces.image.geojson'),
 );
+await copyFile(
+  resolve(root, 'public/data/walkable-surfaces/walkable-surfaces.wgs84.geojson'),
+  resolve(apiRoot, 'walkable-surfaces.wgs84.geojson'),
+);
+await copyFile(
+  resolve(root, 'public/data/walkable-surfaces/registration-report.json'),
+  resolve(apiRoot, 'walkable-registration-report.json'),
+);
 
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.4',
+    schemaVersion: '1.5',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
@@ -60,6 +68,8 @@ await writeFile(
       routingGraph: './routing-graph.json',
       robotBleProtocol: './robot-ble-protocol.json',
       renderWalkableSurfaceCandidates: './walkable-surfaces.image.geojson',
+      registeredWalkableSurfaceCandidates: './walkable-surfaces.wgs84.geojson',
+      walkableSurfaceRegistrationReport: './walkable-registration-report.json',
       routeTemplate: './routes/{from}/{to}.{mode}.json',
     },
     examples: [

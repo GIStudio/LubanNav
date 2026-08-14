@@ -40,7 +40,9 @@
       <p>浏览器作为 BLE Central，通过可配置 GATT Characteristic 顺序分包下发路线；小车以通知返回 WGS84 位置、确认和状态。</p>
       <h2>5. 3D 俯瞰图水泥面候选</h2>
       <pre>GET <a href="./v1/walkable-surfaces.image.geojson">./v1/walkable-surfaces.image.geojson</a></pre>
-      <p>坐标为俯瞰图归一化像素坐标，包含外部铺装、屋面和潜在立面，全部标记为 <code>routingEnabled=false</code>；完成 WGS84 配准、地面/屋顶复核和垂直连接核验前不会进入寻路图。</p>
+      <pre>GET <a href="./v1/walkable-surfaces.wgs84.geojson">./v1/walkable-surfaces.wgs84.geojson</a></pre>
+      <pre>GET <a href="./v1/walkable-registration-report.json">./v1/walkable-registration-report.json</a></pre>
+      <p>系统使用 OSM 的 E1–E4、W1–W4 八栋楼与俯瞰图对应中心拟合单应矩阵，同时保留原始归一化图像坐标和 WGS84 版本。两者都包含外部铺装、屋面和潜在立面，全部标记为 <code>routingEnabled=false</code>；完成地面/屋顶复核和垂直连接核验前不会进入寻路图。</p>
     </section>
 
     <section>
