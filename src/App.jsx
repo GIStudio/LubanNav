@@ -3,13 +3,14 @@ import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
 import { RobotControl } from './components/RobotControl.jsx';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
+import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 
 const DEFAULT_MESSAGES = [
   {
     role: 'assistant',
-    text: '你好，我可以离线解析校园地点。试试说“从主入口到图书馆”，或直接在地图上点一个目的地。',
+    text: '你好，我可以离线解析校园地点和常见问题，也可以连接实时语音。试试说“从主入口到图书馆”或问“今天要带伞吗”。',
   },
 ];
 
@@ -50,10 +51,26 @@ export function App() {
     const parsed = parseNavigationQuery(query, from);
     if (includeUser) setMessages((items) => [...items, { role: 'user', text: query }]);
 
-    if (parsed.intent === 'greeting') {
+    if (parsed.understood) {
+      const nextRoute = findRoute(parsed.from, parsed.to, parsed.mode);
+      setFrom(parsed.from);
+      setTo(parsed.to);
+      setMode(parsed.mode);
       setMessages((items) => [
         ...items,
-        { role: 'assistant', text: '你好！告诉我从哪里出发、要去哪里；只说目的地时，我会使用当前起点。' },
+        {
+          role: 'assistant',
+          text: `已解析：${NODE_BY_ID[parsed.from].name} → ${NODE_BY_ID[parsed.to].name}。约 ${nextRoute.summary.distanceMeters} 米，${formatDuration(nextRoute.summary.durationSeconds)}。`,
+        },
+      ]);
+      return;
+    }
+
+    const cachedReply = getCachedAssistantReply(query);
+    if (cachedReply) {
+      setMessages((items) => [
+        ...items,
+        { role: 'assistant', text: cachedReply.text, source: cachedReply.source },
       ]);
       return;
     }
@@ -66,18 +83,19 @@ export function App() {
       ]);
       return;
     }
+  }
 
-    const nextRoute = findRoute(parsed.from, parsed.to, parsed.mode);
+  function handleVoiceUserTranscript(query) {
+    setMessages((items) => [...items, { role: 'user', text: query, source: 'voice' }]);
+    const parsed = parseNavigationQuery(query, from);
+    if (!parsed.understood) return;
     setFrom(parsed.from);
     setTo(parsed.to);
     setMode(parsed.mode);
-    setMessages((items) => [
-      ...items,
-      {
-        role: 'assistant',
-        text: `已解析：${NODE_BY_ID[parsed.from].name} → ${NODE_BY_ID[parsed.to].name}。约 ${nextRoute.summary.distanceMeters} 米，${formatDuration(nextRoute.summary.durationSeconds)}。`,
-      },
-    ]);
+  }
+
+  function handleVoiceAssistantTranscript(text) {
+    setMessages((items) => [...items, { role: 'assistant', text, source: 'voice' }]);
   }
 
   function selectDestination(id) {
@@ -190,7 +208,13 @@ export function App() {
           </section>
 
           <RobotControl route={route} onRobotPosition={setRobotPosition} />
-          <ChatAssistant messages={messages} onSend={handleQuery} route={route} />
+          <ChatAssistant
+            messages={messages}
+            onSend={handleQuery}
+            onVoiceUserTranscript={handleVoiceUserTranscript}
+            onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
+            route={route}
+          />
         </aside>
 
         <CampusMap

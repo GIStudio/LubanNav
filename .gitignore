@@ -12,3 +12,4 @@ public/api/v1/walkable-registration-report.json
 playwright-report/
 test-results/
 artifacts/
+.env*.local

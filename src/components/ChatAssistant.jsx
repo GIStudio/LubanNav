@@ -1,10 +1,17 @@
 import { useState } from 'preact/hooks';
 import { NODE_BY_ID } from '../data/campus.js';
 import { formatDuration } from '../lib/pathfinding.js';
+import { VoiceAssistant } from './VoiceAssistant.jsx';
 
-const SUGGESTIONS = ['带我去图书馆', '从宿舍 5 到饭堂', '机器人从主入口去体育馆'];
+const SUGGESTIONS = ['带我去图书馆', '学校简介', '今天要带伞吗'];
 
-export function ChatAssistant({ messages, onSend, route }) {
+export function ChatAssistant({
+  messages,
+  onSend,
+  onVoiceUserTranscript,
+  onVoiceAssistantTranscript,
+  route,
+}) {
   const [input, setInput] = useState('');
 
   const submit = (event) => {
@@ -19,10 +26,10 @@ export function ChatAssistant({ messages, onSend, route }) {
       <div class="assistant-heading">
         <div class="assistant-icon" aria-hidden="true">路</div>
         <div>
-          <p class="eyebrow">LOCAL INTENT PARSER</p>
+          <p class="eyebrow">LOCAL CACHE + REALTIME VOICE</p>
           <h2 id="assistant-title">AI 导航助手</h2>
         </div>
-        <span class="offline-badge">本地解析</span>
+        <span class="offline-badge">混合模式</span>
       </div>
 
       <div class="conversation" aria-live="polite">
@@ -51,6 +58,12 @@ export function ChatAssistant({ messages, onSend, route }) {
         />
         <button type="submit" aria-label="发送导航问题">↗</button>
       </form>
+
+      <VoiceAssistant
+        route={route}
+        onUserTranscript={onVoiceUserTranscript}
+        onAssistantTranscript={onVoiceAssistantTranscript}
+      />
 
       {route && (
         <div class="assistant-route" aria-label="助手解析结果">

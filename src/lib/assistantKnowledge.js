@@ -1,0 +1,91 @@
+const CACHED_REPLIES = {
+  greeting: '你好！我是 LubanNav 校园助手。你可以问我学校简介、出行提醒，或直接说“带我去图书馆”。',
+  thanks: '不客气！出发前记得确认手机、校园卡和随身物品，需要时我可以继续帮你规划路线。',
+  goodbye: '再见，路上注意安全。离开前记得检查背包，并根据天气应用决定是否带伞。',
+  capabilities: '我可以离线解析校内目的地、计算步行或机器人路线，也可以通过语音介绍香港科技大学（广州）。实时天气尚未接入，因此天气相关内容只提供通用出行提醒。',
+  school: '香港科技大学（广州）于 2022 年 6 月正式设立，位于广州市南沙区，是一所内地与香港合作举办的大学。学校以融合学科教育为特色。',
+  hubs: '学校采用“枢纽—学域”融合学科架构，设有功能、信息、系统和社会四大枢纽，以促进跨学科教育、研究与知识转移。',
+  location: '香港科技大学（广州）位于广州市南沙区庆盛枢纽区块。需要校内导航时，可以继续告诉我具体建筑或地点。',
+  weather: '我目前没有接入实时天气，不能判断此刻是否下雨。广州天气可能炎热、多雨或有强对流，出发前请查看可靠的天气应用；有降雨提示时带伞并注意湿滑，晴热时注意防晒、补水。',
+  carry: '出发前建议检查手机、校园卡、钥匙和必要的充电设备；是否带伞请以实时天气应用为准，步行较远时也可以带水。',
+};
+
+function normalizeQuery(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s，。！？、,.!?：:；;（）()'“”\-_/]/g, '');
+}
+
+const EXACT_GROUPS = [
+  {
+    key: 'greeting',
+    values: ['你好', '您好', '嗨', '哈喽', 'hello', 'hi', '早上好', '中午好', '下午好', '晚上好'],
+  },
+  {
+    key: 'thanks',
+    values: ['谢谢', '谢谢你', '感谢', '多谢', 'thankyou', 'thanks'],
+  },
+  {
+    key: 'goodbye',
+    values: ['再见', '拜拜', '回头见', 'byebye', 'bye'],
+  },
+  {
+    key: 'capabilities',
+    values: ['你是谁', '你能做什么', '有什么功能', '介绍一下你自己', '如何使用'],
+  },
+  {
+    key: 'school',
+    values: ['学校简介', '介绍一下学校', '港科广简介', '香港科技大学广州简介', '港科广是什么学校'],
+  },
+  {
+    key: 'hubs',
+    values: ['四大枢纽', '学校有几个枢纽', '有哪些枢纽', '学校的学术架构', '枢纽和学域'],
+  },
+  {
+    key: 'location',
+    values: ['学校在哪里', '港科广在哪里', '学校地址', '港科广地址'],
+  },
+];
+
+export function getCachedAssistantReply(query) {
+  const normalized = normalizeQuery(query);
+  if (!normalized) return null;
+
+  const exact = EXACT_GROUPS.find((group) =>
+    group.values.some((value) => normalizeQuery(value) === normalized),
+  );
+  if (exact) {
+    return { key: exact.key, text: CACHED_REPLIES[exact.key], source: 'local-cache' };
+  }
+
+  if (/天气|下雨|雨伞|带伞|防晒|温度|热不热|晒不晒/.test(normalized)) {
+    return { key: 'weather', text: CACHED_REPLIES.weather, source: 'local-cache' };
+  }
+
+  if (/背包|书包|随身物品|出门带什么|要带什么/.test(normalized)) {
+    return { key: 'carry', text: CACHED_REPLIES.carry, source: 'local-cache' };
+  }
+
+  return null;
+}
+
+export function buildCampusAssistantInstructions(routeContext = {}) {
+  const from = routeContext.fromName || '当前起点';
+  const to = routeContext.toName || '当前目的地';
+  const mode = routeContext.modeLabel || '步行';
+  const distance = Number.isFinite(routeContext.distanceMeters)
+    ? `，地图计算距离约 ${routeContext.distanceMeters} 米`
+    : '';
+
+  return [
+    '你是 LubanNav 的校园语音助手，服务于香港科技大学（广州）校内导航。默认使用简洁、自然的普通话，每次回答优先控制在一到三句话。',
+    '稳定事实：学校于2022年6月正式设立，位于广州市南沙区，由香港科技大学与广州大学合作举办；学校采用融合学科架构，设功能、信息、系统、社会四大枢纽。',
+    '能力边界：不知道的校规、开放时间、活动安排或个人信息不得猜测，应提示用户查询学校官方渠道。不要编造路线距离、建筑入口或室内通行状态，精确路线以 LubanNav 地图计算为准。',
+    '天气边界：当前没有实时天气 API。不得声称知道今天、此刻的天气、温度或降雨；应明确说明没有实时数据，并友好提醒用户出发前查看可靠天气应用，降雨时带伞防滑，晴热时防晒补水，雷雨时避开空旷地和水边并遵循校园通知。',
+    '随身提醒：在合适的出行情境下，可简短提醒检查背包、手机、校园卡、钥匙和必要物品，但不要每轮重复。',
+    `当前地图路线：${from}到${to}，模式为${mode}${distance}。用户说出新目的地时，可简短确认，地图会在本地完成实际寻路。`,
+  ].join('\n');
+}
+
+export { CACHED_REPLIES };

@@ -123,6 +123,27 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 
 请使用 Android 上的 nRF Connect 或固件源码读取 car7 的 GATT 表，然后把实际 Service、可写 RX 和支持 Notify 的 TX UUID 填入面板。如果在 nRF Connect 中只能看到 Bluetooth Classic SPP/RFCOMM，网页 Web Bluetooth 无法访问该串口，需要修改小车为 BLE GATT 固件或使用原生 Android 桥接应用。
 
+## AI 语音会话
+
+文字助手会优先在浏览器本地回答常见问候、学校简介、四大枢纽、位置、随身物品和通用天气提醒；导航目的地仍由本地解析器和 A* 路网处理。这些请求不调用模型。当前未接入天气 API，助手必须明确无法判断实时温度和降雨，并建议用户查看可靠天气应用。
+
+点击“开始语音”后，浏览器生成 WebRTC Offer SDP，并交给阿里云函数计算完成访问码校验和百炼 SDP 交换；获得 Answer SDP 后，麦克风音频通过 WebRTC 直连阿里云百炼 `qwen3.5-omni-flash-realtime`。百炼浏览器端点不接受跨域 SDP 请求，因此函数计算必须代理这个建连步骤。长期百炼 API Key 与 Workspace ID 只存在于函数计算环境变量中，不进入网页、GitHub 仓库或浏览器。单次会话在前端限制为 3 分钟；访问码只保存在当前页面内存，刷新后清除。
+
+本地开发可在不提交的 `.env.local` 中覆盖语音网关地址：
+
+```bash
+# 可选；不填写时使用项目默认的函数计算地址
+VITE_VOICE_GATEWAY_URL=https://your-domain.example/voice/session
+```
+
+访问码、Workspace ID 和 API Key 都不要写入 Vite 环境变量，因为所有 `VITE_*` 值都会出现在构建后的公开 JavaScript 中。访问码由访客在页面临时输入；另外两项只配置在函数计算。
+
+GitHub Pages 部署时，在仓库 **Settings → Secrets and variables → Actions → Variables** 中设置：
+
+- `VOICE_GATEWAY_URL`：可选，自定义域名或 API 网关的 `/voice/session` 地址；未设置时使用项目默认函数地址。
+
+函数计算需要允许 Pages 域名发起 `POST` 和预检 `OPTIONS`，并在服务端执行来源白名单、访问码校验、频率限制和每日配额。可直接部署 [`services/voice-gateway/server.mjs`](services/voice-gateway/server.mjs)，完整环境变量和请求合约见 [`services/voice-gateway/README.md`](services/voice-gateway/README.md)。函数不向浏览器返回任何百炼密钥。
+
 ## 本地开发
 
 要求 Node.js 20+：
