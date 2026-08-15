@@ -10,6 +10,7 @@ export function ChatAssistant({
   onSend,
   onVoiceUserTranscript,
   onVoiceAssistantTranscript,
+  onVoiceNavigationCommand,
   route,
 }) {
   const [input, setInput] = useState('');
@@ -63,6 +64,7 @@ export function ChatAssistant({
         route={route}
         onUserTranscript={onVoiceUserTranscript}
         onAssistantTranscript={onVoiceAssistantTranscript}
+        onNavigationCommand={onVoiceNavigationCommand}
       />
 
       {route && (

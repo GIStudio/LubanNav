@@ -18,16 +18,29 @@ const STATUS_LABELS = {
   error: '连接失败',
 };
 
-export function VoiceAssistant({ route, onUserTranscript, onAssistantTranscript }) {
+export function VoiceAssistant({
+  route,
+  onUserTranscript,
+  onAssistantTranscript,
+  onNavigationCommand,
+}) {
   const [accessCode, setAccessCode] = useState('');
   const [status, setStatus] = useState('idle');
   const [statusMessage, setStatusMessage] = useState('点击后会请求麦克风权限');
   const [liveTranscript, setLiveTranscript] = useState('');
   const sessionRef = useRef(null);
   const audioRef = useRef(null);
+  const callbacksRef = useRef({
+    onUserTranscript,
+    onAssistantTranscript,
+    onNavigationCommand,
+  });
+  callbacksRef.current = { onUserTranscript, onAssistantTranscript, onNavigationCommand };
 
   const routeContext = useMemo(() => ({
+    fromId: route?.request?.from,
     fromName: NODE_BY_ID[route?.request?.from]?.name,
+    toId: route?.request?.to,
     toName: NODE_BY_ID[route?.request?.to]?.name,
     modeLabel: route?.request?.mode === 'robot' ? '机器人' : '步行',
     distanceMeters: route?.summary?.distanceMeters,
@@ -57,6 +70,10 @@ export function VoiceAssistant({ route, onUserTranscript, onAssistantTranscript 
       accessCode,
       instructions,
       audioElement: audioRef.current,
+      functionHandlers: {
+        set_navigation_route: (...argumentsList) =>
+          callbacksRef.current.onNavigationCommand?.(...argumentsList),
+      },
     });
     sessionRef.current = session;
 
@@ -69,7 +86,7 @@ export function VoiceAssistant({ route, onUserTranscript, onAssistantTranscript 
     });
     session.addEventListener('user-transcript', (transcriptEvent) => {
       const text = transcriptEvent.detail.text.trim();
-      if (text) onUserTranscript(text);
+      if (text) callbacksRef.current.onUserTranscript?.(text);
       setLiveTranscript('');
     });
     session.addEventListener('assistant-transcript-delta', (transcriptEvent) => {
@@ -77,7 +94,7 @@ export function VoiceAssistant({ route, onUserTranscript, onAssistantTranscript 
     });
     session.addEventListener('assistant-transcript', (transcriptEvent) => {
       const text = transcriptEvent.detail.text.trim();
-      if (text) onAssistantTranscript(text);
+      if (text) callbacksRef.current.onAssistantTranscript?.(text);
       setLiveTranscript('');
     });
     session.addEventListener('error', () => {

@@ -1,3 +1,5 @@
+import { campusLocationCatalog } from './voiceNavigation.js';
+
 const CACHED_REPLIES = {
   greeting: '你好！我是 LubanNav 校园助手。你可以问我学校简介、出行提醒，或直接说“带我去图书馆”。',
   thanks: '不客气！出发前记得确认手机、校园卡和随身物品，需要时我可以继续帮你规划路线。',
@@ -73,6 +75,8 @@ export function getCachedAssistantReply(query) {
 export function buildCampusAssistantInstructions(routeContext = {}) {
   const from = routeContext.fromName || '当前起点';
   const to = routeContext.toName || '当前目的地';
+  const fromId = routeContext.fromId || 'main-entrance';
+  const toId = routeContext.toId || 'library';
   const mode = routeContext.modeLabel || '步行';
   const distance = Number.isFinite(routeContext.distanceMeters)
     ? `，地图计算距离约 ${routeContext.distanceMeters} 米`
@@ -84,7 +88,9 @@ export function buildCampusAssistantInstructions(routeContext = {}) {
     '能力边界：不知道的校规、开放时间、活动安排或个人信息不得猜测，应提示用户查询学校官方渠道。不要编造路线距离、建筑入口或室内通行状态，精确路线以 LubanNav 地图计算为准。',
     '天气边界：当前没有实时天气 API。不得声称知道今天、此刻的天气、温度或降雨；应明确说明没有实时数据，并友好提醒用户出发前查看可靠天气应用，降雨时带伞防滑，晴热时防晒补水，雷雨时避开空旷地和水边并遵循校园通知。',
     '随身提醒：在合适的出行情境下，可简短提醒检查背包、手机、校园卡、钥匙和必要物品，但不要每轮重复。',
-    `当前地图路线：${from}到${to}，模式为${mode}${distance}。用户说出新目的地时，可简短确认，地图会在本地完成实际寻路。`,
+    '导航工具：只要用户表达去某处、从某地到某地、规划路线或让机器人前往某处的意图，必须调用 set_navigation_route；不得只在口头上确认。工具只提取地点 ID 和模式，距离与路径由 LubanNav 本地计算。目的地不明确时先追问，不得猜测。',
+    `当前地图路线：${from}到${to}，模式为${mode}${distance}（地点 ID：${fromId} → ${toId}）。用户没有说明起点时，可省略工具的 from 参数以沿用当前起点。`,
+    `可导航地点 ID：${campusLocationCatalog()}。`,
   ].join('\n');
 }
 

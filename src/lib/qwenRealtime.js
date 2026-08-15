@@ -1,3 +1,5 @@
+import { NAVIGATION_TOOL } from './voiceNavigation.js';
+
 const DEFAULT_GATEWAY_ENDPOINT =
   'https://lubannace-token-wwdlyxygjx.cn-hangzhou.fcapp.run/voice/session';
 
@@ -94,7 +96,28 @@ export function buildSessionUpdate({ instructions, voice = DEFAULT_VOICE_CONFIG.
       max_tokens: 512,
       temperature: 0.6,
       enable_search: false,
+      tools: [NAVIGATION_TOOL],
     },
+  };
+}
+
+export function buildFunctionCallOutput(callId, output) {
+  return {
+    event_id: `lubannav-${crypto.randomUUID()}`,
+    type: 'conversation.item.create',
+    item: {
+      type: 'function_call_output',
+      call_id: callId,
+      output: JSON.stringify(output),
+    },
+  };
+}
+
+export function buildResponseCreate() {
+  return {
+    event_id: `lubannav-${crypto.randomUUID()}`,
+    type: 'response.create',
+    response: { modalities: ['text', 'audio'] },
   };
 }
 
@@ -130,6 +153,7 @@ export class QwenRealtimeSession extends EventTarget {
     mediaDevices = navigator.mediaDevices,
     PeerConnection = RTCPeerConnection,
     maxSessionMs = DEFAULT_VOICE_CONFIG.maxSessionMs,
+    functionHandlers = {},
   }) {
     super();
     this.accessCode = accessCode;
@@ -140,7 +164,9 @@ export class QwenRealtimeSession extends EventTarget {
     this.mediaDevices = mediaDevices;
     this.PeerConnection = PeerConnection;
     this.maxSessionMs = maxSessionMs;
+    this.functionHandlers = functionHandlers;
     this.seenEventIds = new Set();
+    this.completedFunctionCalls = new Set();
     this.started = false;
   }
 
@@ -259,6 +285,9 @@ export class QwenRealtimeSession extends EventTarget {
       case 'response.audio_transcript.done':
         this.dispatchEvent(eventDetail('assistant-transcript', { text: serverEvent.transcript || '' }));
         break;
+      case 'response.function_call_arguments.done':
+        void this.handleFunctionCall(serverEvent, channel);
+        break;
       case 'response.done':
         this.emitStatus('listening', '正在聆听');
         break;
@@ -273,6 +302,34 @@ export class QwenRealtimeSession extends EventTarget {
       default:
         break;
     }
+  }
+
+  async handleFunctionCall(serverEvent, channel) {
+    const { call_id: callId, name } = serverEvent;
+    if (!callId || this.completedFunctionCalls.has(callId)) return;
+    this.completedFunctionCalls.add(callId);
+
+    let output;
+    try {
+      const handler = this.functionHandlers[name];
+      if (typeof handler !== 'function') {
+        output = { ok: false, error: 'unsupported_tool', message: `不支持工具 ${name || 'unknown'}。` };
+      } else {
+        const argumentsValue = JSON.parse(serverEvent.arguments || '{}');
+        output = await handler(argumentsValue, serverEvent);
+        if (!output || typeof output !== 'object') output = { ok: true };
+      }
+    } catch (error) {
+      output = {
+        ok: false,
+        error: 'tool_execution_failed',
+        message: error instanceof SyntaxError ? '导航参数不是有效 JSON。' : '页面执行导航命令失败。',
+      };
+    }
+
+    this.send(buildFunctionCallOutput(callId, output), channel);
+    this.send(buildResponseCreate(), channel);
+    this.dispatchEvent(eventDetail('function-call', { name, callId, output }));
   }
 
   send(payload, preferredChannel = this.dataChannel) {

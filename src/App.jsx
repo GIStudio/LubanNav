@@ -6,6 +6,7 @@ import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
+import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 
 const DEFAULT_MESSAGES = [
   {
@@ -96,6 +97,41 @@ export function App() {
 
   function handleVoiceAssistantTranscript(text) {
     setMessages((items) => [...items, { role: 'assistant', text, source: 'voice' }]);
+  }
+
+  function handleVoiceNavigationCommand(argumentsValue) {
+    const parsed = resolveNavigationCommand(argumentsValue, from, mode);
+    if (!parsed.understood) {
+      return {
+        ok: false,
+        error: parsed.error,
+        message: '没有识别出有效的校内目的地，请向用户追问具体建筑或地点。',
+      };
+    }
+
+    const nextRoute = findRoute(parsed.from, parsed.to, parsed.mode);
+    if (nextRoute.status !== 'ok') {
+      return {
+        ok: false,
+        error: 'no_route',
+        message: '本地寻路图暂时找不到这两个地点之间的可用路线。',
+      };
+    }
+
+    setFrom(parsed.from);
+    setTo(parsed.to);
+    setMode(parsed.mode);
+
+    return {
+      ok: true,
+      action: 'navigation_updated',
+      from: { id: parsed.from, name: NODE_BY_ID[parsed.from].name },
+      to: { id: parsed.to, name: NODE_BY_ID[parsed.to].name },
+      mode: parsed.mode,
+      distanceMeters: nextRoute.summary.distanceMeters,
+      durationSeconds: nextRoute.summary.durationSeconds,
+      message: 'LubanNav 页面已使用本地寻路图更新路线，请简短告知用户。',
+    };
   }
 
   function selectDestination(id) {
@@ -213,6 +249,7 @@ export function App() {
             onSend={handleQuery}
             onVoiceUserTranscript={handleVoiceUserTranscript}
             onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
+            onVoiceNavigationCommand={handleVoiceNavigationCommand}
             route={route}
           />
         </aside>
