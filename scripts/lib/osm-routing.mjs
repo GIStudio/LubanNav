@@ -351,6 +351,21 @@ function indoorNodeId(locationId, level, suffix) {
   return `indoor/${locationId}/level-${level}/${suffix}`;
 }
 
+function indoorNetworkNodeId(nodeId) {
+  return `indoor-network/${nodeId}`;
+}
+
+function allowedIndoorModes(properties) {
+  const requestedModes = properties.modes ?? ['pedestrian'];
+  const modes = requestedModes.filter(
+    (mode) => mode === 'pedestrian' || (mode === 'robot' && properties.robotValidated === true),
+  );
+  if (!modes.includes('pedestrian')) {
+    throw new Error('Indoor routing features must explicitly permit pedestrian routing');
+  }
+  return modes;
+}
+
 export function applyEntrancePoiOverrides(campusGeojson, overlayGeojson, roadGraph, bindings) {
   const featureById = new Map(campusGeojson.features.map((feature) => [feature.id, feature]));
   const routableIds = new Set(roadGraph.routableNodeIds);
@@ -562,5 +577,274 @@ export function addIndoorRoutesToGraph(campusGeojson, indoorGeojson, roadGraph, 
     edges: addedEdges,
     indoorEdges: addedIndoorEdges,
     entranceConnectorEdges: addedConnectorEdges,
+  };
+}
+
+export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
+  const explicitNodeFeatures = (indoorGeojson.features ?? []).filter(
+    (feature) => feature.properties.featureClass === 'indoorNetworkNode',
+  );
+  const explicitLinkFeatures = (indoorGeojson.features ?? []).filter(
+    (feature) => feature.properties.featureClass === 'indoorNetworkLink',
+  );
+  const verticalFeatures = (indoorGeojson.features ?? []).filter(
+    (feature) => feature.properties.featureClass === 'indoorVerticalConnector',
+  );
+  const nodeFeatures = [...explicitNodeFeatures];
+  const linkFeatures = [...explicitLinkFeatures];
+
+  for (const feature of verticalFeatures) {
+    if (feature.geometry?.type !== 'Point') {
+      throw new Error(`Indoor vertical connector ${feature.id} must be a Point`);
+    }
+    const levels = (feature.properties.levels ?? []).map(String);
+    const defaultLevel = String(feature.properties.defaultLevel ?? levels[0] ?? '');
+    if (!feature.properties.nodeId || levels.length < 2 || !levels.includes(defaultLevel)) {
+      throw new Error(`Indoor vertical connector ${feature.id} requires nodeId, levels, and a valid defaultLevel`);
+    }
+    const levelHeightMeters = Number(feature.properties.levelHeightMeters ?? 4.2);
+    levels.forEach((level) => {
+      nodeFeatures.push({
+        ...feature,
+        id: `${feature.id}/level-${level}`,
+        properties: {
+          ...feature.properties,
+          featureClass: 'indoorNetworkNode',
+          nodeId: `${feature.properties.nodeId}-${level}f`,
+          name: `${feature.properties.name} · ${level}F`,
+          kind: 'elevator',
+          level,
+          servedLevels: levels,
+          locationId: level === defaultLevel ? feature.properties.locationId : null,
+        },
+      });
+    });
+    for (let index = 1; index < levels.length; index += 1) {
+      const fromLevel = levels[index - 1];
+      const toLevel = levels[index];
+      linkFeatures.push({
+        type: 'Feature',
+        id: `${feature.id}/level-${fromLevel}-${toLevel}`,
+        properties: {
+          ...feature.properties,
+          featureClass: 'indoorNetworkLink',
+          fromNodeId: `${feature.properties.nodeId}-${fromLevel}f`,
+          toNodeId: `${feature.properties.nodeId}-${toLevel}f`,
+          highway: 'elevator',
+          vertical: true,
+          distanceMeters: Math.abs(Number(toLevel) - Number(fromLevel)) * levelHeightMeters,
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [feature.geometry.coordinates, feature.geometry.coordinates],
+        },
+      });
+    }
+  }
+  if (!nodeFeatures.length && !linkFeatures.length) {
+    return { networks: 0, nodes: 0, edges: 0, indoorEdges: 0, verticalEdges: 0 };
+  }
+
+  const graphNodeById = new Map(roadGraph.nodes.map((node) => [node.id, node]));
+  const nodeFeatureByKey = new Map();
+  const edgeIds = new Set(roadGraph.edges.map((edge) => edge.id));
+  let addedEdges = 0;
+  let verticalEdges = 0;
+
+  for (const feature of nodeFeatures) {
+    if (feature.geometry?.type !== 'Point') {
+      throw new Error(`Indoor network node ${feature.id} must be a Point`);
+    }
+    const nodeKey = feature.properties.nodeId;
+    const level = String(feature.properties.level ?? '');
+    if (!nodeKey || !level) {
+      throw new Error(`Indoor network node ${feature.id} requires nodeId and level`);
+    }
+    if (nodeFeatureByKey.has(nodeKey)) throw new Error(`Duplicate indoor network node ${nodeKey}`);
+
+    const id = indoorNetworkNodeId(nodeKey);
+    if (graphNodeById.has(id)) throw new Error(`Duplicate indoor routing node ${id}`);
+    const [longitude, latitude] = feature.geometry.coordinates;
+    const node = {
+      id,
+      osmNodeId: null,
+      longitude,
+      latitude,
+      name: feature.properties.name ?? '室内路径节点',
+      kind: feature.properties.kind ?? 'indoor-waypoint',
+      indoor: true,
+      level,
+      servedLevels: feature.properties.servedLevels ?? null,
+      source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
+      verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+    };
+    nodeFeatureByKey.set(nodeKey, feature);
+    graphNodeById.set(id, node);
+    roadGraph.nodes.push(node);
+  }
+
+  for (const feature of nodeFeatures) {
+    const outdoorLocationId = feature.properties.outdoorLocationId;
+    if (!outdoorLocationId) continue;
+    const binding = bindings[outdoorLocationId];
+    if (!binding) {
+      throw new Error(`Indoor network node ${feature.id} references unknown outdoor location ${outdoorLocationId}`);
+    }
+    const nodeId = indoorNetworkNodeId(feature.properties.nodeId);
+    const node = graphNodeById.get(nodeId);
+    const outdoorNode = graphNodeById.get(binding.roadNodeId);
+    if (!outdoorNode) throw new Error(`Indoor network node ${feature.id} has no outdoor attachment node`);
+    const edgeId = `${feature.id}/outdoor-connector`;
+    if (edgeIds.has(edgeId)) throw new Error(`Duplicate indoor routing edge ${edgeId}`);
+    roadGraph.edges.push({
+      id: edgeId,
+      from: binding.roadNodeId,
+      to: nodeId,
+      distanceMeters: Number(
+        distanceMeters(
+          [outdoorNode.longitude, outdoorNode.latitude],
+          [node.longitude, node.latitude],
+        ).toFixed(3),
+      ),
+      highway: 'corridor',
+      osmWayId: null,
+      modes: allowedIndoorModes(feature.properties),
+      segmentType: 'indoor-entrance',
+      indoor: true,
+      level: node.level,
+      source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
+      verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+      indoorFeatureId: feature.id,
+      routingPenaltyMeters: Number(feature.properties.routingPenaltyMeters ?? 250),
+      accessAssumed: feature.properties.verificationStatus !== 'verified',
+    });
+    edgeIds.add(edgeId);
+    addedEdges += 1;
+  }
+
+  for (const feature of linkFeatures) {
+    if (feature.geometry?.type !== 'LineString' || feature.geometry.coordinates.length < 2) {
+      throw new Error(`Indoor network link ${feature.id} must be a LineString`);
+    }
+    const fromKey = feature.properties.fromNodeId;
+    const toKey = feature.properties.toNodeId;
+    const from = graphNodeById.get(indoorNetworkNodeId(fromKey));
+    const to = graphNodeById.get(indoorNetworkNodeId(toKey));
+    if (!from || !to) throw new Error(`Indoor network link ${feature.id} references an unknown node`);
+    if (distanceMeters(feature.geometry.coordinates[0], [from.longitude, from.latitude]) > 3) {
+      throw new Error(`Indoor network link ${feature.id} does not start at ${fromKey}`);
+    }
+    if (distanceMeters(feature.geometry.coordinates.at(-1), [to.longitude, to.latitude]) > 3) {
+      throw new Error(`Indoor network link ${feature.id} does not end at ${toKey}`);
+    }
+
+    const highway = feature.properties.highway ?? 'corridor';
+    const vertical = highway === 'elevator' || feature.properties.vertical === true;
+    const measuredDistance = distanceMeters(
+      [from.longitude, from.latitude],
+      [to.longitude, to.latitude],
+    );
+    const routeDistance = Number(feature.properties.distanceMeters ?? measuredDistance);
+    if (!(routeDistance > 0)) {
+      throw new Error(`Indoor network link ${feature.id} requires a positive routing distance`);
+    }
+    const edgeId = feature.id;
+    if (edgeIds.has(edgeId)) throw new Error(`Duplicate indoor routing edge ${edgeId}`);
+    roadGraph.edges.push({
+      id: edgeId,
+      from: from.id,
+      to: to.id,
+      distanceMeters: Number(routeDistance.toFixed(3)),
+      highway,
+      osmWayId: null,
+      modes: allowedIndoorModes(feature.properties),
+      segmentType: vertical ? 'vertical-connector' : 'indoor-path',
+      indoor: true,
+      vertical,
+      level: vertical ? `${from.level}->${to.level}` : String(feature.properties.level ?? from.level),
+      fromLevel: from.level,
+      toLevel: to.level,
+      source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
+      verificationStatus: feature.properties.verificationStatus ?? 'unverified',
+      indoorFeatureId: feature.id,
+      accessAssumed: feature.properties.verificationStatus !== 'verified',
+    });
+    edgeIds.add(edgeId);
+    addedEdges += 1;
+    if (vertical) verticalEdges += 1;
+  }
+
+  for (const feature of nodeFeatures) {
+    const locationId = feature.properties.locationId;
+    if (!locationId) continue;
+    const binding = bindings[locationId];
+    if (!binding) {
+      throw new Error(`Indoor network node ${feature.id} references unknown location ${locationId}`);
+    }
+    const entryLocationId = feature.properties.entryLocationId;
+    const entryBinding = entryLocationId ? bindings[entryLocationId] : binding;
+    if (!entryBinding) {
+      throw new Error(`Indoor network node ${feature.id} references unknown entry location ${entryLocationId}`);
+    }
+    if (entryBinding !== binding) {
+      binding.entrance = { ...entryBinding.entrance };
+      binding.roadNodeId = entryBinding.roadNodeId;
+      binding.snapDistanceMeters = entryBinding.snapDistanceMeters;
+      binding.matchedBuildingFeatureIds = [...entryBinding.matchedBuildingFeatureIds];
+    }
+
+    const nodeId = indoorNetworkNodeId(feature.properties.nodeId);
+    const node = graphNodeById.get(nodeId);
+    const modes = allowedIndoorModes(feature.properties);
+    const entryNodeId = feature.properties.entryNodeId
+      ? indoorNetworkNodeId(feature.properties.entryNodeId)
+      : nodeId;
+    if (!graphNodeById.has(entryNodeId)) {
+      throw new Error(`Indoor network node ${feature.id} references unknown entry node ${feature.properties.entryNodeId}`);
+    }
+    binding.accessNodeId = entryNodeId;
+    binding.modeNodeIds = {
+      pedestrian: modes.includes('pedestrian') ? nodeId : binding.roadNodeId,
+      robot: modes.includes('robot') ? nodeId : binding.roadNodeId,
+    };
+    binding.destination = {
+      longitude: Number(node.longitude.toFixed(7)),
+      latitude: Number(node.latitude.toFixed(7)),
+      name: node.name,
+      kind: node.kind,
+      source: node.source,
+      featureId: feature.id,
+      indoor: true,
+      level: node.level,
+      servedLevels: node.servedLevels,
+      levelAssumed: feature.properties.levelAssumed === true,
+      verificationStatus: node.verificationStatus,
+    };
+    binding.indoorRoute = {
+      featureId: feature.id,
+      networkId: feature.properties.networkId ?? 'central-academic-indoor-network',
+      highway: feature.properties.highway ?? 'corridor',
+      level: node.level,
+      servedLevels: node.servedLevels,
+      levelAssumed: feature.properties.levelAssumed === true,
+      modes,
+      evidence: feature.properties.evidence ?? null,
+      verificationStatus: node.verificationStatus,
+    };
+  }
+
+  roadGraph.nodes.sort((a, b) => a.id.localeCompare(b.id));
+  roadGraph.edges.sort((a, b) => a.id.localeCompare(b.id));
+  roadGraph.stats.nodes = roadGraph.nodes.length;
+  roadGraph.stats.edges = roadGraph.edges.length;
+  roadGraph.stats.indoorNetworkNodes = nodeFeatures.length;
+  roadGraph.stats.indoorNetworkEdges = addedEdges;
+  roadGraph.stats.verticalConnectorEdges = verticalEdges;
+  return {
+    networks: 1,
+    nodes: nodeFeatures.length,
+    edges: addedEdges,
+    indoorEdges: addedEdges,
+    verticalEdges,
   };
 }

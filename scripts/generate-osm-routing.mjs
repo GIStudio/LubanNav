@@ -4,6 +4,7 @@ import { DATASET, LOCATION_OSM_FEATURES, PUBLIC_LOCATIONS } from '../src/data/ca
 import {
   ROUTABLE_HIGHWAYS,
   addIndoorRoutesToGraph,
+  addIndoorNetworkToGraph,
   applyEntrancePoiOverrides,
   bindLocationsToRoadGraph,
   buildRoadGraph,
@@ -23,6 +24,7 @@ const locations = bindLocationsToRoadGraph(
 );
 const entrancePoiStats = applyEntrancePoiOverrides(geojson, indoorGeojson, graph, locations);
 const indoorStats = addIndoorRoutesToGraph(geojson, indoorGeojson, graph, locations);
+const indoorNetworkStats = addIndoorNetworkToGraph(indoorGeojson, graph, locations);
 
 const routing = {
   schemaVersion: '2.0',
@@ -34,7 +36,7 @@ const routing = {
     disclaimer: indoorGeojson.disclaimer,
   },
   allowedHighways: [...ROUTABLE_HIGHWAYS].sort(),
-  indoorHighways: ['corridor'],
+  indoorHighways: ['corridor', 'elevator'],
   graph: {
     nodes: graph.nodes,
     edges: graph.edges,
@@ -64,6 +66,10 @@ const routing = {
     indoorNodes: indoorStats.nodes,
     indoorEdges: indoorStats.indoorEdges,
     entranceConnectorEdges: indoorStats.entranceConnectorEdges,
+    indoorNetworks: indoorNetworkStats.networks,
+    indoorNetworkNodes: indoorNetworkStats.nodes,
+    indoorNetworkEdges: indoorNetworkStats.edges,
+    verticalConnectorEdges: indoorNetworkStats.verticalEdges,
   },
 };
 
@@ -71,5 +77,6 @@ await writeFile(outputPath, `${JSON.stringify(routing, null, 2)}\n`);
 console.log(
   `Generated OSM routing graph: ${routing.stats.nodes} nodes, ${routing.stats.edges} edges, ` +
     `${routing.stats.locations} locations, ${routing.stats.indoorRoutes} indoor route(s), ` +
+    `${routing.stats.indoorNetworks} shared indoor network(s), ` +
     `max snap ${routing.stats.maximumSnapDistanceMeters.toFixed(2)} m.`,
 );

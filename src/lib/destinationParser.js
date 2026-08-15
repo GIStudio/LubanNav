@@ -31,12 +31,16 @@ export function matchLocation(fragment) {
   const needle = normalize(fragment);
   if (!needle) return null;
 
-  const exactOrContained = PUBLIC_LOCATIONS.flatMap((location) =>
+  const candidates = PUBLIC_LOCATIONS.flatMap((location) =>
     searchableNames(location).map((name) => ({ location, name })),
-  )
+  );
+  const exact = candidates.find(({ name }) => name.normalized === needle);
+  if (exact) return exact.location;
+
+  const contained = candidates
     .filter(({ name }) => needle.includes(name.normalized) || name.normalized.includes(needle))
     .sort((a, b) => b.name.normalized.length - a.name.normalized.length)[0];
-  if (exactOrContained) return exactOrContained.location;
+  if (contained) return contained.location;
 
   const fuzzy = PUBLIC_LOCATIONS.flatMap((location) =>
     searchableNames(location).map((name) => ({

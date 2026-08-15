@@ -38,6 +38,18 @@ describe('destination parser', () => {
     expect(matchLocation('西翼大学')?.id).toBe('west-concourse');
   });
 
+  it('recognizes W2/E2 indoor POIs and the 3F platform restaurant', () => {
+    expect(matchLocation('W2大堂')?.id).toBe('w2');
+    expect(matchLocation('E2电梯')?.id).toBe('e2-elevator');
+    expect(matchLocation('三楼平台')?.id).toBe('third-floor-platform');
+    expect(matchLocation('嘉宾晚宴餐厅')?.id).toBe('platform-restaurant');
+    expect(parseNavigationQuery('从W2电梯到3楼平台')).toMatchObject({
+      from: 'w2-elevator',
+      to: 'third-floor-platform',
+      understood: true,
+    });
+  });
+
   it('does not invent an unknown destination', () => {
     expect(parseNavigationQuery('带我去火星')).toMatchObject({ understood: false, to: null });
   });

@@ -35,9 +35,10 @@
       <p>文件包含全部节点、边、模式权限与地点绑定。后端缓存这一份 JSON 后，无需另行持有或查询 OSM 数据。</p>
       <h2>4. 查询预计算路径</h2>
       <pre>GET ./v1/routes/{from}/{to}.{mode}.json</pre>
-      <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。路线由 OSM <code>footway/path/pedestrian/service</code> 与分层室内 <code>corridor</code> 共同构图，并使用 A* 计算。</p>
+      <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。路线由 OSM <code>footway/path/pedestrian/service</code> 与分层室内 <code>corridor/elevator</code> 共同构图，并使用 A* 计算。</p>
       <pre>GET <a href="./v1/routes/main-entrance/library.pedestrian.json">./v1/routes/main-entrance/library.pedestrian.json</a></pre>
       <pre>GET <a href="./v1/routes/dorm-5/sports-hall.robot.json">./v1/routes/dorm-5/sports-hall.robot.json</a></pre>
+      <pre>GET <a href="./v1/routes/w2-elevator/third-floor-platform.pedestrian.json">./v1/routes/w2-elevator/third-floor-platform.pedestrian.json</a></pre>
       <h2>5. 机器人 BLE 协议</h2>
       <pre>GET <a href="./v1/robot-ble-protocol.json">./v1/robot-ble-protocol.json</a></pre>
       <p>浏览器作为 BLE Central，通过可配置 GATT Characteristic 顺序分包下发路线；小车以通知返回 WGS84 位置、确认和状态。</p>

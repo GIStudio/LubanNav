@@ -143,6 +143,48 @@ describe('findRoute', () => {
     });
   });
 
+  it('routes between the W2/E2 elevators and the shared 3F platform', () => {
+    const west = findRoute('w2-elevator', 'third-floor-platform', 'pedestrian');
+    expect(west.status).toBe('ok');
+    expect(west.path[0]).toMatchObject({
+      id: 'w2-elevator',
+      kind: 'elevator',
+      level: '1',
+      servedLevels: ['1', '2', '3', '4', '5'],
+    });
+    expect(west.path.at(-1)).toMatchObject({
+      id: 'third-floor-platform',
+      kind: 'platform',
+      level: '3',
+    });
+    expect(west.segments.filter((segment) => segment.highway === 'elevator')).toHaveLength(2);
+    expect(west.instructions.some((instruction) => instruction.includes('乘电梯前往 3F'))).toBe(true);
+
+    const east = findRoute('e2-elevator', 'platform-restaurant', 'pedestrian');
+    expect(east.status).toBe('ok');
+    expect(east.path.at(-1)).toMatchObject({
+      id: 'platform-restaurant',
+      kind: 'restaurant',
+      level: '3',
+    });
+    expect(east.routing.indoorFeatureIds).toContain(
+      'local/central-academic/e2-elevator-to-platform-3f',
+    );
+  });
+
+  it('keeps the approximate multi-floor indoor network out of robot routing', () => {
+    const pedestrian = findRoute('main-entrance', 'platform-restaurant', 'pedestrian');
+    const robot = findRoute('main-entrance', 'platform-restaurant', 'robot');
+    expect(pedestrian.path.at(-1)).toMatchObject({ indoor: true, level: '3' });
+    expect(pedestrian.summary.indoorDistanceMeters).toBeGreaterThan(0);
+    expect(robot.path.at(-1)).toMatchObject({
+      kind: 'entrance',
+      longitude: 113.47693,
+      latitude: 22.89156,
+    });
+    expect(robot.summary.indoorDistanceMeters).toBe(0);
+  });
+
   it('uses the selected mobility profile', () => {
     const pedestrian = findRoute('dorm-5', 'sports-hall', 'pedestrian');
     const robot = findRoute('dorm-5', 'sports-hall', 'robot');

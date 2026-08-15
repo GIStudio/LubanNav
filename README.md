@@ -12,6 +12,7 @@
 - 内置活动：<https://gistudio.github.io/LubanNav/api/v1/events.json>
 - 完整寻路图：<https://gistudio.github.io/LubanNav/api/v1/routing-graph.json>
 - 示例路线：<https://gistudio.github.io/LubanNav/api/v1/routes/main-entrance/library.pedestrian.json>
+- 跨楼层示例：<https://gistudio.github.io/LubanNav/api/v1/routes/w2-elevator/third-floor-platform.pedestrian.json>
 
 页面支持三种导航入口：手动选择起终点、输入“从宿舍 5 到饭堂”等自然语言，以及连接实时语音后直接说“请从校门口导航到 W-4”。三种入口最终都调用同一个本地路由内核，因此页面路线、分享 URL、静态 API 地点 ID 和机器人任务使用一致的导航合约。
 
@@ -31,6 +32,7 @@ GET https://<user>.github.io/<repo>/api/v1/walkable-surfaces.wgs84.geojson
 GET https://<user>.github.io/<repo>/api/v1/walkable-registration-report.json
 GET https://<user>.github.io/<repo>/api/v1/routes/main-entrance/library.pedestrian.json
 GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
+GET https://<user>.github.io/<repo>/api/v1/routes/w2-elevator/third-floor-platform.pedestrian.json
 ```
 
 已知地点对可以直接读取预计算路线。需要在自己的后端运行 A* 时，只需缓存 `routing-graph.json`；它内含全部节点坐标、边、模式权限、地点入口和分模式图节点绑定，不依赖另一份 OSM 数据。完整机器可读目录位于 `api/v1/catalog.json`，网页 API 说明位于 `api/`。
@@ -40,7 +42,7 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 ```json
 {
   "schemaVersion": "1.3",
-  "dataset": "hkustgz-layered-routing-v3",
+  "dataset": "hkustgz-layered-routing-v4",
   "status": "ok",
   "request": {
     "from": "main-entrance",
@@ -81,11 +83,11 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
   "routing": {
     "engine": "layered-osm-indoor-a-star",
     "allowedHighways": ["footway", "path", "pedestrian", "service"],
-    "indoorHighways": ["corridor"],
+    "indoorHighways": ["corridor", "elevator"],
     "indoorFeatureIds": ["local/library-level-0-main-corridor"],
     "osmWayIds": [1192908727, 1154868989]
   },
-  "instructions": ["从主入口出发", "...", "沿0层室内通道前行约 51 米", "抵达图书馆馆内目的地"],
+  "instructions": ["从主入口出发", "...", "沿0 层室内通道前行约 51 米", "抵达图书馆"],
   "disclaimer": "..."
 }
 ```
@@ -267,15 +269,25 @@ npm run build
 4. 将入口绑定到最近道路节点，记录 `roadNodeId`、`snapDistanceMeters`、建筑/入口 OSM ID 与来源。
 5. 把通过校验的室内入口、走廊和地点锚点接入同一张图，A* 根据模式在室外与室内边上统一搜索。
 
-当前快照与室内补丁生成 322 个节点、337 条边，其中 OSM 共同连通分量有 277 个节点；25 个公开地点均有绑定。API 不仅返回 `roadNodeId`，还内嵌对应节点坐标并提供完整路网下载；单条路线将 OSM 道路、入口连接段与室内段逐段返回，便于调用方离线导航并识别推断部分。
+当前快照与室内补丁生成 341 个节点、358 条边，其中 OSM 共同连通分量有 277 个节点；29 个公开地点均有绑定。API 不仅返回 `roadNodeId`，还内嵌对应节点坐标并提供完整路网下载；单条路线将 OSM 道路、入口连接段、楼层通道与电梯段逐段返回，便于调用方离线导航并识别推断部分。
 
 ### 如何添加室内搜索空间
 
 OSM 推荐让建筑入口节点同时连接室内外路径，室内线性导航路径使用 `highway=corridor`、`indoor=yes` 和 `level=*`；完整楼层也可以进一步使用 [Simple Indoor Tagging](https://wiki.openstreetmap.org/wiki/Simple_Indoor_Tagging) 的 `indoor=corridor/area/room` 面要素。
 
-当前 OSM 没有港科大广州图书馆的室内要素，也没有西翼/东翼大堂入口点，因此 `public/data/campus-indoor.geojson` 保存可独立审查的本地入口与室内路由补丁。
+当前 OSM 没有港科大广州图书馆、W2/E2、三楼平台的完整室内要素，也没有西翼/东翼大堂入口点，因此 `public/data/campus-indoor.geojson` 保存可独立审查的本地入口与室内路由补丁。
 
 `entrancePoi` 用于补充可搜索的本地入口锚点。西翼大堂沿用用户确认的 POI；东翼大堂入口按西翼 POI 在 W1 中的相对端部位置映射到 E1，对应坐标为 `[113.4776200, 22.8904414]`。生成器要求入口 POI 位于目标建筑内且距建筑边界不超过 5 米，并记录 `evidence`、`inferredFrom` 与 `verificationStatus`。稳定地点 ID 仍为 `west-concourse` 和 `east-concourse`，旧称“西翼大学 / 东翼大学”继续作为搜索别名。
+
+W2/E2 使用用户标注截图中的近似位置补充两组室内 POI：稳定 ID `w2`、`e2` 现在分别显示为 `W2-大堂`、`E2-大堂`，新增 `w2-elevator` 与 `e2-elevator`。两部电梯声明服务 `1–5F`，生成器会把 `indoorVerticalConnector` 展开为逐层节点和 `highway=elevator` 边；两侧 `3F` 节点接入共享的 `third-floor-platform`，平台再连接 `platform-restaurant`。餐厅同时可经演讲厅一侧的二楼中部通道和中部电梯到达。自然语言可直接使用“W2电梯”“三楼平台”“嘉宾晚宴餐厅”等名称。
+
+共享室内网络使用三类可审查要素：
+
+- `indoorNetworkNode`：大堂、平台、餐厅和楼层内转折点，可选绑定公开 `locationId`。
+- `indoorNetworkLink`：同层通道，显式引用 `fromNodeId` / `toNodeId`。
+- `indoorVerticalConnector`：电梯点，声明 `levels`、默认楼层和层高成本，生成逐层垂直边。
+
+共享室内网络入口带有仅用于路径选择的换楼入口惩罚，避免与目的地无关的路线把建筑当作室外捷径；API 返回的实际距离仍只累计几何和电梯段距离，不把该偏好惩罚伪装成真实长度。
 
 每条室内路径至少需要：
 
@@ -304,7 +316,7 @@ OSM 推荐让建筑入口节点同时连接室内外路径，室内线性导航�
 
 生成器会拒绝入口偏差超过 3 米、室内点落到建筑轮廓外、缺少楼层或没有步行权限的补丁。未核验室内段默认只加入 `pedestrian`；只有现场验证门宽、坡度、门禁和机器人可达性后，同时设置 `"modes": ["pedestrian", "robot"]` 与 `"robotValidated": true`，才会进入机器人搜索空间。
 
-图书馆当前加入约 51 米的 0 层室内段。其可步行性来自用户确认，但几何和楼层编号仍是近似假定；步行路线进入馆内锚点，机器人路线仍止于建筑入口。
+图书馆当前加入约 51 米的 0 层室内段。W2/E2 大堂、电梯、三楼平台、平台餐厅和中部二楼电梯路径均来自用户描述与截图近似定位，尚未经过楼层图或现场测量。所有这些补丁只进入步行搜索空间；机器人路线仍止于对应建筑入口。
 
 ## GitHub Pages 部署
 

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "2.0",
-  "dataset": "hkustgz-layered-routing-v3",
+  "dataset": "hkustgz-layered-routing-v4",
   "generatedAt": "2026-08-13T05:57:34.212Z",
   "source": "https://www.openstreetmap.org/way/894157108",
   "indoorSource": {
@@ -14,10 +14,324 @@
     "service"
   ],
   "indoorHighways": [
-    "corridor"
+    "corridor",
+    "elevator"
   ],
   "graph": {
     "nodes": [
+      {
+        "id": "indoor-network/central-elevator-2f",
+        "osmNodeId": null,
+        "longitude": 113.4777,
+        "latitude": 22.8915,
+        "name": "中部电梯 · 2F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "2",
+        "servedLevels": [
+          "2",
+          "3"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/central-elevator-3f",
+        "osmNodeId": null,
+        "longitude": 113.4777,
+        "latitude": 22.8915,
+        "name": "中部电梯 · 3F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": [
+          "2",
+          "3"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/central-entry-2f",
+        "osmNodeId": null,
+        "longitude": 113.47735,
+        "latitude": 22.89122,
+        "name": "中部二楼入口通道",
+        "kind": "indoor-waypoint",
+        "indoor": true,
+        "level": "2",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/e2-elevator-1f",
+        "osmNodeId": null,
+        "longitude": 113.47808,
+        "latitude": 22.89079,
+        "name": "E2-电梯 · 1F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/e2-elevator-2f",
+        "osmNodeId": null,
+        "longitude": 113.47808,
+        "latitude": 22.89079,
+        "name": "E2-电梯 · 2F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "2",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/e2-elevator-3f",
+        "osmNodeId": null,
+        "longitude": 113.47808,
+        "latitude": 22.89079,
+        "name": "E2-电梯 · 3F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/e2-elevator-4f",
+        "osmNodeId": null,
+        "longitude": 113.47808,
+        "latitude": 22.89079,
+        "name": "E2-电梯 · 4F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "4",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/e2-elevator-5f",
+        "osmNodeId": null,
+        "longitude": 113.47808,
+        "latitude": 22.89079,
+        "name": "E2-电梯 · 5F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "5",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/e2-lobby-1f",
+        "osmNodeId": null,
+        "longitude": 113.47796,
+        "latitude": 22.8909,
+        "name": "E2-大堂",
+        "kind": "lobby",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/platform-east-3f",
+        "osmNodeId": null,
+        "longitude": 113.47783,
+        "latitude": 22.8912,
+        "name": "3楼平台东侧",
+        "kind": "platform-waypoint",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/platform-main-3f",
+        "osmNodeId": null,
+        "longitude": 113.47755,
+        "latitude": 22.89147,
+        "name": "3楼平台",
+        "kind": "platform",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/platform-restaurant-3f",
+        "osmNodeId": null,
+        "longitude": 113.47793,
+        "latitude": 22.89166,
+        "name": "3楼平台餐厅",
+        "kind": "restaurant",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/platform-west-3f",
+        "osmNodeId": null,
+        "longitude": 113.47718,
+        "latitude": 22.8915,
+        "name": "3楼平台西侧",
+        "kind": "platform-waypoint",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/w2-elevator-1f",
+        "osmNodeId": null,
+        "longitude": 113.47682,
+        "latitude": 22.89154,
+        "name": "W2-电梯 · 1F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/w2-elevator-2f",
+        "osmNodeId": null,
+        "longitude": 113.47682,
+        "latitude": 22.89154,
+        "name": "W2-电梯 · 2F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "2",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/w2-elevator-3f",
+        "osmNodeId": null,
+        "longitude": 113.47682,
+        "latitude": 22.89154,
+        "name": "W2-电梯 · 3F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/w2-elevator-4f",
+        "osmNodeId": null,
+        "longitude": 113.47682,
+        "latitude": 22.89154,
+        "name": "W2-电梯 · 4F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "4",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/w2-elevator-5f",
+        "osmNodeId": null,
+        "longitude": 113.47682,
+        "latitude": 22.89154,
+        "name": "W2-电梯 · 5F",
+        "kind": "elevator",
+        "indoor": true,
+        "level": "5",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
+      {
+        "id": "indoor-network/w2-lobby-1f",
+        "osmNodeId": null,
+        "longitude": 113.47693,
+        "latitude": 22.89156,
+        "name": "W2-大堂",
+        "kind": "lobby",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": null,
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied"
+      },
       {
         "id": "indoor/library/level-0/entrance",
         "osmNodeId": null,
@@ -1977,6 +2291,441 @@
       }
     ],
     "edges": [
+      {
+        "id": "local/central-academic/central-elevator-to-restaurant-3f",
+        "from": "indoor-network/central-elevator-3f",
+        "to": "indoor-network/platform-restaurant-3f",
+        "distanceMeters": 29.523,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "3",
+        "fromLevel": "3",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/central-elevator-to-restaurant-3f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/central-elevator/level-2-3",
+        "from": "indoor-network/central-elevator-2f",
+        "to": "indoor-network/central-elevator-3f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "2->3",
+        "fromLevel": "2",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/central-elevator/level-2-3",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/central-entry-2f/outdoor-connector",
+        "from": "osm-node/10057722430",
+        "to": "indoor-network/central-entry-2f",
+        "distanceMeters": 132.607,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-entrance",
+        "indoor": true,
+        "level": "2",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/central-entry-2f",
+        "routingPenaltyMeters": 250,
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/central-entry-to-elevator-2f",
+        "from": "indoor-network/central-entry-2f",
+        "to": "indoor-network/central-elevator-2f",
+        "distanceMeters": 47.485,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "2",
+        "fromLevel": "2",
+        "toLevel": "2",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/central-entry-to-elevator-2f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-elevator-to-platform-3f",
+        "from": "indoor-network/e2-elevator-3f",
+        "to": "indoor-network/platform-east-3f",
+        "distanceMeters": 52.29,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "3",
+        "fromLevel": "3",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-elevator-to-platform-3f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-elevator/level-1-2",
+        "from": "indoor-network/e2-elevator-1f",
+        "to": "indoor-network/e2-elevator-2f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "1->2",
+        "fromLevel": "1",
+        "toLevel": "2",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-elevator/level-1-2",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-elevator/level-2-3",
+        "from": "indoor-network/e2-elevator-2f",
+        "to": "indoor-network/e2-elevator-3f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "2->3",
+        "fromLevel": "2",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-elevator/level-2-3",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-elevator/level-3-4",
+        "from": "indoor-network/e2-elevator-3f",
+        "to": "indoor-network/e2-elevator-4f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "3->4",
+        "fromLevel": "3",
+        "toLevel": "4",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-elevator/level-3-4",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-elevator/level-4-5",
+        "from": "indoor-network/e2-elevator-4f",
+        "to": "indoor-network/e2-elevator-5f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "4->5",
+        "fromLevel": "4",
+        "toLevel": "5",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-elevator/level-4-5",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-lobby-1f/outdoor-connector",
+        "from": "osm-node/10740248760",
+        "to": "indoor-network/e2-lobby-1f",
+        "distanceMeters": 139.406,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-entrance",
+        "indoor": true,
+        "level": "1",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-lobby-1f",
+        "routingPenaltyMeters": 250,
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/e2-lobby-to-elevator-1f",
+        "from": "indoor-network/e2-lobby-1f",
+        "to": "indoor-network/e2-elevator-1f",
+        "distanceMeters": 17.341,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "1",
+        "fromLevel": "1",
+        "toLevel": "1",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/e2-lobby-to-elevator-1f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/platform-east-to-main-3f",
+        "from": "indoor-network/platform-east-3f",
+        "to": "indoor-network/platform-main-3f",
+        "distanceMeters": 41.522,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "3",
+        "fromLevel": "3",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/platform-east-to-main-3f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/platform-to-restaurant-3f",
+        "from": "indoor-network/platform-main-3f",
+        "to": "indoor-network/platform-restaurant-3f",
+        "distanceMeters": 44.29,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "3",
+        "fromLevel": "3",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/platform-to-restaurant-3f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/platform-west-to-main-3f",
+        "from": "indoor-network/platform-west-3f",
+        "to": "indoor-network/platform-main-3f",
+        "distanceMeters": 38.048,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "3",
+        "fromLevel": "3",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/platform-west-to-main-3f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-elevator-to-platform-3f",
+        "from": "indoor-network/w2-elevator-3f",
+        "to": "indoor-network/platform-west-3f",
+        "distanceMeters": 37.145,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "3",
+        "fromLevel": "3",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-elevator-to-platform-3f",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-elevator/level-1-2",
+        "from": "indoor-network/w2-elevator-1f",
+        "to": "indoor-network/w2-elevator-2f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "1->2",
+        "fromLevel": "1",
+        "toLevel": "2",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-elevator/level-1-2",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-elevator/level-2-3",
+        "from": "indoor-network/w2-elevator-2f",
+        "to": "indoor-network/w2-elevator-3f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "2->3",
+        "fromLevel": "2",
+        "toLevel": "3",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-elevator/level-2-3",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-elevator/level-3-4",
+        "from": "indoor-network/w2-elevator-3f",
+        "to": "indoor-network/w2-elevator-4f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "3->4",
+        "fromLevel": "3",
+        "toLevel": "4",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-elevator/level-3-4",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-elevator/level-4-5",
+        "from": "indoor-network/w2-elevator-4f",
+        "to": "indoor-network/w2-elevator-5f",
+        "distanceMeters": 4.2,
+        "highway": "elevator",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "vertical-connector",
+        "indoor": true,
+        "vertical": true,
+        "level": "4->5",
+        "fromLevel": "4",
+        "toLevel": "5",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-elevator/level-4-5",
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-lobby-1f/outdoor-connector",
+        "from": "osm-node/10775863319",
+        "to": "indoor-network/w2-lobby-1f",
+        "distanceMeters": 141.52,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-entrance",
+        "indoor": true,
+        "level": "1",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-lobby-1f",
+        "routingPenaltyMeters": 250,
+        "accessAssumed": true
+      },
+      {
+        "id": "local/central-academic/w2-lobby-to-elevator-1f",
+        "from": "indoor-network/w2-lobby-1f",
+        "to": "indoor-network/w2-elevator-1f",
+        "distanceMeters": 11.486,
+        "highway": "corridor",
+        "osmWayId": null,
+        "modes": [
+          "pedestrian"
+        ],
+        "segmentType": "indoor-path",
+        "indoor": true,
+        "vertical": false,
+        "level": "1",
+        "fromLevel": "1",
+        "toLevel": "1",
+        "source": "local-routing-overlay",
+        "verificationStatus": "approximate-user-supplied",
+        "indoorFeatureId": "local/central-academic/w2-lobby-to-elevator-1f",
+        "accessAssumed": true
+      },
       {
         "id": "local/library-level-0-main-corridor/entrance-connector",
         "from": "osm-node/10775863319",
@@ -8165,17 +8914,118 @@
     "w2": {
       "locationId": "w2",
       "entrance": {
-        "longitude": 113.4757517,
-        "latitude": 22.8918934,
-        "source": "inferred-building-boundary",
+        "longitude": 113.47693,
+        "latitude": 22.89156,
+        "source": "local-entrance-poi",
         "osmFeatureId": "way/1096048404",
-        "osmEntranceId": null
+        "osmEntranceId": null,
+        "localFeatureId": "local/w2-main-lobby-entrance-poi",
+        "level": "1",
+        "evidence": "user-supplied-annotated-screenshot",
+        "inferredFrom": null,
+        "verificationStatus": "approximate-user-supplied",
+        "buildingBoundaryDistanceMeters": 4.73
       },
-      "roadNodeId": "osm-node/10775863315",
-      "snapDistanceMeters": 22.93,
+      "roadNodeId": "osm-node/10775863319",
+      "snapDistanceMeters": 141.52,
       "matchedBuildingFeatureIds": [
         "way/1096048404"
-      ]
+      ],
+      "accessNodeId": "indoor-network/w2-lobby-1f",
+      "modeNodeIds": {
+        "pedestrian": "indoor-network/w2-lobby-1f",
+        "robot": "osm-node/10775863319"
+      },
+      "destination": {
+        "longitude": 113.47693,
+        "latitude": 22.89156,
+        "name": "W2-大堂",
+        "kind": "lobby",
+        "source": "local-routing-overlay",
+        "featureId": "local/central-academic/w2-lobby-1f",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "verificationStatus": "approximate-user-supplied"
+      },
+      "indoorRoute": {
+        "featureId": "local/central-academic/w2-lobby-1f",
+        "networkId": "central-academic-indoor-network",
+        "highway": "corridor",
+        "level": "1",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-supplied-annotated-screenshot",
+        "verificationStatus": "approximate-user-supplied"
+      }
+    },
+    "w2-elevator": {
+      "locationId": "w2-elevator",
+      "entrance": {
+        "longitude": 113.47693,
+        "latitude": 22.89156,
+        "source": "local-entrance-poi",
+        "osmFeatureId": "way/1096048404",
+        "osmEntranceId": null,
+        "localFeatureId": "local/w2-main-lobby-entrance-poi",
+        "level": "1",
+        "evidence": "user-supplied-annotated-screenshot",
+        "inferredFrom": null,
+        "verificationStatus": "approximate-user-supplied",
+        "buildingBoundaryDistanceMeters": 4.73
+      },
+      "roadNodeId": "osm-node/10775863319",
+      "snapDistanceMeters": 141.52,
+      "matchedBuildingFeatureIds": [
+        "way/1096048404"
+      ],
+      "accessNodeId": "indoor-network/w2-lobby-1f",
+      "modeNodeIds": {
+        "pedestrian": "indoor-network/w2-elevator-1f",
+        "robot": "osm-node/10775863319"
+      },
+      "destination": {
+        "longitude": 113.47682,
+        "latitude": 22.89154,
+        "name": "W2-电梯 · 1F",
+        "kind": "elevator",
+        "source": "local-routing-overlay",
+        "featureId": "local/central-academic/w2-elevator/level-1",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "levelAssumed": false,
+        "verificationStatus": "approximate-user-supplied"
+      },
+      "indoorRoute": {
+        "featureId": "local/central-academic/w2-elevator/level-1",
+        "networkId": "central-academic-indoor-network",
+        "highway": "corridor",
+        "level": "1",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "levelAssumed": false,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-supplied-annotated-screenshot-and-floor-description",
+        "verificationStatus": "approximate-user-supplied"
+      }
     },
     "w3": {
       "locationId": "w3",
@@ -8225,17 +9075,118 @@
     "e2": {
       "locationId": "e2",
       "entrance": {
-        "longitude": 113.4790594,
-        "latitude": 22.8903998,
-        "source": "inferred-building-boundary",
+        "longitude": 113.47796,
+        "latitude": 22.8909,
+        "source": "local-entrance-poi",
         "osmFeatureId": "way/1096049211",
-        "osmEntranceId": null
+        "osmEntranceId": null,
+        "localFeatureId": "local/e2-main-lobby-entrance-poi",
+        "level": "1",
+        "evidence": "user-supplied-annotated-screenshot",
+        "inferredFrom": null,
+        "verificationStatus": "approximate-user-supplied",
+        "buildingBoundaryDistanceMeters": 3.61
       },
-      "roadNodeId": "osm-node/10775856877",
-      "snapDistanceMeters": 15.03,
+      "roadNodeId": "osm-node/10740248760",
+      "snapDistanceMeters": 139.41,
       "matchedBuildingFeatureIds": [
         "way/1096049211"
-      ]
+      ],
+      "accessNodeId": "indoor-network/e2-lobby-1f",
+      "modeNodeIds": {
+        "pedestrian": "indoor-network/e2-lobby-1f",
+        "robot": "osm-node/10740248760"
+      },
+      "destination": {
+        "longitude": 113.47796,
+        "latitude": 22.8909,
+        "name": "E2-大堂",
+        "kind": "lobby",
+        "source": "local-routing-overlay",
+        "featureId": "local/central-academic/e2-lobby-1f",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "verificationStatus": "approximate-user-supplied"
+      },
+      "indoorRoute": {
+        "featureId": "local/central-academic/e2-lobby-1f",
+        "networkId": "central-academic-indoor-network",
+        "highway": "corridor",
+        "level": "1",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-supplied-annotated-screenshot",
+        "verificationStatus": "approximate-user-supplied"
+      }
+    },
+    "e2-elevator": {
+      "locationId": "e2-elevator",
+      "entrance": {
+        "longitude": 113.47796,
+        "latitude": 22.8909,
+        "source": "local-entrance-poi",
+        "osmFeatureId": "way/1096049211",
+        "osmEntranceId": null,
+        "localFeatureId": "local/e2-main-lobby-entrance-poi",
+        "level": "1",
+        "evidence": "user-supplied-annotated-screenshot",
+        "inferredFrom": null,
+        "verificationStatus": "approximate-user-supplied",
+        "buildingBoundaryDistanceMeters": 3.61
+      },
+      "roadNodeId": "osm-node/10740248760",
+      "snapDistanceMeters": 139.41,
+      "matchedBuildingFeatureIds": [
+        "way/1096049211"
+      ],
+      "accessNodeId": "indoor-network/e2-lobby-1f",
+      "modeNodeIds": {
+        "pedestrian": "indoor-network/e2-elevator-1f",
+        "robot": "osm-node/10740248760"
+      },
+      "destination": {
+        "longitude": 113.47808,
+        "latitude": 22.89079,
+        "name": "E2-电梯 · 1F",
+        "kind": "elevator",
+        "source": "local-routing-overlay",
+        "featureId": "local/central-academic/e2-elevator/level-1",
+        "indoor": true,
+        "level": "1",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "levelAssumed": false,
+        "verificationStatus": "approximate-user-supplied"
+      },
+      "indoorRoute": {
+        "featureId": "local/central-academic/e2-elevator/level-1",
+        "networkId": "central-academic-indoor-network",
+        "highway": "corridor",
+        "level": "1",
+        "servedLevels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "levelAssumed": false,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-supplied-annotated-screenshot-and-floor-description",
+        "verificationStatus": "approximate-user-supplied"
+      }
     },
     "e3": {
       "locationId": "e3",
@@ -8266,6 +9217,110 @@
       "matchedBuildingFeatureIds": [
         "way/1096049212"
       ]
+    },
+    "third-floor-platform": {
+      "locationId": "third-floor-platform",
+      "entrance": {
+        "longitude": 113.47693,
+        "latitude": 22.89156,
+        "source": "local-entrance-poi",
+        "osmFeatureId": "way/1096048404",
+        "osmEntranceId": null,
+        "localFeatureId": "local/w2-main-lobby-entrance-poi",
+        "level": "1",
+        "evidence": "user-supplied-annotated-screenshot",
+        "inferredFrom": null,
+        "verificationStatus": "approximate-user-supplied",
+        "buildingBoundaryDistanceMeters": 4.73
+      },
+      "roadNodeId": "osm-node/10775863319",
+      "snapDistanceMeters": 141.52,
+      "matchedBuildingFeatureIds": [
+        "way/1096048404"
+      ],
+      "accessNodeId": "indoor-network/w2-lobby-1f",
+      "modeNodeIds": {
+        "pedestrian": "indoor-network/platform-main-3f",
+        "robot": "osm-node/10775863319"
+      },
+      "destination": {
+        "longitude": 113.47755,
+        "latitude": 22.89147,
+        "name": "3楼平台",
+        "kind": "platform",
+        "source": "local-routing-overlay",
+        "featureId": "local/central-academic/platform-main-3f",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "verificationStatus": "approximate-user-supplied"
+      },
+      "indoorRoute": {
+        "featureId": "local/central-academic/platform-main-3f",
+        "networkId": "central-academic-indoor-network",
+        "highway": "corridor",
+        "level": "3",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-described-platform-above-lecture-halls-and-food-court",
+        "verificationStatus": "approximate-user-supplied"
+      }
+    },
+    "platform-restaurant": {
+      "locationId": "platform-restaurant",
+      "entrance": {
+        "longitude": 113.47693,
+        "latitude": 22.89156,
+        "source": "local-entrance-poi",
+        "osmFeatureId": "way/1096048404",
+        "osmEntranceId": null,
+        "localFeatureId": "local/w2-main-lobby-entrance-poi",
+        "level": "1",
+        "evidence": "user-supplied-annotated-screenshot",
+        "inferredFrom": null,
+        "verificationStatus": "approximate-user-supplied",
+        "buildingBoundaryDistanceMeters": 4.73
+      },
+      "roadNodeId": "osm-node/10775863319",
+      "snapDistanceMeters": 141.52,
+      "matchedBuildingFeatureIds": [
+        "way/1096048404"
+      ],
+      "accessNodeId": "indoor-network/w2-lobby-1f",
+      "modeNodeIds": {
+        "pedestrian": "indoor-network/platform-restaurant-3f",
+        "robot": "osm-node/10775863319"
+      },
+      "destination": {
+        "longitude": 113.47793,
+        "latitude": 22.89166,
+        "name": "3楼平台餐厅",
+        "kind": "restaurant",
+        "source": "local-routing-overlay",
+        "featureId": "local/central-academic/platform-restaurant-3f",
+        "indoor": true,
+        "level": "3",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "verificationStatus": "approximate-user-supplied"
+      },
+      "indoorRoute": {
+        "featureId": "local/central-academic/platform-restaurant-3f",
+        "networkId": "central-academic-indoor-network",
+        "highway": "corridor",
+        "level": "3",
+        "servedLevels": null,
+        "levelAssumed": false,
+        "modes": [
+          "pedestrian"
+        ],
+        "evidence": "user-described-guest-dinner-restaurant-near-food-court",
+        "verificationStatus": "approximate-user-supplied"
+      }
     },
     "south-residences": {
       "locationId": "south-residences",
@@ -8422,8 +9477,8 @@
   },
   "stats": {
     "sourceRoadWays": 52,
-    "nodes": 322,
-    "edges": 337,
+    "nodes": 341,
+    "edges": 358,
     "pedestrianLargestComponentNodes": 277,
     "robotLargestComponentNodes": 277,
     "sharedRoutableComponentNodes": 277,
@@ -8431,12 +9486,16 @@
     "indoorNodes": 5,
     "indoorEdges": 4,
     "entranceConnectorEdges": 1,
-    "locations": 25,
+    "indoorNetworkNodes": 19,
+    "indoorNetworkEdges": 21,
+    "verticalConnectorEdges": 9,
+    "locations": 29,
     "osmEntrances": 6,
     "taggedLocationEntrances": 1,
-    "inferredBuildingEntrances": 20,
+    "inferredBuildingEntrances": 18,
     "coordinateAnchors": 2,
-    "localEntrancePois": 2,
-    "maximumSnapDistanceMeters": 140.15
+    "localEntrancePois": 4,
+    "maximumSnapDistanceMeters": 141.52,
+    "indoorNetworks": 1
   }
 }

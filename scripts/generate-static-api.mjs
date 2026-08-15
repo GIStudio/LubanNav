@@ -14,12 +14,15 @@ const pretty = (value) => `${JSON.stringify(value, null, 2)}\n`;
 await rm(routesRoot, { recursive: true, force: true });
 await mkdir(routesRoot, { recursive: true });
 
-const locations = PUBLIC_LOCATIONS.map(({ id, name, en, category, aliases }) => ({
+const locations = PUBLIC_LOCATIONS.map(({ id, name, en, category, aliases, poiType, level, servedLevels }) => ({
   id,
   name,
   en,
   category,
   aliases,
+  poiType: poiType ?? null,
+  level: level ?? null,
+  servedLevels: servedLevels ?? null,
   routing: getLocationBinding(id),
 }));
 const events = defaultEventProfiles();
@@ -54,13 +57,13 @@ await copyFile(
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.6',
+    schemaVersion: '1.7',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
       engine: 'layered-osm-indoor-a-star',
       allowedHighways: ['footway', 'path', 'pedestrian', 'service'],
-      indoorHighways: ['corridor'],
+      indoorHighways: ['corridor', 'elevator'],
       entranceFallback: 'nearest building-boundary point to the routable graph',
       indoorOverlay: {
         path: '../../data/campus-indoor.geojson',
@@ -82,6 +85,7 @@ await writeFile(
     examples: [
       './routes/main-entrance/library.pedestrian.json',
       './routes/dorm-5/sports-hall.robot.json',
+      './routes/w2-elevator/third-floor-platform.pedestrian.json',
     ],
   }),
 );

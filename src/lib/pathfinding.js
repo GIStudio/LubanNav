@@ -66,7 +66,10 @@ function findRoadPath(from, to, modeId) {
 
     open.delete(current);
     for (const neighbor of graph.get(current) ?? []) {
-      const tentative = (gScore.get(current) ?? Number.POSITIVE_INFINITY) + neighbor.distanceMeters;
+      const tentative =
+        (gScore.get(current) ?? Number.POSITIVE_INFINITY) +
+        neighbor.distanceMeters +
+        (neighbor.routingPenaltyMeters ?? 0);
       if (tentative < (gScore.get(neighbor.node) ?? Number.POSITIVE_INFINITY)) {
         cameFrom.set(neighbor.node, { node: current, edge: neighbor });
         gScore.set(neighbor.node, tentative);
@@ -107,8 +110,10 @@ function publicRoutingNode(nodeId) {
     longitude: node.longitude,
     latitude: node.latitude,
     kind: node.kind ?? 'road',
+    name: node.name ?? null,
     indoor: node.indoor ?? false,
     level: node.level ?? null,
+    servedLevels: node.servedLevels ?? null,
     source: node.source ?? 'openstreetmap',
     verificationStatus: node.verificationStatus ?? null,
   };
@@ -122,7 +127,7 @@ function endpointPoint(locationId, role, modeId) {
   return {
     id: locationId,
     name: location.name,
-    kind: destination.indoor ? 'indoor-destination' : 'entrance',
+    kind: destination.indoor ? (destination.kind ?? 'indoor-destination') : 'entrance',
     role,
     longitude,
     latitude,
@@ -132,6 +137,7 @@ function endpointPoint(locationId, role, modeId) {
     osmEntranceId: binding.entrance.osmEntranceId,
     indoor: destination.indoor === true,
     level: destination.level ?? null,
+    servedLevels: destination.servedLevels ?? null,
     levelAssumed: destination.levelAssumed ?? false,
     source: destination.source,
     verificationStatus: destination.verificationStatus ?? null,
@@ -142,8 +148,8 @@ function roadPoint(nodeId) {
   const node = ROUTING_NODE_BY_ID.get(nodeId);
   return {
     id: nodeId,
-    name: node.indoor === true ? '室内路径节点' : node.indoor === 'transition' ? '建筑入口' : 'OSM 道路节点',
-    kind: node.indoor === true ? 'indoor' : node.indoor === 'transition' ? 'entrance-transition' : 'road',
+    name: node.name ?? (node.indoor === true ? '室内路径节点' : node.indoor === 'transition' ? '建筑入口' : 'OSM 道路节点'),
+    kind: node.kind ?? (node.indoor === true ? 'indoor' : node.indoor === 'transition' ? 'entrance-transition' : 'road'),
     osmNodeId: node.osmNodeId,
     longitude: node.longitude,
     latitude: node.latitude,
@@ -151,6 +157,7 @@ function roadPoint(nodeId) {
     indoor: node.indoor === true,
     indoorTransition: node.indoor === 'transition',
     level: node.level ?? null,
+    servedLevels: node.servedLevels ?? null,
     source: node.source ?? 'openstreetmap',
     verificationStatus: node.verificationStatus ?? null,
   };
@@ -186,21 +193,21 @@ function makeInstructions(from, to, modeId, edges) {
   const fromDestination = selectedDestination(OSM_ROUTING.locations[from], modeId);
   const toDestination = selectedDestination(OSM_ROUTING.locations[to], modeId);
   const osmEdges = edges.filter((edge) => edge.segmentType === 'osm-road');
-  const fromIndoorFeatureId = OSM_ROUTING.locations[from].indoorRoute?.featureId;
-  const toIndoorFeatureId = OSM_ROUTING.locations[to].indoorRoute?.featureId;
-  const fromIndoorEdges = edges.filter(
-    (edge) => edge.indoorFeatureId === fromIndoorFeatureId,
-  );
-  const toIndoorEdges = edges.filter(
-    (edge) => edge.indoorFeatureId === toIndoorFeatureId,
-  );
+  const indoorEdges = edges.filter((edge) => edge.indoor === true);
+  const corridorEdges = indoorEdges.filter((edge) => edge.highway !== 'elevator');
+  const elevatorEdges = indoorEdges.filter((edge) => edge.highway === 'elevator');
+  const elevatorLevels = [
+    ...new Set(elevatorEdges.flatMap((edge) => [edge.fromLevel, edge.toLevel]).filter(Boolean)),
+  ].sort((a, b) => Number(a) - Number(b));
+  const toIndoorRoute = OSM_ROUTING.locations[to].indoorRoute;
+  const floorLabel = (level) => level === '0' ? '0 层' : `${level}F`;
   const instructions = [
-    `从${fromDestination.indoor ? `${NODE_BY_ID[from].name}馆内目的地` : withEntrance(from)}出发`,
+    `从${fromDestination.indoor ? NODE_BY_ID[from].name : withEntrance(from)}出发`,
   ];
 
-  if (fromDestination.indoor && fromIndoorEdges.length) {
+  if (fromDestination.indoor && indoorEdges.length && osmEdges.length) {
     instructions.push(
-      `沿${fromDestination.level ?? '当前'}层室内通道前往出口，约 ${Math.round(sumEdgeDistance(fromIndoorEdges, () => true))} 米`,
+      `沿室内通道前往出口，约 ${Math.round(sumEdgeDistance(indoorEdges, () => true))} 米`,
     );
     instructions.push(`经${withEntrance(from)}离开建筑`);
   }
@@ -210,14 +217,33 @@ function makeInstructions(from, to, modeId, edges) {
       `沿 OSM ${highwayTypes}前行约 ${Math.round(sumEdgeDistance(osmEdges, () => true))} 米`,
     );
   }
-  if (toDestination.indoor && toIndoorEdges.length) {
-    instructions.push(`经${withEntrance(to)}进入建筑`);
+  if (toDestination.indoor && indoorEdges.length && osmEdges.length) {
     instructions.push(
-      `沿${toDestination.level ?? '当前'}层室内通道前行约 ${Math.round(sumEdgeDistance(toIndoorEdges, () => true))} 米`,
+      toIndoorRoute?.networkId
+        ? '经可用大堂进入室内网络'
+        : `经${withEntrance(to)}进入建筑`,
+    );
+  }
+  if (elevatorEdges.length) {
+    const targetLevel = toDestination.indoor ? toDestination.level : null;
+    const returnsToSameFloor =
+      targetLevel &&
+      !fromDestination.indoor &&
+      elevatorLevels.length > 2 &&
+      targetLevel === elevatorLevels[0];
+    instructions.push(
+      returnsToSameFloor
+        ? `经电梯连通 ${elevatorLevels.map(floorLabel).join(' / ')}`
+        : targetLevel ? `乘电梯前往 ${floorLabel(targetLevel)}` : '经电梯完成楼层转换',
+    );
+  }
+  if (toDestination.indoor && corridorEdges.length) {
+    instructions.push(
+      `沿${toDestination.level ? floorLabel(toDestination.level) : '当前楼层'}室内通道前行约 ${Math.round(sumEdgeDistance(corridorEdges, () => true))} 米`,
     );
   }
   instructions.push(
-    `抵达${toDestination.indoor ? `${NODE_BY_ID[to].name}馆内目的地` : withEntrance(to)}`,
+    `抵达${toDestination.indoor ? NODE_BY_ID[to].name : withEntrance(to)}`,
   );
   return instructions;
 }

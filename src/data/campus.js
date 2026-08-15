@@ -1,14 +1,14 @@
 export const DATASET = {
-  id: 'hkustgz-layered-routing-v3',
+  id: 'hkustgz-layered-routing-v4',
   name: 'HKUST(GZ) layered outdoor-indoor routing graph',
-  version: '2026-08-13',
+  version: '2026-08-15',
   coordinateSystem: 'WGS84 with legacy local coordinates',
   sourceUrl: 'https://www.openstreetmap.org/way/894157108',
   sourceDate: '2026-08-13',
   mapAttribution: '© OpenStreetMap contributors',
   mapLicense: 'ODbL-1.0',
   disclaimer:
-    '室外建筑、入口与道路来自 OpenStreetMap；室内段来自明确标注来源与核验状态的本地补丁。OSM 入口缺失时使用推断建筑边界点，数据未经现场测绘，不可直接控制真实机器人。',
+    '室外建筑、入口与道路来自 OpenStreetMap；室内大堂、电梯、楼层平台与通道来自明确标注来源与核验状态的本地补丁。OSM 入口缺失时使用推断建筑边界点，数据未经现场测绘，不可直接控制真实机器人。',
 };
 
 export const CAMPUS_BOUNDS = [
@@ -26,13 +26,17 @@ const GEO_COORDINATES = {
   'food-court': [113.4780496, 22.8917561],
   'lecture-halls': [113.4775173, 22.8914252],
   w1: [113.4762296, 22.8912547],
-  w2: [113.4763811, 22.891729],
+  w2: [113.47693, 22.89156],
+  'w2-elevator': [113.47682, 22.89154],
   w3: [113.4767096, 22.8922243],
   w4: [113.4770166, 22.8925521],
   e1: [113.4781055, 22.8902847],
-  e2: [113.4784656, 22.8906208],
+  e2: [113.47796, 22.8909],
+  'e2-elevator': [113.47808, 22.89079],
   e3: [113.4787573, 22.8911057],
   e4: [113.4789368, 22.8915546],
+  'third-floor-platform': [113.47755, 22.89147],
+  'platform-restaurant': [113.47793, 22.89166],
   'south-residences': [113.48015, 22.88834],
   'dorm-1': [113.4790276, 22.8890118],
   'dorm-2': [113.4785597, 22.8882702],
@@ -49,7 +53,7 @@ function geographicPosition(id) {
   return { longitude, latitude };
 }
 
-const publicNode = (id, name, en, x, y, category, aliases = []) => ({
+const publicNode = (id, name, en, x, y, category, aliases = [], details = {}) => ({
   id,
   name,
   en,
@@ -58,6 +62,7 @@ const publicNode = (id, name, en, x, y, category, aliases = []) => ({
   category,
   aliases,
   public: true,
+  ...details,
   ...geographicPosition(id),
 });
 
@@ -103,13 +108,57 @@ export const NODES = [
     'lecture hall',
   ]),
   publicNode('w1', 'W-1', 'W-1', 185, 435, 'academic', ['w1', '西一']),
-  publicNode('w2', 'W-2', 'W-2', 160, 350, 'academic', ['w2', '西二']),
+  publicNode('w2', 'W2-大堂', 'W2 Lobby', 322, 275, 'academic', [
+    'w2',
+    'W-2',
+    'W2大堂',
+    'W2正门',
+    '西二',
+    '西二大堂',
+  ], { poiType: 'lobby', level: '1' }),
+  publicNode('w2-elevator', 'W2-电梯', 'W2 Elevator', 310, 277, 'indoor', [
+    'W2电梯',
+    'W-2电梯',
+    '西二电梯',
+  ], { poiType: 'elevator', level: '1', servedLevels: ['1', '2', '3', '4', '5'] }),
   publicNode('w3', 'W-3', 'W-3', 160, 270, 'academic', ['w3', '西三']),
   publicNode('w4', 'W-4', 'W-4', 195, 175, 'academic', ['w4', '西四']),
   publicNode('e1', 'E-1', 'E-1', 545, 435, 'academic', ['e1', '东一']),
-  publicNode('e2', 'E-2', 'E-2', 575, 350, 'academic', ['e2', '东二']),
+  publicNode('e2', 'E2-大堂', 'E2 Lobby', 436, 328, 'academic', [
+    'e2',
+    'E-2',
+    'E2大堂',
+    'E2正门',
+    '东二',
+    '东二大堂',
+  ], { poiType: 'lobby', level: '1' }),
+  publicNode('e2-elevator', 'E2-电梯', 'E2 Elevator', 449, 337, 'indoor', [
+    'E2电梯',
+    'E-2电梯',
+    '东二电梯',
+  ], { poiType: 'elevator', level: '1', servedLevels: ['1', '2', '3', '4', '5'] }),
   publicNode('e3', 'E-3', 'E-3', 575, 270, 'academic', ['e3', '东三']),
   publicNode('e4', 'E-4', 'E-4', 540, 175, 'academic', ['e4', '东四']),
+  publicNode(
+    'third-floor-platform',
+    '3楼平台',
+    'Level 3 Platform',
+    391,
+    282,
+    'indoor',
+    ['三楼平台', '3F平台', '三层平台', '中间平台'],
+    { poiType: 'platform', level: '3' },
+  ),
+  publicNode(
+    'platform-restaurant',
+    '3楼平台餐厅',
+    'Level 3 Platform Restaurant',
+    432,
+    267,
+    'service',
+    ['三楼平台餐厅', '3F餐厅', '平台餐厅', '嘉宾晚宴餐厅', '晚宴餐厅'],
+    { poiType: 'restaurant', level: '3' },
+  ),
   publicNode('south-residences', '南区住宅', 'South Residences', 805, 500, 'residence', [
     '南区宿舍',
     '宿舍区',
@@ -177,12 +226,16 @@ export const LOCATION_OSM_FEATURES = {
   'lecture-halls': ['relation/14632285'],
   w1: ['way/1096048403'],
   w2: ['way/1096048404'],
+  'w2-elevator': ['way/1096048404'],
   w3: ['way/1098450398'],
   w4: ['way/1098450397'],
   e1: ['way/1098450389'],
   e2: ['way/1096049211'],
+  'e2-elevator': ['way/1096049211'],
   e3: ['way/1096049213'],
   e4: ['way/1096049212'],
+  'third-floor-platform': ['relation/14632285'],
+  'platform-restaurant': ['relation/14632285'],
   'south-residences': [
     'way/1098450403',
     'way/1526136018',

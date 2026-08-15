@@ -15,7 +15,7 @@ const indoorData = JSON.parse(
 describe('generated OSM routing graph', () => {
   it('uses only the requested highway classes', () => {
     expect(routing.allowedHighways).toEqual(['footway', 'path', 'pedestrian', 'service']);
-    expect(routing.indoorHighways).toEqual(['corridor']);
+    expect(routing.indoorHighways).toEqual(['corridor', 'elevator']);
     expect(
       new Set(
         routing.graph.edges
@@ -74,12 +74,12 @@ describe('generated OSM routing graph', () => {
     expect(routing.stats.inferredBuildingEntrances).toBeGreaterThanOrEqual(15);
   });
 
-  it('binds both lobby POIs as corresponding local entrances', () => {
+  it('binds the wing and W2/E2 lobby POIs as local entrances', () => {
     const entrancePois = indoorData.features.filter(
       (feature) => feature.properties.featureClass === 'entrancePoi',
     );
-    expect(entrancePois).toHaveLength(2);
-    expect(routing.stats.localEntrancePois).toBe(2);
+    expect(entrancePois).toHaveLength(4);
+    expect(routing.stats.localEntrancePois).toBe(4);
     expect(routing.stats.coordinateAnchors).toBe(2);
 
     expect(routing.locations['west-concourse'].entrance).toMatchObject({
@@ -98,6 +98,22 @@ describe('generated OSM routing graph', () => {
       inferredFrom: 'local/west-lobby-entrance-poi',
       verificationStatus: 'approximate-unverified',
       buildingBoundaryDistanceMeters: 2.8,
+    });
+    expect(routing.locations.w2.entrance).toMatchObject({
+      longitude: 113.47693,
+      latitude: 22.89156,
+      source: 'local-entrance-poi',
+      osmFeatureId: 'way/1096048404',
+      verificationStatus: 'approximate-user-supplied',
+      buildingBoundaryDistanceMeters: 4.73,
+    });
+    expect(routing.locations.e2.entrance).toMatchObject({
+      longitude: 113.47796,
+      latitude: 22.8909,
+      source: 'local-entrance-poi',
+      osmFeatureId: 'way/1096049211',
+      verificationStatus: 'approximate-user-supplied',
+      buildingBoundaryDistanceMeters: 3.61,
     });
   });
 
@@ -122,9 +138,50 @@ describe('generated OSM routing graph', () => {
     expect(library.modeNodeIds.pedestrian).toMatch(/^indoor\/library\//);
     expect(library.modeNodeIds.robot).toBe(library.accessNodeId);
 
-    const indoorEdges = routing.graph.edges.filter((edge) => edge.indoor === true);
+    const indoorEdges = routing.graph.edges.filter(
+      (edge) => edge.indoorFeatureId === 'local/library-level-0-main-corridor',
+    );
     expect(indoorEdges).toHaveLength(4);
     expect(indoorEdges.every((edge) => edge.modes.includes('pedestrian'))).toBe(true);
     expect(indoorEdges.some((edge) => edge.modes.includes('robot'))).toBe(false);
+  });
+
+  it('adds W2/E2 elevators, all five stops, and the shared 3F platform network', () => {
+    expect(routing.stats.indoorNetworks).toBe(1);
+    expect(routing.stats.indoorNetworkNodes).toBe(19);
+    expect(routing.stats.indoorNetworkEdges).toBe(21);
+    expect(routing.stats.verticalConnectorEdges).toBe(9);
+
+    for (const locationId of ['w2-elevator', 'e2-elevator']) {
+      const binding = routing.locations[locationId];
+      expect(binding.destination).toMatchObject({
+        kind: 'elevator',
+        indoor: true,
+        level: '1',
+        servedLevels: ['1', '2', '3', '4', '5'],
+        verificationStatus: 'approximate-user-supplied',
+      });
+      expect(binding.modeNodeIds.pedestrian).toMatch(/elevator-1f$/);
+      expect(binding.modeNodeIds.robot).toBe(binding.roadNodeId);
+    }
+
+    expect(routing.locations['third-floor-platform'].destination).toMatchObject({
+      name: '3楼平台',
+      kind: 'platform',
+      indoor: true,
+      level: '3',
+    });
+    expect(routing.locations['platform-restaurant'].destination).toMatchObject({
+      name: '3楼平台餐厅',
+      kind: 'restaurant',
+      indoor: true,
+      level: '3',
+    });
+
+    const verticalEdges = routing.graph.edges.filter((edge) => edge.highway === 'elevator');
+    expect(verticalEdges).toHaveLength(9);
+    expect(verticalEdges.every((edge) => edge.segmentType === 'vertical-connector')).toBe(true);
+    expect(verticalEdges.every((edge) => edge.modes.includes('pedestrian'))).toBe(true);
+    expect(verticalEdges.some((edge) => edge.modes.includes('robot'))).toBe(false);
   });
 });

@@ -7,6 +7,7 @@ import { getLocationBinding } from '../lib/pathfinding.js';
 const CATEGORY_LABELS = {
   entrance: '入口',
   academic: '教学',
+  indoor: '室内',
   service: '服务',
   residence: '住宿',
   sports: '运动',
@@ -115,21 +116,40 @@ function addIndoorLayers(map, data) {
   L.geoJSON(data, {
     renderer: canvas,
     pane: 'indoorPane',
-    filter: (feature) => feature.properties.featureClass === 'indoorPath',
-    style: {
-      color: '#79ded5',
+    filter: (feature) => ['indoorPath', 'indoorNetworkLink'].includes(feature.properties.featureClass),
+    style: (feature) => ({
+      color: feature.properties.highway === 'elevator' ? '#ff9d63' : '#79ded5',
       opacity: 0.82,
-      weight: 3,
-      dashArray: '3 5',
+      weight: feature.properties.highway === 'elevator' ? 5 : 3,
+      dashArray: feature.properties.highway === 'elevator' ? null : '3 5',
       lineCap: 'round',
       lineJoin: 'round',
-    },
+    }),
     onEachFeature: (feature, layer) => {
       const level = feature.properties.level ?? '?';
       layer.bindTooltip(`${feature.properties.name} · level ${level} · 待核验`, {
         className: 'osm-feature-tooltip',
         sticky: true,
       });
+    },
+  }).addTo(map);
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'indoorPane',
+    filter: (feature) => feature.properties.featureClass === 'indoorVerticalConnector',
+    pointToLayer: (feature, latLng) => L.circleMarker(latLng, {
+      radius: 6,
+      color: '#071c2c',
+      weight: 2,
+      fillColor: '#ff9d63',
+      fillOpacity: 0.96,
+    }),
+    onEachFeature: (feature, layer) => {
+      layer.bindTooltip(
+        `${feature.properties.name} · ${feature.properties.levels.join('–')}F · 位置待核验`,
+        { className: 'osm-feature-tooltip', direction: 'top', offset: [0, -7] },
+      );
     },
   }).addTo(map);
 }
@@ -229,12 +249,14 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
       (location) => selectedCategory === 'all' || location.category === selectedCategory,
     ).forEach((location) => {
       const selected = destination === location.id;
+      const elevator = location.poiType === 'elevator';
+      const platform = location.poiType === 'platform';
       const marker = L.circleMarker(locationLatLng(location, route?.request.mode), {
         pane: 'locationPane',
-        radius: selected ? 8 : 5.5,
-        color: selected ? '#071c2c' : '#79ded5',
+        radius: selected ? 8.5 : (elevator ? 7 : 5.5),
+        color: selected || elevator ? '#071c2c' : '#79ded5',
         weight: selected ? 3 : 2,
-        fillColor: selected ? '#b9f227' : '#0d3142',
+        fillColor: selected ? '#b9f227' : (elevator ? '#ff9d63' : (platform ? '#d7ff6d' : '#0d3142')),
         fillOpacity: 1,
       });
       marker.bindTooltip(location.name, {
@@ -398,7 +420,9 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
         </a>
         <div class="map-note">
           {route?.summary.indoorDistanceMeters > 0
-            ? `室内约 ${route.summary.indoorDistanceMeters} m · level 0 为假定值`
+            ? `室内约 ${route.summary.indoorDistanceMeters} m · ${[
+              ...new Set(route.path.filter((point) => point.indoor).map((point) => point.level).filter(Boolean)),
+            ].map((level) => `${level}F`).join(' / ')} · 近似待核验`
             : 'OSM 实际路网 · 未核验室内段仅开放步行'}
         </div>
         <div class="zoom-controls" aria-label="地图缩放">
