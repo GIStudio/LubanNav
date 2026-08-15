@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
 import { EventPanel } from './components/EventPanel.jsx';
-import { RobotControl } from './components/RobotControl.jsx';
+import { SystemMenu } from './components/SystemMenu.jsx';
 import { DEFAULT_EVENT_ID } from './data/events.js';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
@@ -49,6 +49,13 @@ export function App() {
   const [messages, setMessages] = useState(DEFAULT_MESSAGES);
   const [showDetails, setShowDetails] = useState(false);
   const [robotPosition, setRobotPosition] = useState(null);
+  const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const systemMenuButtonRef = useRef(null);
+
+  const closeSystemMenu = useCallback(() => {
+    setSystemMenuOpen(false);
+    window.requestAnimationFrame(() => systemMenuButtonRef.current?.focus());
+  }, []);
 
   const route = useMemo(() => findRoute(from, to, mode), [from, to, mode]);
   const activeEvent = useMemo(
@@ -232,20 +239,37 @@ export function App() {
             <small>HKUST(GZ) CAMPUS</small>
           </span>
         </a>
-        <div class="system-status">
-          <span class="status-dot" />
-          <span>STATIC · OFFLINE READY</span>
-          <span class="version">V0.2.1 · BLE</span>
+        <div class="topbar-actions">
+          <div class="system-status">
+            <span class="status-dot" />
+            <span>STATIC · OFFLINE READY</span>
+            <span class="version">V0.2.1</span>
+          </div>
+          <button
+            ref={systemMenuButtonRef}
+            type="button"
+            class="system-menu-trigger"
+            aria-label="打开实时语音与机器人联络"
+            aria-haspopup="dialog"
+            aria-expanded={systemMenuOpen}
+            onClick={() => setSystemMenuOpen(true)}
+          >
+            <span class="system-menu-trigger-label">VOICE / ROBOT</span>
+            <span class="hamburger" aria-hidden="true"><i /><i /><i /></span>
+          </button>
         </div>
       </header>
 
       <div class="workspace">
         <aside class="control-rail">
-          <section class="route-control" aria-labelledby="route-title">
+          <section class="route-control navigation-assistant" aria-labelledby="route-title">
             <div class="section-heading">
-              <div>
-                <p class="eyebrow">ROUTE / A*</p>
-                <h1 id="route-title">去哪里？</h1>
+              <div class="navigation-title">
+                <span class="assistant-icon" aria-hidden="true">路</span>
+                <div>
+                  <p class="eyebrow">ASK / ROUTE / A*</p>
+                  <h1 id="route-title">去哪里？ <small>AI 导航助手</small></h1>
+                </div>
               </div>
               <button class="icon-button" onClick={copyShareLink} title="复制导航链接" aria-label="复制导航链接">↗</button>
             </div>
@@ -307,6 +331,8 @@ export function App() {
                 ))}
               </ol>
             )}
+
+            <ChatAssistant messages={messages} onSend={handleQuery} />
           </section>
 
           <EventPanel
@@ -317,16 +343,6 @@ export function App() {
             onRestoreDefault={handleRestoreDefaultEvent}
             onNavigate={handleEventNavigate}
           />
-          <RobotControl route={route} onRobotPosition={setRobotPosition} />
-          <ChatAssistant
-            messages={messages}
-            onSend={handleQuery}
-            onVoiceUserTranscript={handleVoiceUserTranscript}
-            onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
-            onVoiceNavigationCommand={handleVoiceNavigationCommand}
-            route={route}
-            event={activeEvent}
-          />
         </aside>
 
         <CampusMap
@@ -336,6 +352,17 @@ export function App() {
           onSelectDestination={selectDestination}
         />
       </div>
+
+      <SystemMenu
+        open={systemMenuOpen}
+        onClose={closeSystemMenu}
+        route={route}
+        event={activeEvent}
+        onVoiceUserTranscript={handleVoiceUserTranscript}
+        onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
+        onVoiceNavigationCommand={handleVoiceNavigationCommand}
+        onRobotPosition={setRobotPosition}
+      />
 
       <footer class="footer">
         <p><strong>工程演示：</strong>{DATASET.disclaimer}</p>
