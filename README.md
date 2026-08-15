@@ -139,7 +139,9 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 
 固件消息、分包重组和安全边界详见 [`docs/robot-ble-protocol.md`](docs/robot-ble-protocol.md)，机器可读合约位于 `api/v1/robot-ble-protocol.json`。
 
-> 当前仓库只验证了模拟 GATT 设备的连接、分包、任务和位置消息。正式小车仍需用真实 UUID 和固件联调，并在小车端实现失联看门狗、指令去重、定位、避障、制动和实体急停。
+没有小车时，可在带蓝牙的 Mac 上运行 `npm run ble:simulator`，让 Android 手机连接本机广播的 `car7`，实测 GATT 连接、分包任务、位置回传、STOP 和断连停止。完整步骤见 [`docs/car7-local-ble-test.md`](docs/car7-local-ble-test.md)。模拟器只回放遥测，不发布 ROS2 `/cmd_vel`，不会驱动电机。
+
+> 正式小车仍需用真实 UUID 和固件联调，并在小车端实现失联看门狗、指令去重、定位、避障、制动和实体急停。
 
 ### car7 能扫描但无法连接
 

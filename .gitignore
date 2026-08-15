@@ -13,4 +13,5 @@ public/api/v1/walkable-registration-report.json
 playwright-report/
 test-results/
 artifacts/
+tools/car7-ble-simulator/.build/
 .env*.local
