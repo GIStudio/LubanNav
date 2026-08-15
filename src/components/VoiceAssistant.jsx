@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { NODE_BY_ID } from '../data/campus.js';
 import { buildCampusAssistantInstructions } from '../lib/assistantKnowledge.js';
 import { DEFAULT_VOICE_CONFIG, QwenRealtimeSession } from '../lib/qwenRealtime.js';
@@ -24,6 +24,8 @@ export function VoiceAssistant({
   onAssistantTranscript,
   onNavigationCommand,
   event,
+  controlRef,
+  onControlStateChange,
 }) {
   const [accessCode, setAccessCode] = useState('');
   const [status, setStatus] = useState('idle');
@@ -55,6 +57,7 @@ export function VoiceAssistant({
   const supported = Boolean(
     window.isSecureContext && navigator.mediaDevices?.getUserMedia && window.RTCPeerConnection,
   );
+  const configured = Boolean(accessCode.trim());
 
   useEffect(() => {
     sessionRef.current?.updateInstructions(instructions);
@@ -62,8 +65,8 @@ export function VoiceAssistant({
 
   useEffect(() => () => sessionRef.current?.stop('unmount', false), []);
 
-  async function startSession(event) {
-    event.preventDefault();
+  const startSession = useCallback(async (event = null) => {
+    event?.preventDefault();
     if (active) return;
     setLiveTranscript('');
 
@@ -107,13 +110,33 @@ export function VoiceAssistant({
     } catch {
       // The session emits a user-facing status and performs its own cleanup.
     }
-  }
+  }, [accessCode, active, instructions]);
 
-  function stopSession() {
+  const stopSession = useCallback(() => {
     sessionRef.current?.stop('user');
     sessionRef.current = null;
     setLiveTranscript('');
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!controlRef) return undefined;
+    const controls = { start: startSession, stop: stopSession };
+    controlRef.current = controls;
+    return () => {
+      if (controlRef.current === controls) controlRef.current = null;
+    };
+  }, [controlRef, startSession, stopSession]);
+
+  useEffect(() => {
+    onControlStateChange?.({
+      status,
+      active,
+      configured,
+      supported,
+      liveTranscript,
+      statusMessage,
+    });
+  }, [active, configured, liveTranscript, onControlStateChange, status, statusMessage, supported]);
 
   return (
     <div class="voice-assistant">

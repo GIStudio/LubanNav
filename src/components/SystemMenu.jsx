@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 import { RobotControl } from './RobotControl.jsx';
 import { VoiceAssistant } from './VoiceAssistant.jsx';
 
@@ -10,14 +10,17 @@ const PANELS = [
 export function SystemMenu({
   open,
   onClose,
+  activePanel,
+  onSelectPanel,
   route,
   event,
   onVoiceUserTranscript,
   onVoiceAssistantTranscript,
   onVoiceNavigationCommand,
   onRobotPosition,
+  voiceControlRef,
+  onVoiceControlStateChange,
 }) {
-  const [activePanel, setActivePanel] = useState('voice');
   const closeButtonRef = useRef(null);
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export function SystemMenu({
               class={activePanel === panel.id ? 'active' : ''}
               aria-selected={activePanel === panel.id}
               aria-controls={`system-menu-panel-${panel.id}`}
-              onClick={() => setActivePanel(panel.id)}
+              onClick={() => onSelectPanel(panel.id)}
             >
               <span>{panel.code}</span>
               {panel.label}
@@ -92,6 +95,8 @@ export function SystemMenu({
               onAssistantTranscript={onVoiceAssistantTranscript}
               onNavigationCommand={onVoiceNavigationCommand}
               event={event}
+              controlRef={voiceControlRef}
+              onControlStateChange={onVoiceControlStateChange}
             />
           </section>
 

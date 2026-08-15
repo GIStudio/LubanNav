@@ -3,6 +3,7 @@ import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
 import { EventPanel } from './components/EventPanel.jsx';
 import { SystemMenu } from './components/SystemMenu.jsx';
+import { VoiceQuickControl } from './components/VoiceQuickControl.jsx';
 import { DEFAULT_EVENT_ID } from './data/events.js';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
@@ -24,6 +25,15 @@ const DEFAULT_MESSAGES = [
     text: '你好，我可以离线解析校园地点和常见问题，也可以连接实时语音。试试说“从主入口到图书馆”或问“今天要带伞吗”。',
   },
 ];
+
+const DEFAULT_VOICE_CONTROL_STATE = {
+  status: 'idle',
+  active: false,
+  configured: false,
+  supported: true,
+  liveTranscript: '',
+  statusMessage: '',
+};
 
 function validPublicLocation(id) {
   return Boolean(NODE_BY_ID[id]?.public);
@@ -50,12 +60,34 @@ export function App() {
   const [showDetails, setShowDetails] = useState(false);
   const [robotPosition, setRobotPosition] = useState(null);
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
+  const [voiceControlState, setVoiceControlState] = useState(DEFAULT_VOICE_CONTROL_STATE);
   const systemMenuButtonRef = useRef(null);
+  const voiceControlRef = useRef(null);
+
+  const openSystemMenu = useCallback((panel = systemMenuPanel) => {
+    setSystemMenuPanel(panel);
+    setSystemMenuOpen(true);
+  }, [systemMenuPanel]);
 
   const closeSystemMenu = useCallback(() => {
     setSystemMenuOpen(false);
     window.requestAnimationFrame(() => systemMenuButtonRef.current?.focus());
   }, []);
+
+  function handleVoiceQuickAction() {
+    if (voiceControlState.active) {
+      voiceControlRef.current?.stop();
+      return;
+    }
+
+    if (!voiceControlState.configured || !voiceControlState.supported) {
+      openSystemMenu('voice');
+      return;
+    }
+
+    voiceControlRef.current?.start();
+  }
 
   const route = useMemo(() => findRoute(from, to, mode), [from, to, mode]);
   const activeEvent = useMemo(
@@ -252,7 +284,7 @@ export function App() {
             aria-label="打开实时语音与机器人联络"
             aria-haspopup="dialog"
             aria-expanded={systemMenuOpen}
-            onClick={() => setSystemMenuOpen(true)}
+            onClick={() => openSystemMenu()}
           >
             <span class="system-menu-trigger-label">VOICE / ROBOT</span>
             <span class="hamburger" aria-hidden="true"><i /><i /><i /></span>
@@ -345,23 +377,34 @@ export function App() {
           />
         </aside>
 
-        <CampusMap
-          route={route}
-          destination={to}
-          robotPosition={robotPosition}
-          onSelectDestination={selectDestination}
-        />
+        <section class="map-stage" aria-label="地图与实时语音">
+          <CampusMap
+            route={route}
+            destination={to}
+            robotPosition={robotPosition}
+            onSelectDestination={selectDestination}
+          />
+          <VoiceQuickControl
+            state={voiceControlState}
+            onToggle={handleVoiceQuickAction}
+            onConfigure={() => openSystemMenu('voice')}
+          />
+        </section>
       </div>
 
       <SystemMenu
         open={systemMenuOpen}
         onClose={closeSystemMenu}
+        activePanel={systemMenuPanel}
+        onSelectPanel={setSystemMenuPanel}
         route={route}
         event={activeEvent}
         onVoiceUserTranscript={handleVoiceUserTranscript}
         onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
         onVoiceNavigationCommand={handleVoiceNavigationCommand}
         onRobotPosition={setRobotPosition}
+        voiceControlRef={voiceControlRef}
+        onVoiceControlStateChange={setVoiceControlState}
       />
 
       <footer class="footer">
