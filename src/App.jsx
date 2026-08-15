@@ -1,10 +1,20 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
+import { EventPanel } from './components/EventPanel.jsx';
 import { RobotControl } from './components/RobotControl.jsx';
+import { DEFAULT_EVENT_ID } from './data/events.js';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
+import {
+  loadEventProfiles,
+  normalizeEventConfig,
+  resolveEventNavigationQuery,
+  restoreDefaultEvent,
+  saveEventProfiles,
+  upsertEventProfile,
+} from './lib/eventMode.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 
@@ -24,14 +34,27 @@ export function App() {
   const initialFrom = validPublicLocation(params.get('from')) ? params.get('from') : 'main-entrance';
   const initialTo = validPublicLocation(params.get('to')) ? params.get('to') : 'library';
   const initialMode = MODES[params.get('mode')] ? params.get('mode') : 'pedestrian';
+  const initialEvents = useMemo(() => loadEventProfiles(window.localStorage), []);
+  const requestedEventId = params.get('event');
+  const initialEventId = requestedEventId === 'none'
+    ? null
+    : (initialEvents.some((event) => event.id === requestedEventId)
+      ? requestedEventId
+      : DEFAULT_EVENT_ID);
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
   const [mode, setMode] = useState(initialMode);
+  const [events, setEvents] = useState(initialEvents);
+  const [activeEventId, setActiveEventId] = useState(initialEventId);
   const [messages, setMessages] = useState(DEFAULT_MESSAGES);
   const [showDetails, setShowDetails] = useState(false);
   const [robotPosition, setRobotPosition] = useState(null);
 
   const route = useMemo(() => findRoute(from, to, mode), [from, to, mode]);
+  const activeEvent = useMemo(
+    () => events.find((event) => event.id === activeEventId) || null,
+    [activeEventId, events],
+  );
   const staticApiUrl = `./api/v1/routes/${from}/${to}.${mode}.json`;
 
   useEffect(() => {
@@ -44,12 +67,18 @@ export function App() {
     url.searchParams.set('from', from);
     url.searchParams.set('to', to);
     url.searchParams.set('mode', mode);
+    url.searchParams.set('event', activeEventId || 'none');
     url.searchParams.delete('q');
     window.history.replaceState({}, '', url);
-  }, [from, to, mode]);
+  }, [activeEventId, from, to, mode]);
+
+  function parseQueryWithEvent(query) {
+    const eventParsed = resolveEventNavigationQuery(query, activeEvent, from, mode);
+    return eventParsed.detected ? eventParsed : parseNavigationQuery(query, from);
+  }
 
   function handleQuery(query, includeUser = true) {
-    const parsed = parseNavigationQuery(query, from);
+    const parsed = parseQueryWithEvent(query);
     if (includeUser) setMessages((items) => [...items, { role: 'user', text: query }]);
 
     if (parsed.understood) {
@@ -62,6 +91,19 @@ export function App() {
         {
           role: 'assistant',
           text: `已解析：${NODE_BY_ID[parsed.from].name} → ${NODE_BY_ID[parsed.to].name}。约 ${nextRoute.summary.distanceMeters} 米，${formatDuration(nextRoute.summary.durationSeconds)}。`,
+        },
+      ]);
+      return;
+    }
+
+    if (parsed.detected) {
+      setMessages((items) => [
+        ...items,
+        {
+          role: 'assistant',
+          text: parsed.error === 'ambiguous_event_place'
+            ? '这个活动配置了多个匹配地点，请说出具体会场或地点名称。'
+            : '活动信息已记录，但这个场所尚未绑定地图地点。请先在“活动专属导航”中完成配置。',
         },
       ]);
       return;
@@ -88,11 +130,35 @@ export function App() {
 
   function handleVoiceUserTranscript(query) {
     setMessages((items) => [...items, { role: 'user', text: query, source: 'voice' }]);
-    const parsed = parseNavigationQuery(query, from);
+    const parsed = parseQueryWithEvent(query);
     if (!parsed.understood) return;
     setFrom(parsed.from);
     setTo(parsed.to);
     setMode(parsed.mode);
+  }
+
+  function handleSaveEvent(input) {
+    const event = normalizeEventConfig(input);
+    if (!event) return;
+    setEvents((current) => {
+      const next = upsertEventProfile(current, event);
+      saveEventProfiles(next, window.localStorage);
+      return next;
+    });
+    setActiveEventId(event.id);
+  }
+
+  function handleRestoreDefaultEvent(eventId) {
+    setEvents((current) => {
+      const next = restoreDefaultEvent(current, eventId);
+      saveEventProfiles(next, window.localStorage);
+      return next;
+    });
+  }
+
+  function handleEventNavigate(place) {
+    if (!NODE_BY_ID[place.locationId]?.public) return;
+    selectDestination(place.locationId);
   }
 
   function handleVoiceAssistantTranscript(text) {
@@ -243,6 +309,14 @@ export function App() {
             )}
           </section>
 
+          <EventPanel
+            events={events}
+            activeEventId={activeEventId}
+            onSelectEvent={setActiveEventId}
+            onSaveEvent={handleSaveEvent}
+            onRestoreDefault={handleRestoreDefaultEvent}
+            onNavigate={handleEventNavigate}
+          />
           <RobotControl route={route} onRobotPosition={setRobotPosition} />
           <ChatAssistant
             messages={messages}
@@ -251,6 +325,7 @@ export function App() {
             onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
             onVoiceNavigationCommand={handleVoiceNavigationCommand}
             route={route}
+            event={activeEvent}
           />
         </aside>
 

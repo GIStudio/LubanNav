@@ -23,6 +23,7 @@ export function VoiceAssistant({
   onUserTranscript,
   onAssistantTranscript,
   onNavigationCommand,
+  event,
 }) {
   const [accessCode, setAccessCode] = useState('');
   const [status, setStatus] = useState('idle');
@@ -46,8 +47,8 @@ export function VoiceAssistant({
     distanceMeters: route?.summary?.distanceMeters,
   }), [route]);
   const instructions = useMemo(
-    () => buildCampusAssistantInstructions(routeContext),
-    [routeContext],
+    () => buildCampusAssistantInstructions(routeContext, event),
+    [event, routeContext],
   );
 
   const active = !['idle', 'ended', 'error'].includes(status);

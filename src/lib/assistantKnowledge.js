@@ -1,4 +1,5 @@
 import { campusLocationCatalog } from './voiceNavigation.js';
+import { eventAssistantContext } from './eventMode.js';
 
 const CACHED_REPLIES = {
   greeting: '你好！我是 LubanNav 校园助手。你可以问我学校简介、出行提醒，或直接说“带我去图书馆”。',
@@ -72,7 +73,7 @@ export function getCachedAssistantReply(query) {
   return null;
 }
 
-export function buildCampusAssistantInstructions(routeContext = {}) {
+export function buildCampusAssistantInstructions(routeContext = {}, event = null) {
   const from = routeContext.fromName || '当前起点';
   const to = routeContext.toName || '当前目的地';
   const fromId = routeContext.fromId || 'main-entrance';
@@ -91,6 +92,7 @@ export function buildCampusAssistantInstructions(routeContext = {}) {
     '导航工具：只要用户表达去某处、从某地到某地、规划路线或让机器人前往某处的意图，必须调用 set_navigation_route；不得只在口头上确认。工具只提取地点 ID 和模式，距离与路径由 LubanNav 本地计算。目的地不明确时先追问，不得猜测。',
     `当前地图路线：${from}到${to}，模式为${mode}${distance}（地点 ID：${fromId} → ${toId}）。用户没有说明起点时，可省略工具的 from 参数以沿用当前起点。`,
     `可导航地点 ID：${campusLocationCatalog()}。`,
+    eventAssistantContext(event),
   ].join('\n');
 }
 

@@ -1,6 +1,6 @@
 # LubanNav
 
-面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、可自动刷新地图路线的 Qwen 实时语音助手、可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API，以及浏览器通过 BLE GATT 与机器人小车进行任务和位置通信的 Web Bluetooth 控制面板。
+面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、可配置的会议/活动专属导航、可自动刷新地图路线的 Qwen 实时语音助手、可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API，以及浏览器通过 BLE GATT 与机器人小车进行任务和位置通信的 Web Bluetooth 控制面板。
 
 > 当前版本是工程演示，不是学校官方导航产品。室外建筑、入口、水域和道路来自 [OpenStreetMap](https://www.openstreetmap.org/way/894157108)，地图数据采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)；本地室内补丁会单独标明来源和核验状态。OSM 缺少入口时会推断建筑边界入口，导航拓扑与可通行性仍未经现场测绘，不可直接用于真实机器人运动控制。
 
@@ -9,6 +9,7 @@
 - Web 应用：<https://gistudio.github.io/LubanNav/>
 - API 目录：<https://gistudio.github.io/LubanNav/api/>
 - 地点列表：<https://gistudio.github.io/LubanNav/api/v1/locations.json>
+- 内置活动：<https://gistudio.github.io/LubanNav/api/v1/events.json>
 - 完整寻路图：<https://gistudio.github.io/LubanNav/api/v1/routing-graph.json>
 - 示例路线：<https://gistudio.github.io/LubanNav/api/v1/routes/main-entrance/library.pedestrian.json>
 
@@ -20,6 +21,7 @@ GitHub Pages 不运行服务端代码。构建时，LubanNav 会为所有公开�
 
 ```text
 GET https://<user>.github.io/<repo>/api/v1/locations.json
+GET https://<user>.github.io/<repo>/api/v1/events.json
 GET https://<user>.github.io/<repo>/api/v1/routing-graph.json
 GET https://<user>.github.io/<repo>/api/v1/robot-ble-protocol.json
 GET https://<user>.github.io/<repo>/api/v1/walkable-surfaces.image.geojson
@@ -98,6 +100,18 @@ GET https://<user>.github.io/<repo>/api/v1/routes/dorm-5/sports-hall.robot.json
 `walkable-surfaces.image.geojson` 是从 3D 俯瞰渲染图提取的水泥色平面候选；`walkable-surfaces.wgs84.geojson` 使用 OSM 的 E1–E4、W1–W4 八栋楼作为控制对象完成初始 WGS84 配准。地面、屋顶与潜在立面尚未完成语义复核，所有要素均为 `routingEnabled=false`，不会进入当前 A* 路网。
 
 `path` 是可直接绘制的有序点列，并同时提供 WGS84 `longitude` / `latitude` 和早期客户端使用的 `x` / `y`；后者只为兼容保留，不应解释为地理坐标。`segments` 是后端导航应优先使用的有序路段，逐段给出起终点经纬度、距离、`highway`、`segmentType`、可用模式、OSM way 或室内要素来源。`geometry` 是可直接读取的 GeoJSON `LineString`。
+
+## 会议与活动专属导航
+
+“活动专属导航”可配置主会场、签到地点、多个分会场、住宿地点和推荐食堂。每个场所可以单独记录显示名称、地图地点 ID、楼层、房间和现场说明；只有绑定了公开地图地点的场所才能触发导航。
+
+仓库内置“八月真机展示活动”作为默认模式：主会场为三楼，不设分会场，不提供住宿。具体房间、签到点、推荐食堂和地图锚点尚未确认，因此默认显示“待绑定/待配置”，助手不会猜测地点。组织者可在页面新建或编辑活动：
+
+1. 从下拉框选择活动，点击“配置”；“＋”可新建独立活动。
+2. 为场所选择 LubanNav 公开地图地点，并补充楼层、房间或集合说明。
+3. 保存后即可点击场所的“导航”，或对助手说“带我去主会场”“去签到点”。
+
+网页自定义配置保存在当前浏览器 `localStorage`，适合现场快速配置，不会自动上传或跨设备同步。需要所有访客共享的活动应写入 `src/data/events.js` 并重新部署；部署后也可通过 `GET api/v1/events.json` 读取。分享链接用 `event=<id>` 指定活动，`event=none` 表示普通校园导航。
 
 ### 无 OSM 后端如何自行寻路
 
@@ -298,14 +312,17 @@ Vite 使用相对 `base`，因此可同时部署在用户主页和项目子路�
 
 ```text
 src/data/campus.js             稳定地点 ID、别名、OSM 建筑映射与模式
+src/data/events.js             仓库内置的活动模式与会场数据
 public/data/campus-osm.geojson 建筑、入口、水域和道路的 OSM 快照
 public/data/campus-indoor.geojson  分层室内路径补丁与核验状态
 src/data/osm-routing.json      自动生成的 OSM 寻路图与入口绑定
 src/lib/pathfinding.js         室内外统一图上的 A* 路由与机器可读响应
 src/lib/destinationParser.js   本地中英文意图/地点解析
+src/lib/eventMode.js           活动配置校验、本地存储与活动地点解析
 src/lib/voiceNavigation.js     语音导航工具定义、地点白名单与参数验证
 src/lib/qwenRealtime.js        WebRTC 会话、Function Calling 与工具结果回传
 src/components/CampusMap.jsx   Leaflet Canvas 地图、地点和路线叠加
+src/components/EventPanel.jsx  活动选择、会场清单与本地配置界面
 src/components/ChatAssistant.jsx  对话入口
 src/components/VoiceAssistant.jsx 实时语音连接、转写与导航工具桥接
 src/components/RobotControl.jsx     Web Bluetooth 连接、任务下发与遥测面板

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { defaultEventProfiles } from './eventMode.js';
 import { buildCampusAssistantInstructions, getCachedAssistantReply } from './assistantKnowledge.js';
 
 describe('assistant knowledge cache', () => {
@@ -39,5 +40,13 @@ describe('campus assistant instructions', () => {
     expect(instructions).toContain('约 430 米');
     expect(instructions).toContain('不得声称知道今天、此刻的天气');
     expect(instructions).toContain('功能、信息、系统、社会四大枢纽');
+  });
+
+  it('adds the active event manifest without inventing an unbound destination', () => {
+    const instructions = buildCampusAssistantInstructions({}, defaultEventProfiles()[0]);
+
+    expect(instructions).toContain('八月真机展示活动');
+    expect(instructions).toContain('主会场：三楼主会场，3F，地图地点未绑定');
+    expect(instructions).toContain('未绑定时应说明并请组织者配置');
   });
 });

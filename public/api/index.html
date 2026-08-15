@@ -27,18 +27,21 @@
       <h2>1. 查询地点 ID</h2>
       <pre>GET <a href="./v1/locations.json">./v1/locations.json</a></pre>
       <p>地点绑定不仅包含 <code>roadNodeId</code>，也内嵌对应节点的经纬度和分模式路由节点。</p>
-      <h2>2. 下载完整寻路图（后端离线 A*）</h2>
+      <h2>2. 查询内置活动配置</h2>
+      <pre>GET <a href="./v1/events.json">./v1/events.json</a></pre>
+      <p>返回仓库内置的活动模式、会场角色和地图地点绑定。网页中自定义的活动仅保存在当前浏览器，不会由此静态 API 公开。</p>
+      <h2>3. 下载完整寻路图（后端离线 A*）</h2>
       <pre>GET <a href="./v1/routing-graph.json">./v1/routing-graph.json</a></pre>
       <p>文件包含全部节点、边、模式权限与地点绑定。后端缓存这一份 JSON 后，无需另行持有或查询 OSM 数据。</p>
-      <h2>3. 查询预计算路径</h2>
+      <h2>4. 查询预计算路径</h2>
       <pre>GET ./v1/routes/{from}/{to}.{mode}.json</pre>
       <p><code>mode</code> 可选 <code>pedestrian</code> 或 <code>robot</code>。路线由 OSM <code>footway/path/pedestrian/service</code> 与分层室内 <code>corridor</code> 共同构图，并使用 A* 计算。</p>
       <pre>GET <a href="./v1/routes/main-entrance/library.pedestrian.json">./v1/routes/main-entrance/library.pedestrian.json</a></pre>
       <pre>GET <a href="./v1/routes/dorm-5/sports-hall.robot.json">./v1/routes/dorm-5/sports-hall.robot.json</a></pre>
-      <h2>4. 机器人 BLE 协议</h2>
+      <h2>5. 机器人 BLE 协议</h2>
       <pre>GET <a href="./v1/robot-ble-protocol.json">./v1/robot-ble-protocol.json</a></pre>
       <p>浏览器作为 BLE Central，通过可配置 GATT Characteristic 顺序分包下发路线；小车以通知返回 WGS84 位置、确认和状态。</p>
-      <h2>5. 3D 俯瞰图水泥面候选</h2>
+      <h2>6. 3D 俯瞰图水泥面候选</h2>
       <pre>GET <a href="./v1/walkable-surfaces.image.geojson">./v1/walkable-surfaces.image.geojson</a></pre>
       <pre>GET <a href="./v1/walkable-surfaces.wgs84.geojson">./v1/walkable-surfaces.wgs84.geojson</a></pre>
       <pre>GET <a href="./v1/walkable-registration-report.json">./v1/walkable-registration-report.json</a></pre>

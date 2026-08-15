@@ -2,6 +2,7 @@ import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DATASET, MODES, PUBLIC_LOCATIONS } from '../src/data/campus.js';
+import { defaultEventProfiles } from '../src/lib/eventMode.js';
 import { findRoute, getLocationBinding, getRoutingGraph } from '../src/lib/pathfinding.js';
 import { getRobotProtocolDescriptor } from '../src/lib/robotProtocol.js';
 
@@ -21,10 +22,15 @@ const locations = PUBLIC_LOCATIONS.map(({ id, name, en, category, aliases }) => 
   aliases,
   routing: getLocationBinding(id),
 }));
+const events = defaultEventProfiles();
 
 await writeFile(
   resolve(apiRoot, 'locations.json'),
   pretty({ schemaVersion: '1.2', dataset: DATASET, count: locations.length, locations }),
+);
+await writeFile(
+  resolve(apiRoot, 'events.json'),
+  pretty({ schemaVersion: '1.0', dataset: DATASET, count: events.length, events }),
 );
 
 await writeFile(resolve(apiRoot, 'routing-graph.json'), pretty(getRoutingGraph()));
@@ -48,7 +54,7 @@ await copyFile(
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.5',
+    schemaVersion: '1.6',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
@@ -65,6 +71,7 @@ await writeFile(
     },
     endpoints: {
       locations: './locations.json',
+      events: './events.json',
       routingGraph: './routing-graph.json',
       robotBleProtocol: './robot-ble-protocol.json',
       renderWalkableSurfaceCandidates: './walkable-surfaces.image.geojson',
