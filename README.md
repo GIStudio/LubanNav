@@ -1,8 +1,18 @@
 # LubanNav
 
-面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、AI 导航助手式对话与本地自然语言目的地解析、可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API，以及浏览器通过 BLE GATT 与机器人小车进行任务和位置通信的 Web Bluetooth 控制面板。
+面向香港科技大学（广州）校园的轻量导航 Web 应用原型。它提供轻量 OpenStreetMap Canvas 地图、由 OSM `highway=footway/path/pedestrian/service` 与分层室内通道共同组成的 A* 路网、建筑入口吸附、可自动刷新地图路线的 Qwen 实时语音助手、可被 AI/机器人客户端直接 HTTP GET 的静态 JSON 路径 API，以及浏览器通过 BLE GATT 与机器人小车进行任务和位置通信的 Web Bluetooth 控制面板。
 
 > 当前版本是工程演示，不是学校官方导航产品。室外建筑、入口、水域和道路来自 [OpenStreetMap](https://www.openstreetmap.org/way/894157108)，地图数据采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)；本地室内补丁会单独标明来源和核验状态。OSM 缺少入口时会推断建筑边界入口，导航拓扑与可通行性仍未经现场测绘，不可直接用于真实机器人运动控制。
+
+## 在线使用
+
+- Web 应用：<https://gistudio.github.io/LubanNav/>
+- API 目录：<https://gistudio.github.io/LubanNav/api/>
+- 地点列表：<https://gistudio.github.io/LubanNav/api/v1/locations.json>
+- 完整寻路图：<https://gistudio.github.io/LubanNav/api/v1/routing-graph.json>
+- 示例路线：<https://gistudio.github.io/LubanNav/api/v1/routes/main-entrance/library.pedestrian.json>
+
+页面支持三种导航入口：手动选择起终点、输入“从宿舍 5 到饭堂”等自然语言，以及连接实时语音后直接说“请从校门口导航到 W-4”。三种入口最终都调用同一个本地路由内核，因此页面路线、分享 URL、静态 API 地点 ID 和机器人任务使用一致的导航合约。
 
 ## 为什么静态站点也能提供 GET API
 
@@ -130,6 +140,30 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 点击“开始语音”后，浏览器生成 WebRTC Offer SDP，并交给阿里云函数计算完成访问码校验和百炼 SDP 交换；获得 Answer SDP 后，麦克风音频通过 WebRTC 直连阿里云百炼 `qwen3.5-omni-flash-realtime`。百炼浏览器端点不接受跨域 SDP 请求，因此函数计算必须代理这个建连步骤。长期百炼 API Key 与 Workspace ID 只存在于函数计算环境变量中，不进入网页、GitHub 仓库或浏览器。单次会话在前端限制为 3 分钟；访问码只保存在当前页面内存，刷新后清除。
 
 语音模型通过 Function Calling 调用 `set_navigation_route`，只返回白名单内的 `{from, to, mode}` 地点 ID。页面验证这些参数后调用现有本地 A* 寻路并刷新地图，再把真实距离和耗时作为工具结果返回给模型进行语音确认。模型不会生成路径坐标，也不能绕过本地地点白名单和寻路内核。
+
+### 使用语音更新路线
+
+1. 使用 HTTPS 下的最新版 Chrome 或 Edge 打开在线页面。
+2. 在“实时语音”区域输入演示访问码并点击“开始语音”，允许浏览器使用麦克风。
+3. 说出“从校门口导航到 W-4”“带我去图书馆”或“让机器人从宿舍 5 去体育馆”。
+4. 模型提取地点 ID 和模式后，页面会自动更新起终点控件、地图路线、距离、耗时和地址栏查询参数。
+5. 用户没有说明起点时沿用页面当前起点；地点不明确或不在白名单中时，助手应追问而不是猜测。
+
+模型可调用的参数保持很小：
+
+```json
+{
+  "from": "main-entrance",
+  "to": "w4",
+  "mode": "pedestrian"
+}
+```
+
+- `from`：可选；省略时沿用当前起点。
+- `to`：必填；必须是 `locations.json` 中的公开地点 ID。
+- `mode`：`pedestrian` 或 `robot`；机器人、轮椅或无障碍表达映射为 `robot`。
+
+语音输入保留两层保障：浏览器收到完整 ASR 转写后会先尝试本地解析，以降低常见导航句式的延迟；Qwen Function Calling 负责处理更自然或依赖上下文的表达。无论来自哪一层，最终参数都会再次通过本地点位白名单验证。
 
 本地开发可在不提交的 `.env.local` 中覆盖语音网关地址：
 
@@ -269,9 +303,13 @@ public/data/campus-indoor.geojson  分层室内路径补丁与核验状态
 src/data/osm-routing.json      自动生成的 OSM 寻路图与入口绑定
 src/lib/pathfinding.js         室内外统一图上的 A* 路由与机器可读响应
 src/lib/destinationParser.js   本地中英文意图/地点解析
+src/lib/voiceNavigation.js     语音导航工具定义、地点白名单与参数验证
+src/lib/qwenRealtime.js        WebRTC 会话、Function Calling 与工具结果回传
 src/components/CampusMap.jsx   Leaflet Canvas 地图、地点和路线叠加
 src/components/ChatAssistant.jsx  对话入口
+src/components/VoiceAssistant.jsx 实时语音连接、转写与导航工具桥接
 src/components/RobotControl.jsx     Web Bluetooth 连接、任务下发与遥测面板
+services/voice-gateway/server.mjs  函数计算 SDP 代理、访问码与 CORS 防护
 scripts/fetch-osm-campus.mjs      OSM / Overpass 快照刷新器
 scripts/lib/osm-routing.mjs       道路转图、连通分量与入口吸附算法
 scripts/generate-osm-routing.mjs  OSM 寻路图生成器
