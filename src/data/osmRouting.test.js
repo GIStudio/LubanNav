@@ -166,7 +166,7 @@ describe('generated OSM routing graph', () => {
     }
 
     expect(routing.locations['third-floor-platform'].destination).toMatchObject({
-      name: '3楼平台',
+      name: '三楼中央',
       kind: 'platform',
       indoor: true,
       level: '3',

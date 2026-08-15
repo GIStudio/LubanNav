@@ -141,12 +141,12 @@ export const NODES = [
   publicNode('e4', 'E-4', 'E-4', 540, 175, 'academic', ['e4', '东四']),
   publicNode(
     'third-floor-platform',
-    '3楼平台',
-    'Level 3 Platform',
+    '三楼中央',
+    'Level 3 Central',
     391,
     282,
     'indoor',
-    ['三楼平台', '3F平台', '三层平台', '中间平台'],
+    ['三楼中央', '3楼中央', '3F中央', '三楼平台', '3楼平台', '3F平台', '三层平台', '中间平台'],
     { poiType: 'platform', level: '3' },
   ),
   publicNode(

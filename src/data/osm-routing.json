@@ -190,7 +190,7 @@
         "osmNodeId": null,
         "longitude": 113.47755,
         "latitude": 22.89147,
-        "name": "3楼平台",
+        "name": "三楼中央",
         "kind": "platform",
         "indoor": true,
         "level": "3",
@@ -9246,7 +9246,7 @@
       "destination": {
         "longitude": 113.47755,
         "latitude": 22.89147,
-        "name": "3楼平台",
+        "name": "三楼中央",
         "kind": "platform",
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/platform-main-3f",

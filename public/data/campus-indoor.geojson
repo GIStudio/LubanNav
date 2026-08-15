@@ -266,7 +266,7 @@
         "locationId": "third-floor-platform",
         "entryLocationId": "w2",
         "entryNodeId": "w2-lobby-1f",
-        "name": "3楼平台",
+        "name": "三楼中央",
         "kind": "platform",
         "level": "3",
         "modes": ["pedestrian"],

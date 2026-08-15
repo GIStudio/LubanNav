@@ -154,6 +154,7 @@ describe('findRoute', () => {
     });
     expect(west.path.at(-1)).toMatchObject({
       id: 'third-floor-platform',
+      name: '三楼中央',
       kind: 'platform',
       level: '3',
     });
