@@ -112,6 +112,7 @@ function publicRoutingNode(nodeId) {
     kind: node.kind ?? 'road',
     name: node.name ?? null,
     indoor: node.indoor ?? false,
+    outdoor: node.outdoor ?? false,
     level: node.level ?? null,
     servedLevels: node.servedLevels ?? null,
     source: node.source ?? 'openstreetmap',
@@ -127,7 +128,7 @@ function endpointPoint(locationId, role, modeId) {
   return {
     id: locationId,
     name: location.name,
-    kind: destination.indoor ? (destination.kind ?? 'indoor-destination') : 'entrance',
+    kind: destination.kind ?? (destination.indoor ? 'indoor-destination' : 'entrance'),
     role,
     longitude,
     latitude,
@@ -136,6 +137,7 @@ function endpointPoint(locationId, role, modeId) {
     osmFeatureId: binding.entrance.osmFeatureId,
     osmEntranceId: binding.entrance.osmEntranceId,
     indoor: destination.indoor === true,
+    outdoor: destination.outdoor === true,
     level: destination.level ?? null,
     servedLevels: destination.servedLevels ?? null,
     levelAssumed: destination.levelAssumed ?? false,
@@ -155,6 +157,7 @@ function roadPoint(nodeId) {
     latitude: node.latitude,
     ...legacyPosition(node.longitude, node.latitude),
     indoor: node.indoor === true,
+    outdoor: node.outdoor === true,
     indoorTransition: node.indoor === 'transition',
     level: node.level ?? null,
     servedLevels: node.servedLevels ?? null,
@@ -196,14 +199,17 @@ function makeInstructions(from, to, modeId, edges) {
   const indoorEdges = edges.filter((edge) => edge.indoor === true);
   const corridorEdges = indoorEdges.filter((edge) => edge.highway !== 'elevator');
   const elevatorEdges = indoorEdges.filter((edge) => edge.highway === 'elevator');
+  const outdoorPlatformEdges = edges.filter((edge) => edge.segmentType === 'outdoor-platform');
   const elevatorLevels = [
     ...new Set(elevatorEdges.flatMap((edge) => [edge.fromLevel, edge.toLevel]).filter(Boolean)),
   ].sort((a, b) => Number(a) - Number(b));
   const toIndoorRoute = OSM_ROUTING.locations[to].indoorRoute;
   const floorLabel = (level) => level === '0' ? '0 层' : `${level}F`;
-  const instructions = [
-    `从${fromDestination.indoor ? NODE_BY_ID[from].name : withEntrance(from)}出发`,
-  ];
+  const namedEndpoint = (locationId, destination) =>
+    destination.indoor || destination.outdoor || destination.kind
+      ? NODE_BY_ID[locationId].name
+      : withEntrance(locationId);
+  const instructions = [`从${namedEndpoint(from, fromDestination)}出发`];
 
   if (fromDestination.indoor && indoorEdges.length && osmEdges.length) {
     instructions.push(
@@ -225,7 +231,7 @@ function makeInstructions(from, to, modeId, edges) {
     );
   }
   if (elevatorEdges.length) {
-    const targetLevel = toDestination.indoor ? toDestination.level : null;
+    const targetLevel = toDestination.level ?? null;
     const returnsToSameFloor =
       targetLevel &&
       !fromDestination.indoor &&
@@ -242,8 +248,13 @@ function makeInstructions(from, to, modeId, edges) {
       `沿${toDestination.level ? floorLabel(toDestination.level) : '当前楼层'}室内通道前行约 ${Math.round(sumEdgeDistance(corridorEdges, () => true))} 米`,
     );
   }
+  if (outdoorPlatformEdges.length) {
+    instructions.push(
+      `沿 ${toDestination.level ? floorLabel(toDestination.level) : '当前楼层'}室外平台前行约 ${Math.round(sumEdgeDistance(outdoorPlatformEdges, () => true))} 米`,
+    );
+  }
   instructions.push(
-    `抵达${toDestination.indoor ? NODE_BY_ID[to].name : withEntrance(to)}`,
+    `抵达${namedEndpoint(to, toDestination)}`,
   );
   return instructions;
 }
@@ -307,6 +318,7 @@ function segmentPoint(point) {
     latitude: point.latitude,
     kind: point.kind,
     indoor: point.indoor ?? false,
+    outdoor: point.outdoor ?? false,
     level: point.level ?? null,
   };
 }
@@ -412,6 +424,7 @@ export function findRoute(from, to, modeId = 'pedestrian') {
         roadDistanceMeters: 0,
         connectorDistanceMeters: 0,
         indoorDistanceMeters: 0,
+        outdoorPlatformDistanceMeters: 0,
         segmentCount: 0,
       },
       path,
@@ -456,6 +469,10 @@ export function findRoute(from, to, modeId = 'pedestrian') {
     (edge) => edge.segmentType === 'osm-road',
   );
   const indoorDistance = sumEdgeDistance(roadRoute.edges, (edge) => edge.indoor === true);
+  const outdoorPlatformDistance = sumEdgeDistance(
+    roadRoute.edges,
+    (edge) => edge.segmentType === 'outdoor-platform',
+  );
   const graphConnectorDistance = sumEdgeDistance(
     roadRoute.edges,
     (edge) => edge.segmentType === 'entrance-connector',
@@ -464,7 +481,7 @@ export function findRoute(from, to, modeId = 'pedestrian') {
     graphConnectorDistance +
     externalConnectorDistance(fromBinding, modeId) +
     externalConnectorDistance(toBinding, modeId);
-  const distance = roadDistance + indoorDistance + connectorDistance;
+  const distance = roadDistance + indoorDistance + outdoorPlatformDistance + connectorDistance;
   const distanceMetersRounded = Math.round(distance);
   const durationSeconds = Math.ceil(distance / mode.speedMetersPerSecond);
   const path = composePath(from, to, modeId, roadRoute.nodeIds);
@@ -482,6 +499,7 @@ export function findRoute(from, to, modeId = 'pedestrian') {
       roadDistanceMeters: Math.round(roadDistance),
       connectorDistanceMeters: Math.round(connectorDistance),
       indoorDistanceMeters: Math.round(indoorDistance),
+      outdoorPlatformDistanceMeters: Math.round(outdoorPlatformDistance),
       segmentCount: segments.length,
     },
     path,

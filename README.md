@@ -275,11 +275,11 @@ npm run build
 
 OSM 推荐让建筑入口节点同时连接室内外路径，室内线性导航路径使用 `highway=corridor`、`indoor=yes` 和 `level=*`；完整楼层也可以进一步使用 [Simple Indoor Tagging](https://wiki.openstreetmap.org/wiki/Simple_Indoor_Tagging) 的 `indoor=corridor/area/room` 面要素。
 
-当前 OSM 没有港科大广州图书馆、W2/E2、三楼平台的完整室内要素，也没有西翼/东翼大堂入口点，因此 `public/data/campus-indoor.geojson` 保存可独立审查的本地入口与室内路由补丁。
+当前 OSM 没有港科大广州图书馆、W2/E2 和三楼室外平台的完整分层要素，也没有西翼/东翼大堂入口点，因此 `public/data/campus-indoor.geojson` 保存可独立审查的本地入口、室内路由与高层室外平台补丁。
 
 `entrancePoi` 用于补充可搜索的本地入口锚点。西翼大堂沿用用户确认的 POI；东翼大堂入口按西翼 POI 在 W1 中的相对端部位置映射到 E1，对应坐标为 `[113.4776200, 22.8904414]`。生成器要求入口 POI 位于目标建筑内且距建筑边界不超过 5 米，并记录 `evidence`、`inferredFrom` 与 `verificationStatus`。稳定地点 ID 仍为 `west-concourse` 和 `east-concourse`，旧称“西翼大学 / 东翼大学”继续作为搜索别名。
 
-W2/E2 使用用户标注截图中的近似位置补充两组室内 POI：稳定 ID `w2`、`e2` 现在分别显示为 `W2-大堂`、`E2-大堂`，新增 `w2-elevator` 与 `e2-elevator`。两部电梯声明服务 `1–5F`，生成器会把 `indoorVerticalConnector` 展开为逐层节点和 `highway=elevator` 边；两侧 `3F` 节点接入共享的 `third-floor-platform`（显示名“三楼中央”），平台再连接 `platform-restaurant`。餐厅同时可经演讲厅一侧的二楼中部通道和中部电梯到达。自然语言可直接使用“W2”“E2”“W2电梯”“三楼中央”“三楼平台”“嘉宾晚宴餐厅”等名称。
+W2/E2 使用用户标注截图中的近似位置补充两组 POI：稳定 ID `w2`、`e2` 现在分别显示为 `W2-大堂`、`E2-大堂`，新增 `w2-elevator` 与 `e2-elevator`。两部电梯声明服务 `1–5F`，生成器会把 `indoorVerticalConnector` 展开为逐层节点和 `highway=elevator` 边；两侧 `3F` 节点接入共享的 `third-floor-platform`（显示名“三楼中央”），平台再连接 `platform-restaurant`。用户已确认三楼平台位于室外，因此平台节点和水平通道以 `outdoor=true` 进入步行与机器人搜索空间；到达平台所需的 W2/E2 大堂—电梯—3F 出口链路同步开放机器人路线。平台餐厅和中部二楼通道仍只开放步行。自然语言可直接使用“W2”“E2”“W2电梯”“三楼中央”“三楼平台”“嘉宾晚宴餐厅”等名称。
 
 共享室内网络使用三类可审查要素：
 
@@ -316,7 +316,7 @@ W2/E2 使用用户标注截图中的近似位置补充两组室内 POI：稳定 
 
 生成器会拒绝入口偏差超过 3 米、室内点落到建筑轮廓外、缺少楼层或没有步行权限的补丁。未核验室内段默认只加入 `pedestrian`；只有现场验证门宽、坡度、门禁和机器人可达性后，同时设置 `"modes": ["pedestrian", "robot"]` 与 `"robotValidated": true`，才会进入机器人搜索空间。
 
-图书馆当前加入约 51 米的 0 层室内段。W2/E2 大堂、电梯、三楼平台、平台餐厅和中部二楼电梯路径均来自用户描述与截图近似定位，尚未经过楼层图或现场测量。所有这些补丁只进入步行搜索空间；机器人路线仍止于对应建筑入口。
+图书馆当前加入约 51 米的 0 层室内段。W2/E2 大堂、电梯、三楼平台、平台餐厅和中部二楼电梯路径均来自用户描述与截图近似定位，尚未经过楼层图或现场测量。三楼平台已按用户确认修正为室外空间，并连同 W2/E2 电梯访问链路开放机器人搜索；平台餐厅、中部二楼路径和图书馆室内段仍只进入步行搜索空间。路线开放不等同于无人值守控制许可，真实小车仍需现场核验门宽、电梯交互、定位、避障与急停。
 
 ## GitHub Pages 部署
 

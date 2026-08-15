@@ -173,17 +173,31 @@ describe('findRoute', () => {
     );
   });
 
-  it('keeps the approximate multi-floor indoor network out of robot routing', () => {
-    const pedestrian = findRoute('main-entrance', 'platform-restaurant', 'pedestrian');
-    const robot = findRoute('main-entrance', 'platform-restaurant', 'robot');
-    expect(pedestrian.path.at(-1)).toMatchObject({ indoor: true, level: '3' });
-    expect(pedestrian.summary.indoorDistanceMeters).toBeGreaterThan(0);
-    expect(robot.path.at(-1)).toMatchObject({
+  it('routes robots onto the confirmed outdoor 3F platform but not into the restaurant', () => {
+    const platform = findRoute('main-entrance', 'third-floor-platform', 'robot');
+    expect(platform.status).toBe('ok');
+    expect(platform.path.at(-1)).toMatchObject({
+      id: 'third-floor-platform',
+      kind: 'platform',
+      indoor: false,
+      outdoor: true,
+      level: '3',
+      longitude: 113.47755,
+      latitude: 22.89147,
+    });
+    expect(platform.segments.some((segment) => segment.highway === 'elevator')).toBe(true);
+    expect(platform.segments.some((segment) => segment.segmentType === 'outdoor-platform')).toBe(true);
+    expect(platform.summary.indoorDistanceMeters).toBeGreaterThan(0);
+    expect(platform.summary.outdoorPlatformDistanceMeters).toBeGreaterThan(0);
+    expect(platform.instructions.some((instruction) => instruction.includes('室外平台'))).toBe(true);
+
+    const restaurant = findRoute('main-entrance', 'platform-restaurant', 'robot');
+    expect(restaurant.path.at(-1)).toMatchObject({
       kind: 'entrance',
       longitude: 113.47693,
       latitude: 22.89156,
     });
-    expect(robot.summary.indoorDistanceMeters).toBe(0);
+    expect(restaurant.summary.indoorDistanceMeters).toBe(0);
   });
 
   it('uses the selected mobility profile', () => {

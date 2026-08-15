@@ -162,15 +162,20 @@ describe('generated OSM routing graph', () => {
         verificationStatus: 'approximate-user-supplied',
       });
       expect(binding.modeNodeIds.pedestrian).toMatch(/elevator-1f$/);
-      expect(binding.modeNodeIds.robot).toBe(binding.roadNodeId);
+      expect(binding.modeNodeIds.robot).toMatch(/elevator-1f$/);
     }
 
     expect(routing.locations['third-floor-platform'].destination).toMatchObject({
       name: '三楼中央',
       kind: 'platform',
-      indoor: true,
+      indoor: false,
+      outdoor: true,
       level: '3',
     });
+    expect(routing.locations['third-floor-platform'].indoorRoute.modes).toEqual([
+      'pedestrian',
+      'robot',
+    ]);
     expect(routing.locations['platform-restaurant'].destination).toMatchObject({
       name: '3楼平台餐厅',
       kind: 'restaurant',
@@ -182,6 +187,13 @@ describe('generated OSM routing graph', () => {
     expect(verticalEdges).toHaveLength(9);
     expect(verticalEdges.every((edge) => edge.segmentType === 'vertical-connector')).toBe(true);
     expect(verticalEdges.every((edge) => edge.modes.includes('pedestrian'))).toBe(true);
-    expect(verticalEdges.some((edge) => edge.modes.includes('robot'))).toBe(false);
+    expect(verticalEdges.filter((edge) => edge.modes.includes('robot'))).toHaveLength(8);
+
+    const outdoorPlatformEdges = routing.graph.edges.filter(
+      (edge) => edge.segmentType === 'outdoor-platform',
+    );
+    expect(outdoorPlatformEdges).toHaveLength(2);
+    expect(outdoorPlatformEdges.every((edge) => edge.indoor === false)).toBe(true);
+    expect(outdoorPlatformEdges.every((edge) => edge.modes.includes('robot'))).toBe(true);
   });
 });

@@ -27,6 +27,7 @@
         "name": "中部电梯 · 2F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "2",
         "servedLevels": [
           "2",
@@ -43,6 +44,7 @@
         "name": "中部电梯 · 3F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "3",
         "servedLevels": [
           "2",
@@ -59,6 +61,7 @@
         "name": "中部二楼入口通道",
         "kind": "indoor-waypoint",
         "indoor": true,
+        "outdoor": false,
         "level": "2",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -72,6 +75,7 @@
         "name": "E2-电梯 · 1F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": [
           "1",
@@ -91,6 +95,7 @@
         "name": "E2-电梯 · 2F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "2",
         "servedLevels": [
           "1",
@@ -110,6 +115,7 @@
         "name": "E2-电梯 · 3F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "3",
         "servedLevels": [
           "1",
@@ -129,6 +135,7 @@
         "name": "E2-电梯 · 4F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "4",
         "servedLevels": [
           "1",
@@ -148,6 +155,7 @@
         "name": "E2-电梯 · 5F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "5",
         "servedLevels": [
           "1",
@@ -167,6 +175,7 @@
         "name": "E2-大堂",
         "kind": "lobby",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -179,7 +188,8 @@
         "latitude": 22.8912,
         "name": "3楼平台东侧",
         "kind": "platform-waypoint",
-        "indoor": true,
+        "indoor": false,
+        "outdoor": true,
         "level": "3",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -192,7 +202,8 @@
         "latitude": 22.89147,
         "name": "三楼中央",
         "kind": "platform",
-        "indoor": true,
+        "indoor": false,
+        "outdoor": true,
         "level": "3",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -206,6 +217,7 @@
         "name": "3楼平台餐厅",
         "kind": "restaurant",
         "indoor": true,
+        "outdoor": false,
         "level": "3",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -218,7 +230,8 @@
         "latitude": 22.8915,
         "name": "3楼平台西侧",
         "kind": "platform-waypoint",
-        "indoor": true,
+        "indoor": false,
+        "outdoor": true,
         "level": "3",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -232,6 +245,7 @@
         "name": "W2-电梯 · 1F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": [
           "1",
@@ -251,6 +265,7 @@
         "name": "W2-电梯 · 2F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "2",
         "servedLevels": [
           "1",
@@ -270,6 +285,7 @@
         "name": "W2-电梯 · 3F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "3",
         "servedLevels": [
           "1",
@@ -289,6 +305,7 @@
         "name": "W2-电梯 · 4F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "4",
         "servedLevels": [
           "1",
@@ -308,6 +325,7 @@
         "name": "W2-电梯 · 5F",
         "kind": "elevator",
         "indoor": true,
+        "outdoor": false,
         "level": "5",
         "servedLevels": [
           "1",
@@ -327,6 +345,7 @@
         "name": "W2-大堂",
         "kind": "lobby",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": null,
         "source": "local-routing-overlay",
@@ -2303,6 +2322,7 @@
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "3",
         "fromLevel": "3",
@@ -2324,6 +2344,7 @@
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "2->3",
         "fromLevel": "2",
@@ -2364,6 +2385,7 @@
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "2",
         "fromLevel": "2",
@@ -2381,10 +2403,12 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "3",
         "fromLevel": "3",
@@ -2402,10 +2426,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "1->2",
         "fromLevel": "1",
@@ -2423,10 +2449,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "2->3",
         "fromLevel": "2",
@@ -2444,10 +2472,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "3->4",
         "fromLevel": "3",
@@ -2465,10 +2495,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "4->5",
         "fromLevel": "4",
@@ -2486,7 +2518,8 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "indoor-entrance",
         "indoor": true,
@@ -2505,10 +2538,12 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "1",
         "fromLevel": "1",
@@ -2526,10 +2561,12 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
-        "segmentType": "indoor-path",
-        "indoor": true,
+        "segmentType": "outdoor-platform",
+        "indoor": false,
+        "outdoor": true,
         "vertical": false,
         "level": "3",
         "fromLevel": "3",
@@ -2551,6 +2588,7 @@
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "3",
         "fromLevel": "3",
@@ -2568,10 +2606,12 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
-        "segmentType": "indoor-path",
-        "indoor": true,
+        "segmentType": "outdoor-platform",
+        "indoor": false,
+        "outdoor": true,
         "vertical": false,
         "level": "3",
         "fromLevel": "3",
@@ -2589,10 +2629,12 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "3",
         "fromLevel": "3",
@@ -2610,10 +2652,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "1->2",
         "fromLevel": "1",
@@ -2631,10 +2675,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "2->3",
         "fromLevel": "2",
@@ -2652,10 +2698,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "3->4",
         "fromLevel": "3",
@@ -2673,10 +2721,12 @@
         "highway": "elevator",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "vertical-connector",
         "indoor": true,
+        "outdoor": false,
         "vertical": true,
         "level": "4->5",
         "fromLevel": "4",
@@ -2694,7 +2744,8 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "indoor-entrance",
         "indoor": true,
@@ -2713,10 +2764,12 @@
         "highway": "corridor",
         "osmWayId": null,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
         "segmentType": "indoor-path",
         "indoor": true,
+        "outdoor": false,
         "vertical": false,
         "level": "1",
         "fromLevel": "1",
@@ -8934,7 +8987,7 @@
       "accessNodeId": "indoor-network/w2-lobby-1f",
       "modeNodeIds": {
         "pedestrian": "indoor-network/w2-lobby-1f",
-        "robot": "osm-node/10775863319"
+        "robot": "indoor-network/w2-lobby-1f"
       },
       "destination": {
         "longitude": 113.47693,
@@ -8944,6 +8997,7 @@
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/w2-lobby-1f",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": null,
         "levelAssumed": false,
@@ -8957,8 +9011,10 @@
         "servedLevels": null,
         "levelAssumed": false,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
+        "outdoor": false,
         "evidence": "user-supplied-annotated-screenshot",
         "verificationStatus": "approximate-user-supplied"
       }
@@ -8986,7 +9042,7 @@
       "accessNodeId": "indoor-network/w2-lobby-1f",
       "modeNodeIds": {
         "pedestrian": "indoor-network/w2-elevator-1f",
-        "robot": "osm-node/10775863319"
+        "robot": "indoor-network/w2-elevator-1f"
       },
       "destination": {
         "longitude": 113.47682,
@@ -8996,6 +9052,7 @@
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/w2-elevator/level-1",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": [
           "1",
@@ -9021,8 +9078,10 @@
         ],
         "levelAssumed": false,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
+        "outdoor": false,
         "evidence": "user-supplied-annotated-screenshot-and-floor-description",
         "verificationStatus": "approximate-user-supplied"
       }
@@ -9095,7 +9154,7 @@
       "accessNodeId": "indoor-network/e2-lobby-1f",
       "modeNodeIds": {
         "pedestrian": "indoor-network/e2-lobby-1f",
-        "robot": "osm-node/10740248760"
+        "robot": "indoor-network/e2-lobby-1f"
       },
       "destination": {
         "longitude": 113.47796,
@@ -9105,6 +9164,7 @@
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/e2-lobby-1f",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": null,
         "levelAssumed": false,
@@ -9118,8 +9178,10 @@
         "servedLevels": null,
         "levelAssumed": false,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
+        "outdoor": false,
         "evidence": "user-supplied-annotated-screenshot",
         "verificationStatus": "approximate-user-supplied"
       }
@@ -9147,7 +9209,7 @@
       "accessNodeId": "indoor-network/e2-lobby-1f",
       "modeNodeIds": {
         "pedestrian": "indoor-network/e2-elevator-1f",
-        "robot": "osm-node/10740248760"
+        "robot": "indoor-network/e2-elevator-1f"
       },
       "destination": {
         "longitude": 113.47808,
@@ -9157,6 +9219,7 @@
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/e2-elevator/level-1",
         "indoor": true,
+        "outdoor": false,
         "level": "1",
         "servedLevels": [
           "1",
@@ -9182,8 +9245,10 @@
         ],
         "levelAssumed": false,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
+        "outdoor": false,
         "evidence": "user-supplied-annotated-screenshot-and-floor-description",
         "verificationStatus": "approximate-user-supplied"
       }
@@ -9241,7 +9306,7 @@
       "accessNodeId": "indoor-network/w2-lobby-1f",
       "modeNodeIds": {
         "pedestrian": "indoor-network/platform-main-3f",
-        "robot": "osm-node/10775863319"
+        "robot": "indoor-network/platform-main-3f"
       },
       "destination": {
         "longitude": 113.47755,
@@ -9250,7 +9315,8 @@
         "kind": "platform",
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/platform-main-3f",
-        "indoor": true,
+        "indoor": false,
+        "outdoor": true,
         "level": "3",
         "servedLevels": null,
         "levelAssumed": false,
@@ -9264,8 +9330,10 @@
         "servedLevels": null,
         "levelAssumed": false,
         "modes": [
-          "pedestrian"
+          "pedestrian",
+          "robot"
         ],
+        "outdoor": true,
         "evidence": "user-described-platform-above-lecture-halls-and-food-court",
         "verificationStatus": "approximate-user-supplied"
       }
@@ -9303,6 +9371,7 @@
         "source": "local-routing-overlay",
         "featureId": "local/central-academic/platform-restaurant-3f",
         "indoor": true,
+        "outdoor": false,
         "level": "3",
         "servedLevels": null,
         "levelAssumed": false,
@@ -9318,6 +9387,7 @@
         "modes": [
           "pedestrian"
         ],
+        "outdoor": false,
         "evidence": "user-described-guest-dinner-restaurant-near-food-court",
         "verificationStatus": "approximate-user-supplied"
       }

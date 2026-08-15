@@ -31,9 +31,9 @@ The checked-in mask and GeoJSON are review artifacts, not robot control data.
 
 ## Local indoor routing overlay
 
-`campus-indoor.geojson` supplements missing OSM indoor data with provenance-marked local features. It currently contains the library corridor, W2/E2 lobby entrances, W2/E2 elevators serving floors 1–5, the shared level-3 central POI (`third-floor-platform`), the platform restaurant, and the central level-2 elevator approach. These locations are approximate user-supplied geometry, not surveyed floor-plan data.
+`campus-indoor.geojson` supplements missing OSM level-aware data with provenance-marked local features. It currently contains the library corridor, W2/E2 lobby entrances, W2/E2 elevators serving floors 1–5, the shared outdoor level-3 central POI (`third-floor-platform`), the platform restaurant, and the central level-2 elevator approach. The level-3 platform and its horizontal links carry `outdoor=true`; the platform plus its W2/E2 access chains permit robot routing, while the restaurant and central level-2 path remain pedestrian-only. Geometry is approximate user-supplied data, not a surveyed floor plan.
 
-`indoorNetworkNode`, `indoorNetworkLink`, and `indoorVerticalConnector` features are expanded into the generated A* graph. Unverified indoor features permit pedestrian routing only; robot access requires an explicit field validation and `robotValidated=true`.
+`indoorNetworkNode`, `indoorNetworkLink`, and `indoorVerticalConnector` features are expanded into the generated A* graph. Indoor features permit pedestrian routing by default; robot access requires an explicit `robotValidated=true`. Outdoor platform nodes and links retain their floor level but are emitted with `indoor=false`, `outdoor=true`, and `segmentType=outdoor-platform`.
 
 Register an extracted image-space GeoJSON with the eight-building control configuration:
 

@@ -665,6 +665,7 @@ export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
     const id = indoorNetworkNodeId(nodeKey);
     if (graphNodeById.has(id)) throw new Error(`Duplicate indoor routing node ${id}`);
     const [longitude, latitude] = feature.geometry.coordinates;
+    const outdoor = feature.properties.outdoor === true;
     const node = {
       id,
       osmNodeId: null,
@@ -672,7 +673,8 @@ export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
       latitude,
       name: feature.properties.name ?? '室内路径节点',
       kind: feature.properties.kind ?? 'indoor-waypoint',
-      indoor: true,
+      indoor: !outdoor,
+      outdoor,
       level,
       servedLevels: feature.properties.servedLevels ?? null,
       source: feature.properties.source ?? indoorGeojson.source ?? 'local-routing-overlay',
@@ -740,6 +742,7 @@ export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
 
     const highway = feature.properties.highway ?? 'corridor';
     const vertical = highway === 'elevator' || feature.properties.vertical === true;
+    const outdoor = feature.properties.outdoor === true;
     const measuredDistance = distanceMeters(
       [from.longitude, from.latitude],
       [to.longitude, to.latitude],
@@ -758,8 +761,9 @@ export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
       highway,
       osmWayId: null,
       modes: allowedIndoorModes(feature.properties),
-      segmentType: vertical ? 'vertical-connector' : 'indoor-path',
-      indoor: true,
+      segmentType: vertical ? 'vertical-connector' : outdoor ? 'outdoor-platform' : 'indoor-path',
+      indoor: !outdoor,
+      outdoor,
       vertical,
       level: vertical ? `${from.level}->${to.level}` : String(feature.properties.level ?? from.level),
       fromLevel: from.level,
@@ -814,7 +818,8 @@ export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
       kind: node.kind,
       source: node.source,
       featureId: feature.id,
-      indoor: true,
+      indoor: node.indoor,
+      outdoor: node.outdoor,
       level: node.level,
       servedLevels: node.servedLevels,
       levelAssumed: feature.properties.levelAssumed === true,
@@ -828,6 +833,7 @@ export function addIndoorNetworkToGraph(indoorGeojson, roadGraph, bindings) {
       servedLevels: node.servedLevels,
       levelAssumed: feature.properties.levelAssumed === true,
       modes,
+      outdoor: node.outdoor,
       evidence: feature.properties.evidence ?? null,
       verificationStatus: node.verificationStatus,
     };
