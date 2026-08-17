@@ -227,9 +227,30 @@ export class WebBluetoothRobotClient {
     if (!['forward', 'backward', 'left', 'right', 'stop'].includes(direction)) {
       return Promise.reject(new Error(`Unknown direction: ${direction}`));
     }
+    if (direction === 'stop') {
+      // Stop everything and clear every queued/unstarted direction command.
+      this.cancelDirectionTransfers('Manual stop cleared pending direction commands');
+    }
     return this.enqueueMessage(createDirectionCommand(direction, options), {
       priority: direction === 'stop',
     });
+  }
+
+  cancelDirectionTransfers(reason) {
+    const error = abortError(reason);
+    if (this.activeOperation?.message.type === 'direction') {
+      this.activeOperation.cancelled = true;
+    }
+    const remaining = [];
+    for (const operation of this.operationQueue) {
+      if (operation.message.type === 'direction') {
+        operation.reject(error);
+        this.emit({ type: 'transfer-error', message: operation.message, error });
+      } else {
+        remaining.push(operation);
+      }
+    }
+    this.operationQueue = remaining;
   }
 
   enqueueMessage(message, { priority = false, prefixDelimiter = false } = {}) {

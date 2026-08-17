@@ -183,7 +183,11 @@ export function RobotControl({ route, onRobotPosition }) {
       event.preventDefault();
       if (padActiveRef.current) return; // another button already holds
       padActiveRef.current = true;
-      const send = () => client.sendDirection(direction, options).catch(() => {});
+      const command = {
+        ...options,
+        speedMetersPerSecond: config.directionSpeedMetersPerSecond ?? 0.06,
+      };
+      const send = () => client.sendDirection(direction, command).catch(() => {});
       send();
       padTimer.current = setInterval(send, 450);
     };
@@ -209,6 +213,7 @@ export function RobotControl({ route, onRobotPosition }) {
         'interChunkDelayMs',
         'directionStepMeters',
         'directionStepDegrees',
+        'directionSpeedMetersPerSecond',
       ].includes(field)
         ? Number(value)
         : value,
@@ -282,6 +287,20 @@ export function RobotControl({ route, onRobotPosition }) {
               <span>手动方向控制</span>
               <small>每步 {config.directionStepMeters ?? 0.15} m / {config.directionStepDegrees ?? 15}° · 按住连续</small>
             </div>
+            <label class="robot-speed-slider">
+              <span>速度</span>
+              <input
+                type="range"
+                min="0.02"
+                max="0.30"
+                step="0.01"
+                value={config.directionSpeedMetersPerSecond ?? 0.06}
+                onInput={(event) => updateConfig('directionSpeedMetersPerSecond', event.currentTarget.value)}
+                disabled={configLocked}
+                aria-label="方向控制速度"
+              />
+              <strong>{(config.directionSpeedMetersPerSecond ?? 0.06).toFixed(2)} m/s</strong>
+            </label>
             <div class="robot-pad-grid">
               <button
                 class="robot-pad-btn pad-up"
@@ -336,7 +355,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 onContextMenu={(event) => event.preventDefault()}
               >↓<small>后</small></button>
             </div>
-            <small class="robot-hint">方向键只走固定步长；小车端自带超时与断连保护。红色停止键仅停止动作，任务级急停用下方 STOP。</small>
+            <small class="robot-hint">方向键只走固定步长；小车端自带超时与断连保护。红色停止键停止所有动作并清空未执行的指令，任务级急停用下方 STOP。</small>
           </div>
 
           {connection.error && (

@@ -12,6 +12,7 @@ export const DEFAULT_BLE_CONFIG = Object.freeze({
   interChunkDelayMs: 12,
   directionStepMeters: 0.15,
   directionStepDegrees: 15,
+  directionSpeedMetersPerSecond: 0.06,
 });
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -55,6 +56,16 @@ export function normalizeBleConfig(input = {}) {
   config.directionStepDegrees = Math.min(
     90,
     Math.max(5, finiteNumber(config.directionStepDegrees ?? 15, 'directionStepDegrees')),
+  );
+  config.directionSpeedMetersPerSecond = Math.min(
+    0.3,
+    Math.max(
+      0.02,
+      finiteNumber(
+        config.directionSpeedMetersPerSecond ?? 0.06,
+        'directionSpeedMetersPerSecond',
+      ),
+    ),
   );
   return config;
 }
@@ -154,6 +165,11 @@ export function createDirectionCommand(direction, options = {}) {
   if (!DIRECTION_NAMES.includes(direction)) {
     throw new Error(`Unknown direction: ${direction}`);
   }
+  const moving = direction !== 'stop';
+  const speed =
+    moving && options.speedMetersPerSecond != null
+      ? Math.min(0.3, Math.max(0.02, finiteNumber(options.speedMetersPerSecond, 'speedMetersPerSecond')))
+      : null;
   return {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
@@ -168,6 +184,7 @@ export function createDirectionCommand(direction, options = {}) {
       direction === 'left' || direction === 'right'
         ? finiteNumber(options.amountDegrees ?? 15, 'amountDegrees')
         : null,
+    speedMetersPerSecond: speed,
     createdAt: options.createdAt ?? new Date().toISOString(),
   };
 }
@@ -283,7 +300,7 @@ export function getRobotProtocolDescriptor() {
         type: 'direction',
         direction: DIRECTION_NAMES,
         behavior:
-          'Manual joystick step. Each command moves one fixed step (forward/backward: amountMeters, default 0.15 m; left/right: amountDegrees, default 15 deg; stop: halt immediately). The robot must stop at the end of every step by itself; the browser repeats the command while the pad button is held.',
+          'Manual joystick step. Each command moves one fixed step (forward/backward: amountMeters, default 0.15 m; left/right: amountDegrees, default 15 deg; stop: halt immediately and clear queued commands). Optional speedMetersPerSecond (0.02-0.3) overrides the default step speed; angular speed follows proportionally. The robot must stop at the end of every step by itself; the browser repeats the command while the pad button is held.',
       },
     },
     robotToBrowser: {

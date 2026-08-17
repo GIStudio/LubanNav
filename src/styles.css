@@ -1035,6 +1035,44 @@ h2 {
   text-align: right;
 }
 
+.robot-speed-slider {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  background: rgba(2, 16, 26, 0.35);
+}
+
+.robot-speed-slider span {
+  color: var(--muted);
+  font: 700 9px/1 var(--mono);
+  letter-spacing: 0.08em;
+}
+
+.robot-speed-slider strong {
+  min-width: 52px;
+  color: var(--acid);
+  font: 800 10px/1 var(--mono);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.robot-speed-slider input[type='range'] {
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  accent-color: var(--acid);
+  cursor: pointer;
+}
+
+.robot-speed-slider input[type='range']:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .robot-pad-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(56px, 1fr));
