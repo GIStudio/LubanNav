@@ -4,6 +4,7 @@ import {
   DEFAULT_BLE_CONFIG,
   RobotMessageDecoder,
   bluetoothRequestOptions,
+  createDirectionCommand,
   createNavigationTask,
   encodeRobotMessage,
   getRobotProtocolDescriptor,
@@ -112,5 +113,20 @@ describe('robot BLE protocol', () => {
     expect(descriptor.diagnostics.stages).toContain('primary-service');
     expect(descriptor.browserToRobot.navigationTask.type).toBe('navigation_task');
     expect(descriptor.robotToBrowser.position.example.type).toBe('position');
+  });
+
+  it('builds stepped direction commands and rejects unknown directions', () => {
+    const forward = createDirectionCommand('forward');
+    expect(forward).toMatchObject({
+      type: 'direction',
+      direction: 'forward',
+      amountMeters: 0.15,
+      amountDegrees: null,
+    });
+    const turn = createDirectionCommand('right', { amountDegrees: 20 });
+    expect(turn).toMatchObject({ direction: 'right', amountDegrees: 20, amountMeters: null });
+    const stop = createDirectionCommand('stop');
+    expect(stop).toMatchObject({ direction: 'stop', amountMeters: null, amountDegrees: null });
+    expect(() => createDirectionCommand('diagonal')).toThrow(/Unknown direction/);
   });
 });

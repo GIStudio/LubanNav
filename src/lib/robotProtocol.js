@@ -10,6 +10,8 @@ export const DEFAULT_BLE_CONFIG = Object.freeze({
   telemetryCharacteristicUuid: '6e400003-b5a3-f393-e0a9-e50e24dcca9e',
   chunkBytes: 20,
   interChunkDelayMs: 12,
+  directionStepMeters: 0.15,
+  directionStepDegrees: 15,
 });
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -46,6 +48,14 @@ export function normalizeBleConfig(input = {}) {
   if (config.interChunkDelayMs < 0 || config.interChunkDelayMs > 1_000) {
     throw new Error('interChunkDelayMs must be between 0 and 1000');
   }
+  config.directionStepMeters = Math.min(
+    1,
+    Math.max(0.05, finiteNumber(config.directionStepMeters ?? 0.15, 'directionStepMeters')),
+  );
+  config.directionStepDegrees = Math.min(
+    90,
+    Math.max(5, finiteNumber(config.directionStepDegrees ?? 15, 'directionStepDegrees')),
+  );
   return config;
 }
 
@@ -130,6 +140,35 @@ export function createEmergencyStop(options = {}) {
     taskId: options.taskId ?? null,
     createdAt: options.createdAt ?? new Date().toISOString(),
     reason: options.reason ?? 'operator_request',
+  };
+}
+
+export const DIRECTION_NAMES = Object.freeze(['forward', 'backward', 'left', 'right', 'stop']);
+
+/**
+ * Manual joystick command. Each command moves one fixed step (amountMeters /
+ * amountDegrees) so a stray packet can never run the chassis continuously;
+ * the web UI repeats it while the operator holds the pad button.
+ */
+export function createDirectionCommand(direction, options = {}) {
+  if (!DIRECTION_NAMES.includes(direction)) {
+    throw new Error(`Unknown direction: ${direction}`);
+  }
+  return {
+    protocol: ROBOT_PROTOCOL_NAME,
+    protocolVersion: ROBOT_PROTOCOL_VERSION,
+    type: 'direction',
+    commandId: options.commandId ?? `dir-${Date.now().toString(36)}`,
+    direction,
+    amountMeters:
+      direction === 'forward' || direction === 'backward'
+        ? finiteNumber(options.amountMeters ?? 0.15, 'amountMeters')
+        : null,
+    amountDegrees:
+      direction === 'left' || direction === 'right'
+        ? finiteNumber(options.amountDegrees ?? 15, 'amountDegrees')
+        : null,
+    createdAt: options.createdAt ?? new Date().toISOString(),
   };
 }
 
@@ -239,6 +278,12 @@ export function getRobotProtocolDescriptor() {
         type: 'emergency_stop',
         behavior:
           'The browser prefixes LF to resynchronize after a cancelled partial transfer. Ignore an invalid partial line, then stop motion immediately, clear the active task, and notify an ack/status message.',
+      },
+      direction: {
+        type: 'direction',
+        direction: DIRECTION_NAMES,
+        behavior:
+          'Manual joystick step. Each command moves one fixed step (forward/backward: amountMeters, default 0.15 m; left/right: amountDegrees, default 15 deg; stop: halt immediately). The robot must stop at the end of every step by itself; the browser repeats the command while the pad button is held.',
       },
     },
     robotToBrowser: {

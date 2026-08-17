@@ -1008,6 +1008,99 @@ h2 {
   line-height: 1.6;
 }
 
+.robot-pad {
+  margin-top: 16px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  background: rgba(2, 16, 26, 0.3);
+}
+
+.robot-pad-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.robot-pad-head span {
+  color: var(--text);
+  font: 800 9px/1 var(--mono);
+  letter-spacing: 0.08em;
+}
+
+.robot-pad-head small {
+  color: var(--muted);
+  font-size: 8px;
+  text-align: right;
+}
+
+.robot-pad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(56px, 1fr));
+  grid-template-areas:
+    '. up .'
+    'left stop right'
+    '. down .';
+  gap: 7px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.robot-pad-btn {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid var(--line-strong);
+  color: var(--acid);
+  background: rgba(185, 242, 39, 0.06);
+  font: 800 17px/1 var(--mono);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.robot-pad-btn small {
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.robot-pad-btn:active:not(:disabled),
+.robot-pad-btn.held {
+  background: rgba(185, 242, 39, 0.22);
+  border-color: var(--acid);
+  transform: translateY(1px);
+}
+
+.robot-pad-btn:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+
+.robot-pad-btn.pad-up { grid-area: up; }
+.robot-pad-btn.pad-left { grid-area: left; }
+.robot-pad-btn.pad-right { grid-area: right; }
+.robot-pad-btn.pad-down { grid-area: down; }
+
+.robot-pad-btn.pad-stop {
+  grid-area: stop;
+  color: #ffb08a;
+  border-color: rgba(255, 120, 71, 0.78);
+  background: rgba(255, 120, 71, 0.12);
+}
+
+.robot-pad-btn.pad-stop:active:not(:disabled) {
+  background: rgba(255, 120, 71, 0.34);
+  border-color: #ff7a47;
+}
+
+.robot-pad + .robot-hint {
+  margin-top: 9px;
+}
+
 .robot-connection-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

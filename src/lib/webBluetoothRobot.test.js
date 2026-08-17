@@ -121,6 +121,43 @@ describe('WebBluetoothRobotClient', () => {
     expect(JSON.parse(new TextDecoder().decode(stopBytes).trim()).type).toBe('emergency_stop');
   });
 
+  it('sends stepped direction commands and prioritizes direction stop', async () => {
+    const fake = fakeBluetoothStack();
+    const client = new WebBluetoothRobotClient({
+      bluetooth: fake.bluetooth,
+      config: { chunkBytes: 20, interChunkDelayMs: 0 },
+      sleep: async () => {},
+    });
+    await client.connect();
+    const decodeWrites = () => {
+      const size = fake.command.writes.reduce((total, chunk) => total + chunk.byteLength, 0);
+      const bytes = new Uint8Array(size);
+      let offset = 0;
+      for (const chunk of fake.command.writes) {
+        bytes.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+      return JSON.parse(new TextDecoder().decode(bytes).trim());
+    };
+
+    await client.sendDirection('forward', { amountMeters: 0.1 });
+    expect(decodeWrites()).toMatchObject({
+      type: 'direction',
+      direction: 'forward',
+      amountMeters: 0.1,
+      amountDegrees: null,
+    });
+
+    fake.command.writes.length = 0;
+    await client.sendDirection('right');
+    expect(decodeWrites()).toMatchObject({ direction: 'right', amountDegrees: 15 });
+
+    fake.command.writes.length = 0;
+    await client.sendDirection('stop');
+    expect(decodeWrites()).toMatchObject({ type: 'direction', direction: 'stop' });
+    await expect(client.sendDirection('diagonal')).rejects.toThrow(/Unknown direction/);
+  });
+
   it('reports secure-context and API support separately', () => {
     expect(
       webBluetoothSupport({
