@@ -3,15 +3,9 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { CAMPUS_BOUNDS, NODE_BY_ID, PUBLIC_LOCATIONS } from '../data/campus.js';
 import { getLocationBinding } from '../lib/pathfinding.js';
+import { useI18n, localizedName } from '../lib/i18n.js';
 
-const CATEGORY_LABELS = {
-  entrance: '入口',
-  academic: '教学',
-  indoor: '室内',
-  service: '服务',
-  residence: '住宿',
-  sports: '运动',
-};
+const CATEGORY_IDS = ['entrance', 'academic', 'indoor', 'service', 'residence', 'sports'];
 
 const OSM_DATA_URL = `${import.meta.env.BASE_URL}data/campus-osm.geojson`;
 const INDOOR_DATA_URL = `${import.meta.env.BASE_URL}data/campus-indoor.geojson`;
@@ -181,6 +175,7 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [mapStatus, setMapStatus] = useState('loading');
   const [zoom, setZoom] = useState(17);
+  const { t, lang } = useI18n();
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return undefined;
@@ -259,7 +254,7 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
         fillColor: selected ? '#b9f227' : (elevator ? '#ff9d63' : (platform ? '#d7ff6d' : '#0d3142')),
         fillOpacity: 1,
       });
-      marker.bindTooltip(location.name, {
+      marker.bindTooltip(localizedName(location, lang), {
         className: selected ? 'location-tooltip selected' : 'location-tooltip',
         direction: 'top',
         offset: [0, -8],
@@ -283,7 +278,7 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
       );
       robotMarker
         .bindTooltip(
-          `机器人当前位置${robotPosition.headingDegrees == null ? '' : ` · ${Math.round(robotPosition.headingDegrees)}°`}`,
+          `${t('map.robotHere')}${robotPosition.headingDegrees == null ? '' : ` · ${Math.round(robotPosition.headingDegrees)}°`}`,
           {
             className: 'location-tooltip robot',
             direction: 'top',
@@ -293,7 +288,7 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
         )
         .addTo(layer);
     }
-  }, [destination, onSelectDestination, robotPosition, route?.request.mode, selectedCategory]);
+  }, [destination, lang, onSelectDestination, robotPosition, route?.request.mode, selectedCategory]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -343,7 +338,9 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
         lineJoin: 'round',
       })
         .bindTooltip(
-          `室内 · level ${route.routing.destination.selectedDestination.level ?? route.routing.origin.selectedDestination.level ?? '?'} · 近似待核验`,
+          t('map.indoorTooltip', {
+            level: route.routing.destination.selectedDestination.level ?? route.routing.origin.selectedDestination.level ?? '?',
+          }),
           { className: 'osm-feature-tooltip', sticky: true },
         )
         .addTo(layer);
@@ -373,41 +370,41 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
       maxZoom: 18.25,
       animate: true,
     });
-  }, [route]);
+  }, [route, lang]);
 
   function resetView() {
     mapRef.current?.fitBounds(CAMPUS_BOUNDS, { padding: [28, 28], animate: true });
   }
 
   return (
-    <section class="map-panel" aria-label="OpenStreetMap 校园地图">
+    <section class="map-panel" aria-label={t('map.aria')}>
       <div class="map-toolbar">
         <div>
           <p class="eyebrow">OSM / WGS84</p>
-          <h2>校园路径网络</h2>
+          <h2>{t('map.title')}</h2>
         </div>
-        <div class="legend" aria-label="地图图例">
-          <span><i class="legend-line active" />推荐路径</span>
-          <span><i class="legend-robot" />机器人</span>
-          <span><i class="legend-building" />建筑</span>
-          <span><i class="legend-road" />道路</span>
-          <span><i class="legend-indoor" />室内</span>
-          <span><i class="legend-water" />水域</span>
+        <div class="legend" aria-label={t('map.legendAria')}>
+          <span><i class="legend-line active" />{t('map.legend.route')}</span>
+          <span><i class="legend-robot" />{t('map.legend.robot')}</span>
+          <span><i class="legend-building" />{t('map.legend.building')}</span>
+          <span><i class="legend-road" />{t('map.legend.road')}</span>
+          <span><i class="legend-indoor" />{t('map.legend.indoor')}</span>
+          <span><i class="legend-water" />{t('map.legend.water')}</span>
         </div>
       </div>
 
-      <div class="category-filter" aria-label="地点分类">
-        <button class={selectedCategory === 'all' ? 'active' : ''} onClick={() => setSelectedCategory('all')}>全部</button>
-        {Object.entries(CATEGORY_LABELS).map(([id, label]) => (
-          <button key={id} class={selectedCategory === id ? 'active' : ''} onClick={() => setSelectedCategory(id)}>{label}</button>
+      <div class="category-filter" aria-label={t('map.categoryAria')}>
+        <button class={selectedCategory === 'all' ? 'active' : ''} onClick={() => setSelectedCategory('all')}>{t('map.categories.all')}</button>
+        {CATEGORY_IDS.map((id) => (
+          <button key={id} class={selectedCategory === id ? 'active' : ''} onClick={() => setSelectedCategory(id)}>{t(`map.categories.${id}`)}</button>
         ))}
       </div>
 
       <div class="map-viewport osm-map-viewport">
-        <div ref={containerRef} class="osm-map" role="img" aria-label="港科大广州校园 OSM 建筑、水域和道路地图" />
+        <div ref={containerRef} class="osm-map" role="img" aria-label={t('map.imgAria')} />
         {mapStatus !== 'ready' && (
           <div class={`map-loading ${mapStatus}`} role="status">
-            {mapStatus === 'loading' ? '正在载入本地 OSM 数据…' : 'OSM 数据载入失败'}
+            {mapStatus === 'loading' ? t('map.loading') : t('map.loadError')}
           </div>
         )}
         <a
@@ -420,15 +417,18 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
         </a>
         <div class="map-note">
           {route?.summary.indoorDistanceMeters > 0
-            ? `室内约 ${route.summary.indoorDistanceMeters} m · ${[
-              ...new Set(route.path.filter((point) => point.indoor).map((point) => point.level).filter(Boolean)),
-            ].map((level) => `${level}F`).join(' / ')} · 近似待核验`
-            : 'OSM 实际路网 · 未核验室内段仅开放步行'}
+            ? t('map.noteIndoor', {
+              distance: route.summary.indoorDistanceMeters,
+              levels: [
+                ...new Set(route.path.filter((point) => point.indoor).map((point) => point.level).filter(Boolean)),
+              ].map((level) => `${level}F`).join(' / '),
+            })
+            : t('map.noteOutdoor')}
         </div>
-        <div class="zoom-controls" aria-label="地图缩放">
-          <button onClick={() => mapRef.current?.zoomIn()} aria-label="放大地图">＋</button>
-          <button onClick={resetView} aria-label="显示完整校园">{zoom.toFixed(1)}</button>
-          <button onClick={() => mapRef.current?.zoomOut()} aria-label="缩小地图">−</button>
+        <div class="zoom-controls" aria-label={t('map.zoomAria')}>
+          <button onClick={() => mapRef.current?.zoomIn()} aria-label={t('map.zoomIn')}>＋</button>
+          <button onClick={resetView} aria-label={t('map.zoomReset')}>{zoom.toFixed(1)}</button>
+          <button onClick={() => mapRef.current?.zoomOut()} aria-label={t('map.zoomOut')}>−</button>
         </div>
       </div>
     </section>

@@ -1,23 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { NODE_BY_ID } from '../data/campus.js';
 import { buildCampusAssistantInstructions } from '../lib/assistantKnowledge.js';
+import { useI18n } from '../lib/i18n.js';
 import { DEFAULT_VOICE_CONFIG, QwenRealtimeSession } from '../lib/qwenRealtime.js';
 import { fetchWeather } from '../lib/weather.js';
-
-const STATUS_LABELS = {
-  idle: '等待连接',
-  authorizing: '验证访问码',
-  'requesting-microphone': '请求麦克风',
-  connecting: '连接模型',
-  listening: '正在聆听',
-  'user-speaking': '正在聆听',
-  thinking: '正在理解',
-  'assistant-speaking': '正在回答',
-  'audio-blocked': '等待播放权限',
-  'time-limit': '到达时限',
-  ended: '会话已结束',
-  error: '连接失败',
-};
 
 export function VoiceAssistant({
   route,
@@ -28,9 +14,10 @@ export function VoiceAssistant({
   controlRef,
   onControlStateChange,
 }) {
+  const { t } = useI18n();
   const [accessCode, setAccessCode] = useState('');
   const [status, setStatus] = useState('idle');
-  const [statusMessage, setStatusMessage] = useState('点击后会请求麦克风权限');
+  const [statusMessage, setStatusMessage] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [weather, setWeather] = useState(null);
   const sessionRef = useRef(null);
@@ -99,7 +86,7 @@ export function VoiceAssistant({
 
     session.addEventListener('status', (statusEvent) => {
       setStatus(statusEvent.detail.status);
-      setStatusMessage(statusEvent.detail.message || STATUS_LABELS[statusEvent.detail.status] || '');
+      setStatusMessage(statusEvent.detail.message || t(`voice.status.${statusEvent.detail.status}`) || '');
     });
     session.addEventListener('user-transcript-delta', (transcriptEvent) => {
       setLiveTranscript((current) => `${current}${transcriptEvent.detail.text}`);
@@ -158,23 +145,23 @@ export function VoiceAssistant({
     <div class="voice-assistant">
       <div class="voice-heading">
         <div>
-          <strong>实时语音</strong>
-          <small>QWEN REALTIME · 最长 3 分钟</small>
+          <strong>{t('voice.title')}</strong>
+          <small>{t('voice.subtitle')}</small>
         </div>
-        <span class={`voice-status ${status}`}>{STATUS_LABELS[status] || status}</span>
+        <span class={`voice-status ${status}`}>{t(`voice.status.${status}`)}</span>
       </div>
 
       {!supported ? (
-        <p class="voice-notice warning">当前浏览器或页面环境不支持麦克风 WebRTC，请使用 HTTPS 下的最新版 Chrome 或 Edge。</p>
+        <p class="voice-notice warning">{t('voice.unsupported')}</p>
       ) : (
         <form class="voice-form" onSubmit={startSession}>
           <label>
-            <span>演示访问码</span>
+            <span>{t('voice.accessCode')}</span>
             <input
               type="password"
               value={accessCode}
               onInput={(event) => setAccessCode(event.currentTarget.value)}
-              placeholder="仅保存在当前页面内存"
+              placeholder={t('voice.accessCodePlaceholder')}
               autocomplete="off"
               disabled={active}
             />
@@ -186,13 +173,13 @@ export function VoiceAssistant({
             disabled={!active && !accessCode.trim()}
           >
             <span aria-hidden="true">{active ? '■' : '●'}</span>
-            {active ? '结束会话' : '开始语音'}
+            {active ? t('voice.stop') : t('voice.start')}
           </button>
         </form>
       )}
 
-      <p class="voice-notice" aria-live="polite">{liveTranscript || statusMessage}</p>
-      <p class="voice-privacy">仅 SDP 经函数计算代理，通话音频直连百炼；请勿在对话中提供敏感信息。</p>
+      <p class="voice-notice" aria-live="polite">{liveTranscript || statusMessage || t('voice.hintStart')}</p>
+      <p class="voice-privacy">{t('voice.privacy')}</p>
       <audio ref={audioRef} autoplay playsinline />
     </div>
   );

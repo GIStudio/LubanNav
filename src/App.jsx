@@ -8,6 +8,8 @@ import { DEFAULT_EVENT_ID } from './data/events.js';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
+import { useI18n, localizedName } from './lib/i18n.js';
+import { useTheme } from './lib/theme.js';
 import {
   loadEventProfiles,
   normalizeEventConfig,
@@ -19,13 +21,6 @@ import {
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
-
-const DEFAULT_MESSAGES = [
-  {
-    role: 'assistant',
-    text: '你好，我可以离线解析校园地点和常见问题，也可以连接实时语音。试试说“从主入口到图书馆”或问“今天要带伞吗”。',
-  },
-];
 
 const DEFAULT_VOICE_CONTROL_STATE = {
   status: 'idle',
@@ -41,6 +36,8 @@ function validPublicLocation(id) {
 }
 
 export function App() {
+  const { t, lang, setLang } = useI18n();
+  const { theme, toggleTheme } = useTheme();
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const initialFrom = validPublicLocation(params.get('from')) ? params.get('from') : 'main-entrance';
   const initialTo = validPublicLocation(params.get('to')) ? params.get('to') : 'library';
@@ -57,7 +54,9 @@ export function App() {
   const [mode, setMode] = useState(initialMode);
   const [events, setEvents] = useState(initialEvents);
   const [activeEventId, setActiveEventId] = useState(initialEventId);
-  const [messages, setMessages] = useState(DEFAULT_MESSAGES);
+  const [messages, setMessages] = useState(() => [
+    { role: 'assistant', text: t('chat.welcome') },
+  ]);
   const [showDetails, setShowDetails] = useState(false);
   const [robotPosition, setRobotPosition] = useState(null);
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
@@ -128,13 +127,21 @@ export function App() {
       setMode(parsed.mode);
       const highlightsTeaser =
         nextRoute.highlights.length > 0
-          ? ` 途经${nextRoute.highlights.slice(0, 3).map((item) => item.name).join('、')}等地点。`
+          ? t('app.viaHighlights', {
+            list: nextRoute.highlights.slice(0, 3).map((item) => localizedName(item, lang)).join(lang === 'en' ? ', ' : '、'),
+          })
           : '';
       setMessages((items) => [
         ...items,
         {
           role: 'assistant',
-          text: `已解析：${NODE_BY_ID[parsed.from].name} → ${NODE_BY_ID[parsed.to].name}。约 ${nextRoute.summary.distanceMeters} 米，${formatDuration(nextRoute.summary.durationSeconds)}。${highlightsTeaser}`,
+          text: t('app.parsed', {
+            from: localizedName(NODE_BY_ID[parsed.from], lang),
+            to: localizedName(NODE_BY_ID[parsed.to], lang),
+            distance: nextRoute.summary.distanceMeters,
+            duration: formatDuration(nextRoute.summary.durationSeconds, lang),
+            highlights: highlightsTeaser,
+          }),
         },
       ]);
       return;
@@ -146,8 +153,8 @@ export function App() {
         {
           role: 'assistant',
           text: parsed.error === 'ambiguous_event_place'
-            ? '这个活动配置了多个匹配地点，请说出具体会场或地点名称。'
-            : '活动信息已记录，但这个场所尚未绑定地图地点。请先在“活动专属导航”中完成配置。',
+            ? t('app.ambiguousEvent')
+            : t('app.unboundPlace'),
         },
       ]);
       return;
@@ -181,8 +188,15 @@ export function App() {
         {
           role: 'assistant',
           text: highlights.length
-            ? `当前路线${NODE_BY_ID[to].name}方向途经：${highlights.map((item) => `${item.name}（距路线约 ${item.distanceMeters} 米，${item.description ?? '校内地点'}）`).join('；')}。`
-            : `当前路线较短（约 ${route.summary.distanceMeters} 米），没有明显的途经点介绍。`,
+            ? t('app.alongRoute', {
+              to: localizedName(NODE_BY_ID[to], lang),
+              list: highlights.map((item) => t('app.alongRouteItem', {
+                name: localizedName(item, lang),
+                distance: item.distanceMeters,
+                desc: item.description ?? t('app.defaultPlaceDesc'),
+              })).join(lang === 'en' ? '; ' : '；'),
+            })
+            : t('app.noHighlights', { distance: route.summary.distanceMeters }),
           source: 'route-highlights',
         },
       ]);
@@ -190,10 +204,10 @@ export function App() {
     }
 
     if (!parsed.understood) {
-      const missing = parsed.from ? '目的地' : '出发地或目的地';
+      const missing = parsed.from ? t('app.missingDest') : t('app.missingEither');
       setMessages((items) => [
         ...items,
-        { role: 'assistant', text: `我还没识别出${missing}。可以试试“从宿舍 3 到体育馆”。` },
+        { role: 'assistant', text: t('app.missing', { what: missing }) },
       ]);
       return;
     }
@@ -284,7 +298,10 @@ export function App() {
       ...items,
       {
         role: 'assistant',
-        text: `目的地已设为${NODE_BY_ID[id].name}，推荐路线约 ${nextRoute.summary.distanceMeters} 米。`,
+        text: t('route.destSet', {
+          name: localizedName(NODE_BY_ID[id], lang),
+          distance: nextRoute.summary.distanceMeters,
+        }),
       },
     ]);
   }
@@ -296,13 +313,13 @@ export function App() {
 
   async function copyShareLink() {
     await navigator.clipboard.writeText(window.location.href);
-    setMessages((items) => [...items, { role: 'assistant', text: '可复现的导航链接已复制。' }]);
+    setMessages((items) => [...items, { role: 'assistant', text: t('route.copied') }]);
   }
 
   return (
     <main class="app-shell">
       <header class="topbar">
-        <a class="brand" href="./" aria-label="LubanNav 首页">
+        <a class="brand" href="./" aria-label={t('topbar.homeAria')}>
           <span class="brand-mark">LN</span>
           <span>
             <strong>LUBAN NAV</strong>
@@ -316,15 +333,33 @@ export function App() {
             <span class="version">V0.2.1</span>
           </div>
           <button
+            type="button"
+            class="pref-toggle"
+            onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
+            title={t('topbar.langToggle')}
+            aria-label={t('topbar.langToggle')}
+          >
+            {t('topbar.langLabel')}
+          </button>
+          <button
+            type="button"
+            class="pref-toggle"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? t('topbar.themeToLight') : t('topbar.themeToDark')}
+            aria-label={theme === 'dark' ? t('topbar.themeToLight') : t('topbar.themeToDark')}
+          >
+            <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
+          </button>
+          <button
             ref={systemMenuButtonRef}
             type="button"
             class="system-menu-trigger"
-            aria-label="打开实时语音与机器人联络"
+            aria-label={t('topbar.menuAria')}
             aria-haspopup="dialog"
             aria-expanded={systemMenuOpen}
             onClick={() => openSystemMenu()}
           >
-            <span class="system-menu-trigger-label">VOICE / ROBOT</span>
+            <span class="system-menu-trigger-label">{t('topbar.menu')}</span>
             <span class="hamburger" aria-hidden="true"><i /><i /><i /></span>
           </button>
         </div>
@@ -338,16 +373,16 @@ export function App() {
                 <span class="assistant-icon" aria-hidden="true">路</span>
                 <div>
                   <p class="eyebrow">ASK / ROUTE / A*</p>
-                  <h1 id="route-title">去哪里？ <small>AI 导航助手</small></h1>
+                  <h1 id="route-title">{t('route.title')} <small>{t('route.titleSub')}</small></h1>
                 </div>
               </div>
-              <button class="icon-button" onClick={copyShareLink} title="复制导航链接" aria-label="复制导航链接">↗</button>
+              <button class="icon-button" onClick={copyShareLink} title={t('route.copyLink')} aria-label={t('route.copyLink')}>↗</button>
             </div>
 
-            <div class="mode-switch" aria-label="导航对象">
+            <div class="mode-switch" aria-label={t('mode.aria')}>
               {Object.values(MODES).map((item) => (
                 <button key={item.id} class={mode === item.id ? 'active' : ''} onClick={() => setMode(item.id)}>
-                  <span>{item.id === 'pedestrian' ? '◉' : '◇'}</span>{item.label}
+                  <span>{item.id === 'pedestrian' ? '◉' : '◇'}</span>{t(`mode.${item.id}`)}
                 </button>
               ))}
             </div>
@@ -355,43 +390,43 @@ export function App() {
             <div class="route-fields">
               <label>
                 <span class="field-index">A</span>
-                <span class="field-label">出发地</span>
+                <span class="field-label">{t('route.from')}</span>
                 <select value={from} onChange={(event) => setFrom(event.currentTarget.value)}>
-                  {PUBLIC_LOCATIONS.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
+                  {PUBLIC_LOCATIONS.map((location) => <option key={location.id} value={location.id}>{localizedName(location, lang)}</option>)}
                 </select>
               </label>
-              <button class="swap-button" onClick={swapRoute} aria-label="交换出发地和目的地">⇅</button>
+              <button class="swap-button" onClick={swapRoute} aria-label={t('route.swap')}>⇅</button>
               <label>
                 <span class="field-index destination">B</span>
-                <span class="field-label">目的地</span>
+                <span class="field-label">{t('route.to')}</span>
                 <select value={to} onChange={(event) => setTo(event.currentTarget.value)}>
-                  {PUBLIC_LOCATIONS.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
+                  {PUBLIC_LOCATIONS.map((location) => <option key={location.id} value={location.id}>{localizedName(location, lang)}</option>)}
                 </select>
               </label>
             </div>
 
             <div class="route-summary">
               <div>
-                <span>预计距离</span>
-                <strong>{route.summary.distanceMeters}<small> m</small></strong>
+                <span>{t('route.distance')}</span>
+                <strong>{route.summary.distanceMeters}<small>{t('route.meterUnit')}</small></strong>
               </div>
               <div>
-                <span>预计耗时</span>
-                <strong>{formatDuration(route.summary.durationSeconds)}</strong>
+                <span>{t('route.duration')}</span>
+                <strong>{formatDuration(route.summary.durationSeconds, lang)}</strong>
               </div>
               <div>
-                <span>{route.summary.indoorDistanceMeters > 0 ? '室内路段' : '路径节点'}</span>
+                <span>{route.summary.indoorDistanceMeters > 0 ? t('route.indoorLeg') : t('route.pathNodes')}</span>
                 <strong>
                   {route.summary.indoorDistanceMeters > 0
                     ? route.summary.indoorDistanceMeters
                     : route.path.length}
-                  <small>{route.summary.indoorDistanceMeters > 0 ? ' m' : ' 个'}</small>
+                  <small>{route.summary.indoorDistanceMeters > 0 ? t('route.meterUnit') : t('route.nodeUnit')}</small>
                 </strong>
               </div>
             </div>
 
             <button class="details-toggle" onClick={() => setShowDetails((value) => !value)}>
-              {showDetails ? '收起路线详情' : '查看路线详情'} <span>{showDetails ? '−' : '+'}</span>
+              {showDetails ? t('route.hideDetails') : t('route.showDetails')} <span>{showDetails ? '−' : '+'}</span>
             </button>
 
             {showDetails && (
@@ -446,11 +481,11 @@ export function App() {
       />
 
       <footer class="footer">
-        <p><strong>工程演示：</strong>{DATASET.disclaimer}</p>
+        <p><strong>{t('footer.demo')}</strong>{t('footer.disclaimer')}</p>
         <div>
-          <a href={DATASET.sourceUrl} target="_blank" rel="noreferrer">公开地图来源</a>
-          <a href="./api/">API 文档</a>
-          <a href={staticApiUrl} target="_blank" rel="noreferrer">当前路线 JSON</a>
+          <a href={DATASET.sourceUrl} target="_blank" rel="noreferrer">{t('footer.mapSource')}</a>
+          <a href="./api/">{t('footer.apiDocs')}</a>
+          <a href={staticApiUrl} target="_blank" rel="noreferrer">{t('footer.routeJson')}</a>
         </div>
       </footer>
     </main>
