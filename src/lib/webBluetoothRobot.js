@@ -1,6 +1,7 @@
 import {
   RobotMessageDecoder,
   bluetoothRequestOptions,
+  createDirectionCommand,
   createEmergencyStop,
   createNavigationTask,
   encodeRobotMessage,
@@ -219,6 +220,15 @@ export class WebBluetoothRobotClient {
     return this.enqueueMessage(createEmergencyStop({ taskId: this.lastTaskId }), {
       priority: true,
       prefixDelimiter: true,
+    });
+  }
+
+  sendDirection(direction, options = {}) {
+    if (!['forward', 'backward', 'left', 'right', 'stop'].includes(direction)) {
+      return Promise.reject(new Error(`Unknown direction: ${direction}`));
+    }
+    return this.enqueueMessage(createDirectionCommand(direction, options), {
+      priority: direction === 'stop',
     });
   }
 

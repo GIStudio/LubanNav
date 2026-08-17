@@ -163,10 +163,55 @@ export function RobotControl({ route, onRobotPosition }) {
     }
   }
 
+  // ── manual direction pad ────────────────────────────────────────────────
+
+  const padTimer = useRef(null);
+  const padActiveRef = useRef(false);
+
+  function stopPadRepeat() {
+    if (padTimer.current) {
+      clearInterval(padTimer.current);
+      padTimer.current = null;
+    }
+  }
+
+  useEffect(() => () => stopPadRepeat(), []);
+
+  function startPadHold(direction, options) {
+    return (event) => {
+      if (!connected) return;
+      event.preventDefault();
+      if (padActiveRef.current) return; // another button already holds
+      padActiveRef.current = true;
+      const send = () => client.sendDirection(direction, options).catch(() => {});
+      send();
+      padTimer.current = setInterval(send, 450);
+    };
+  }
+
+  function endPadHold(event) {
+    event?.preventDefault();
+    padActiveRef.current = false;
+    stopPadRepeat();
+  }
+
+  function stopNow() {
+    stopPadRepeat();
+    padActiveRef.current = false;
+    client.sendDirection('stop').catch(() => {});
+  }
+
   function updateConfig(field, value) {
     setConfig((current) => ({
       ...current,
-      [field]: field === 'chunkBytes' || field === 'interChunkDelayMs' ? Number(value) : value,
+      [field]: [
+        'chunkBytes',
+        'interChunkDelayMs',
+        'directionStepMeters',
+        'directionStepDegrees',
+      ].includes(field)
+        ? Number(value)
+        : value,
     }));
   }
 
@@ -231,6 +276,68 @@ export function RobotControl({ route, onRobotPosition }) {
             系统选择器只显示正在广播的 BLE 设备：请确认小车已开机、蓝牙在广播，且与平板/电脑在同一空间。
             {config.deviceNamePrefix ? ' 若看不到设备，可清空“设备名前缀”显示全部附近设备。' : ''}
           </small>
+
+          <div class="robot-pad" aria-label="手动方向控制">
+            <div class="robot-pad-head">
+              <span>手动方向控制</span>
+              <small>每步 {config.directionStepMeters ?? 0.15} m / {config.directionStepDegrees ?? 15}° · 按住连续</small>
+            </div>
+            <div class="robot-pad-grid">
+              <button
+                class="robot-pad-btn pad-up"
+                type="button"
+                aria-label="向前"
+                disabled={!connected}
+                onPointerDown={startPadHold('forward', { amountMeters: config.directionStepMeters })}
+                onPointerUp={endPadHold}
+                onPointerLeave={endPadHold}
+                onPointerCancel={endPadHold}
+                onContextMenu={(event) => event.preventDefault()}
+              >↑<small>前</small></button>
+              <button
+                class="robot-pad-btn pad-left"
+                type="button"
+                aria-label="左转"
+                disabled={!connected}
+                onPointerDown={startPadHold('left', { amountDegrees: config.directionStepDegrees })}
+                onPointerUp={endPadHold}
+                onPointerLeave={endPadHold}
+                onPointerCancel={endPadHold}
+                onContextMenu={(event) => event.preventDefault()}
+              >←<small>左</small></button>
+              <button
+                class="robot-pad-btn pad-stop"
+                type="button"
+                aria-label="停止"
+                disabled={!connected}
+                onPointerDown={(event) => event.preventDefault()}
+                onClick={stopNow}
+              >■<small>停止</small></button>
+              <button
+                class="robot-pad-btn pad-right"
+                type="button"
+                aria-label="右转"
+                disabled={!connected}
+                onPointerDown={startPadHold('right', { amountDegrees: config.directionStepDegrees })}
+                onPointerUp={endPadHold}
+                onPointerLeave={endPadHold}
+                onPointerCancel={endPadHold}
+                onContextMenu={(event) => event.preventDefault()}
+              >→<small>右</small></button>
+              <button
+                class="robot-pad-btn pad-down"
+                type="button"
+                aria-label="向后"
+                disabled={!connected}
+                onPointerDown={startPadHold('backward', { amountMeters: config.directionStepMeters })}
+                onPointerUp={endPadHold}
+                onPointerLeave={endPadHold}
+                onPointerCancel={endPadHold}
+                onContextMenu={(event) => event.preventDefault()}
+              >↓<small>后</small></button>
+            </div>
+            <small class="robot-hint">方向键只走固定步长；小车端自带超时与断连保护。红色停止键仅停止动作，任务级急停用下方 STOP。</small>
+          </div>
 
           {connection.error && (
             <div class="robot-diagnostic" role="alert">
@@ -321,6 +428,30 @@ export function RobotControl({ route, onRobotPosition }) {
                   max="512"
                   value={config.chunkBytes}
                   onInput={(event) => updateConfig('chunkBytes', event.currentTarget.value)}
+                  disabled={configLocked}
+                />
+              </label>
+              <label>
+                <span>单步距离 m（前/后）</span>
+                <input
+                  type="number"
+                  min="0.05"
+                  max="1"
+                  step="0.05"
+                  value={config.directionStepMeters}
+                  onInput={(event) => updateConfig('directionStepMeters', event.currentTarget.value)}
+                  disabled={configLocked}
+                />
+              </label>
+              <label>
+                <span>单步转角 °（左/右）</span>
+                <input
+                  type="number"
+                  min="5"
+                  max="90"
+                  step="5"
+                  value={config.directionStepDegrees}
+                  onInput={(event) => updateConfig('directionStepDegrees', event.currentTarget.value)}
                   disabled={configLocked}
                 />
               </label>
