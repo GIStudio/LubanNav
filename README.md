@@ -257,6 +257,10 @@ npm run preview
 
 `npm run build` 会先生成 `routing-graph.json`、地点绑定和 `public/api/v1/routes/` 静态路径响应，再由 Vite 写入 `dist/`。生成文件被 Git 忽略，避免提交大量机械产物。
 
+### 分支约定
+
+前端组的功能分支一律使用 `fe-` 前缀（如 `fe-robot-direction-pad`），从 `main` 拉出，完成后合并回 `main`（建议 `git merge --no-ff` 保留合并记录）。真机（car7）上的校园小车仓库 `campusCar` 只提交、不推送。
+
 从本地 3D 俯瞰图重新提取水泥色平面候选：
 
 ```bash

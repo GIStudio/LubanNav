@@ -158,6 +158,41 @@ describe('WebBluetoothRobotClient', () => {
     await expect(client.sendDirection('diagonal')).rejects.toThrow(/Unknown direction/);
   });
 
+  it('stop clears every queued direction command and halts the active one', async () => {
+    const fake = fakeBluetoothStack();
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const client = new WebBluetoothRobotClient({
+      bluetooth: fake.bluetooth,
+      config: { chunkBytes: 20, interChunkDelayMs: 0 },
+      sleep: () => gate, // freeze the queue between chunks so commands pile up
+    });
+    await client.connect();
+
+    const first = client.sendDirection('forward', { speedMetersPerSecond: 0.1 });
+    const second = client.sendDirection('left');
+    const third = client.sendDirection('right');
+    const stop = client.sendDirection('stop');
+
+    await expect(second).rejects.toThrow(/cleared pending direction/);
+    await expect(third).rejects.toThrow(/cleared pending direction/);
+    release();
+    await expect(first).rejects.toThrow(); // active step cancelled
+    await expect(stop).resolves.toMatchObject({ type: 'direction', direction: 'stop' });
+
+    // Only the aborted forward step (partially written) plus the final stop
+    // were written, and the stop line comes after the aborted fragments.
+    const text = fake.command.writes
+      .map((chunk) => new TextDecoder().decode(chunk))
+      .join('');
+    expect(text.startsWith('{"protocol":"luban')).toBe(true);
+    const stopStart = text.indexOf('{"protocol"', 1);
+    expect(stopStart).toBeGreaterThan(0);
+    expect(JSON.parse(text.slice(stopStart).trim()).direction).toBe('stop');
+  });
+
   it('reports secure-context and API support separately', () => {
     expect(
       webBluetoothSupport({

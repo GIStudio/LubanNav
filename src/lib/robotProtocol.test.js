@@ -122,11 +122,21 @@ describe('robot BLE protocol', () => {
       direction: 'forward',
       amountMeters: 0.15,
       amountDegrees: null,
+      speedMetersPerSecond: null,
     });
+    const fast = createDirectionCommand('forward', { speedMetersPerSecond: 0.2 });
+    expect(fast.speedMetersPerSecond).toBe(0.2);
+    const clamped = createDirectionCommand('backward', { speedMetersPerSecond: 9 });
+    expect(clamped.speedMetersPerSecond).toBe(0.3);
     const turn = createDirectionCommand('right', { amountDegrees: 20 });
     expect(turn).toMatchObject({ direction: 'right', amountDegrees: 20, amountMeters: null });
     const stop = createDirectionCommand('stop');
-    expect(stop).toMatchObject({ direction: 'stop', amountMeters: null, amountDegrees: null });
+    expect(stop).toMatchObject({
+      direction: 'stop',
+      amountMeters: null,
+      amountDegrees: null,
+      speedMetersPerSecond: null,
+    });
     expect(() => createDirectionCommand('diagonal')).toThrow(/Unknown direction/);
   });
 });
