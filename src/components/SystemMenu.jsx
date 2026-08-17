@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'preact/hooks';
+import { useI18n } from '../lib/i18n.js';
 import { RobotControl } from './RobotControl.jsx';
 import { VoiceAssistant } from './VoiceAssistant.jsx';
 
 const PANELS = [
-  { id: 'voice', label: '实时语音', code: 'VOICE' },
-  { id: 'robot', label: '机器人联络', code: 'BLE' },
+  { id: 'voice', code: 'VOICE' },
+  { id: 'robot', code: 'BLE' },
 ];
 
 export function SystemMenu({
@@ -21,6 +22,7 @@ export function SystemMenu({
   voiceControlRef,
   onVoiceControlStateChange,
 }) {
+  const { t } = useI18n();
   const closeButtonRef = useRef(null);
 
   useEffect(() => {
@@ -46,19 +48,19 @@ export function SystemMenu({
         <header class="system-menu-header">
           <div>
             <p class="eyebrow">LIVE SERVICES / DEVICE LINK</p>
-            <h2 id="system-menu-title">语音与设备</h2>
-            <small>按需启用，不占用地图主视区</small>
+            <h2 id="system-menu-title">{t('system.title')}</h2>
+            <small>{t('system.subtitle')}</small>
           </div>
           <button
             ref={closeButtonRef}
             type="button"
             class="system-menu-close"
             onClick={onClose}
-            aria-label="关闭语音与设备面板"
+            aria-label={t('system.close')}
           >×</button>
         </header>
 
-        <nav class="system-menu-tabs" role="tablist" aria-label="设置类型">
+        <nav class="system-menu-tabs" role="tablist" aria-label={t('system.tabsAria')}>
           {PANELS.map((panel) => (
             <button
               key={panel.id}
@@ -71,7 +73,7 @@ export function SystemMenu({
               onClick={() => onSelectPanel(panel.id)}
             >
               <span>{panel.code}</span>
-              {panel.label}
+              {t(`system.panels.${panel.id}`)}
             </button>
           ))}
         </nav>
@@ -83,11 +85,11 @@ export function SystemMenu({
             role="tabpanel"
             aria-labelledby="system-menu-tab-voice"
             hidden={activePanel !== 'voice'}
-            aria-label="实时语音配置"
+            aria-label={t('system.voiceAria')}
           >
             <div class="system-pane-intro">
               <span>01</span>
-              <p>连接 Qwen 实时会话，语音中的导航命令仍由页面本地 A* 校验和执行。</p>
+              <p>{t('system.voiceIntro')}</p>
             </div>
             <VoiceAssistant
               route={route}
@@ -106,11 +108,11 @@ export function SystemMenu({
             role="tabpanel"
             aria-labelledby="system-menu-tab-robot"
             hidden={activePanel !== 'robot'}
-            aria-label="机器人联络配置"
+            aria-label={t('system.robotAria')}
           >
             <div class="system-pane-intro">
               <span>02</span>
-              <p>连接 BLE/GATT 小车、下发当前路线并查看 WGS84 位置回传。</p>
+              <p>{t('system.robotIntro')}</p>
             </div>
             <RobotControl route={route} onRobotPosition={onRobotPosition} />
           </section>

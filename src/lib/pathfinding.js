@@ -616,7 +616,12 @@ export function getRoutingGraph() {
   };
 }
 
-export function formatDuration(seconds) {
+export function formatDuration(seconds, lang = 'zh') {
+  if (lang === 'en') {
+    if (seconds < 60) return `${seconds} s`;
+    const minutes = Math.ceil(seconds / 60);
+    return `${minutes} min`;
+  }
   if (seconds < 60) return `${seconds} 秒`;
   const minutes = Math.ceil(seconds / 60);
   return `${minutes} 分钟`;

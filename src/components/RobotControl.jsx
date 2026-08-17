@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useI18n } from '../lib/i18n.js';
 import { DEFAULT_BLE_CONFIG, normalizeBleConfig } from '../lib/robotProtocol.js';
 import { WebBluetoothRobotClient, webBluetoothSupport } from '../lib/webBluetoothRobot.js';
 
@@ -13,51 +14,53 @@ function loadConfig() {
   }
 }
 
-function friendlyError(error) {
-  if (error?.name === 'RobotConnectionError') {
-    const uuid = error.context?.uuid;
-    const deviceName = error.context?.deviceName ?? 'car7';
-    if (error.stage === 'gatt-connect') {
-      return `已选择 ${deviceName}，但无法建立 BLE GATT 链路。请确认它是 BLE/GATT 设备而不是传统蓝牙 SPP，并关闭其他正在连接小车的 App。`;
-    }
-    if (error.stage === 'primary-service') {
-      return `已连接 ${deviceName}，但找不到 Service ${uuid}。这说明 car7 很可能不使用当前默认的 Nordic UART Service；请从固件或 nRF Connect 读取实际 Service UUID。`;
-    }
-    if (error.stage === 'command-characteristic') {
-      return `已找到 GATT Service，但没有可用的 Command/RX Characteristic ${uuid}。请填写 car7 实际的写入 UUID。`;
-    }
-    if (error.stage === 'telemetry-characteristic') {
-      return `已找到命令通道，但没有 Telemetry/TX Characteristic ${uuid}。请填写 car7 实际的 Notify UUID。`;
-    }
-    if (error.stage === 'notifications') {
-      return `已找到 TX Characteristic ${uuid}，但无法启用 Notify。请确认固件为该 Characteristic 开启 Notify 属性。`;
-    }
-  }
-  if (error?.name === 'NotFoundError') return '已取消设备选择。';
-  if (error?.name === 'SecurityError') return '浏览器拒绝了蓝牙权限，请确认使用 HTTPS 并由按钮触发连接。';
-  if (error?.name === 'NetworkError') return 'GATT 连接失败，请确认小车未被其他设备占用。';
-  if (error?.name === 'AbortError') return '路线传输已中止。';
-  return error?.message ?? '未知蓝牙错误';
-}
-
-function logLabel(event) {
-  if (event.type === 'sent') {
-    return event.message.type === 'navigation_task'
-      ? `任务 ${event.message.taskId} 已完整写入`
-      : '紧急停止指令已写入';
-  }
-  if (event.type === 'message') {
-    if (event.message.type === 'ack') {
-      return `小车确认：${event.message.status ?? 'received'}`;
-    }
-    if (event.message.type === 'status') {
-      return `小车状态：${event.message.status ?? 'unknown'}`;
-    }
-  }
-  return null;
-}
-
 export function RobotControl({ route, onRobotPosition }) {
+  const { t, lang } = useI18n();
+
+  function friendlyError(error) {
+    if (error?.name === 'RobotConnectionError') {
+      const uuid = error.context?.uuid;
+      const deviceName = error.context?.deviceName ?? t('robot.logs.defaultDevice');
+      if (error.stage === 'gatt-connect') {
+        return t('robot.errors.gattConnect', { device: deviceName });
+      }
+      if (error.stage === 'primary-service') {
+        return t('robot.errors.primaryService', { device: deviceName, uuid });
+      }
+      if (error.stage === 'command-characteristic') {
+        return t('robot.errors.commandCharacteristic', { uuid });
+      }
+      if (error.stage === 'telemetry-characteristic') {
+        return t('robot.errors.telemetryCharacteristic', { uuid });
+      }
+      if (error.stage === 'notifications') {
+        return t('robot.errors.notifications', { uuid });
+      }
+    }
+    if (error?.name === 'NotFoundError') return t('robot.errors.notFound');
+    if (error?.name === 'SecurityError') return t('robot.errors.security');
+    if (error?.name === 'NetworkError') return t('robot.errors.network');
+    if (error?.name === 'AbortError') return t('robot.errors.abort');
+    return error?.message ?? t('robot.errors.unknown');
+  }
+
+  function logLabel(event) {
+    if (event.type === 'sent') {
+      return event.message.type === 'navigation_task'
+        ? t('robot.logs.taskSent', { taskId: event.message.taskId })
+        : t('robot.logs.stopSent');
+    }
+    if (event.type === 'message') {
+      if (event.message.type === 'ack') {
+        return t('robot.logs.ack', { status: event.message.status ?? 'received' });
+      }
+      if (event.message.type === 'status') {
+        return t('robot.logs.status', { status: event.message.status ?? 'unknown' });
+      }
+    }
+    return null;
+  }
+
   const support = useMemo(() => webBluetoothSupport(window), []);
   const [config, setConfig] = useState(loadConfig);
   const [connection, setConnection] = useState({
@@ -86,7 +89,7 @@ export function RobotControl({ route, onRobotPosition }) {
   function addLog(text, level = 'info') {
     if (!text) return;
     setLogs((items) => [
-      { text, level, timestamp: new Date().toLocaleTimeString('zh-CN', { hour12: false }) },
+      { text, level, timestamp: new Date().toLocaleTimeString(lang === 'en' ? 'en-US' : 'zh-CN', { hour12: false }) },
       ...items,
     ].slice(0, 5));
   }
@@ -100,8 +103,8 @@ export function RobotControl({ route, onRobotPosition }) {
           stage: event.stage ?? null,
           error: event.error ?? null,
         });
-        if (event.state === 'connected') addLog(`已连接 ${event.deviceName ?? 'BLE 小车'}`, 'success');
-        if (event.state === 'disconnected') addLog('蓝牙连接已断开', 'warning');
+        if (event.state === 'connected') addLog(t('robot.logs.connected', { device: event.deviceName ?? t('robot.logs.defaultBle') }), 'success');
+        if (event.state === 'disconnected') addLog(t('robot.logs.disconnected'), 'warning');
         if (event.state === 'error' && event.error) addLog(friendlyError(event.error), 'error');
       }
       if (event.type === 'transfer-progress') setProgress(event);
@@ -114,7 +117,7 @@ export function RobotControl({ route, onRobotPosition }) {
         addLog(friendlyError(event.error), event.error?.name === 'AbortError' ? 'warning' : 'error');
       }
       if (event.type === 'message') addLog(logLabel(event));
-      if (event.type === 'telemetry-error') addLog(`遥测解析失败：${friendlyError(event.error)}`, 'error');
+      if (event.type === 'telemetry-error') addLog(t('robot.logs.telemetryError', { error: friendlyError(event.error) }), 'error');
       if (event.type === 'position') {
         setPosition(event.position);
         onRobotPosition?.(event.position);
@@ -156,7 +159,7 @@ export function RobotControl({ route, onRobotPosition }) {
 
   async function emergencyStop() {
     try {
-      addLog('正在中止路线传输并发送停止指令…', 'warning');
+      addLog(t('robot.logs.stopping'), 'warning');
       await client.sendEmergencyStop();
     } catch (error) {
       addLog(friendlyError(error), 'error');
@@ -221,13 +224,13 @@ export function RobotControl({ route, onRobotPosition }) {
   }
 
   const stateLabel = {
-    idle: '等待连接',
-    selecting: '选择设备…',
-    connecting: '连接 GATT…',
-    discovering: '检查服务…',
-    connected: '已连接',
-    disconnected: '已断开',
-    error: '连接错误',
+    idle: t('robot.state.idle'),
+    selecting: t('robot.state.selecting'),
+    connecting: t('robot.state.connecting'),
+    discovering: t('robot.state.discovering'),
+    connected: t('robot.state.connected'),
+    disconnected: t('robot.state.disconnected'),
+    error: t('robot.state.error'),
   }[connection.state] ?? connection.state;
 
   return (
@@ -235,7 +238,7 @@ export function RobotControl({ route, onRobotPosition }) {
       <div class="robot-heading">
         <div>
           <p class="eyebrow">WEB BLUETOOTH / BLE GATT</p>
-          <h2 id="robot-control-title">机器人联络</h2>
+          <h2 id="robot-control-title">{t('robot.title')}</h2>
         </div>
         <span class={`robot-state ${connected ? 'connected' : ''}`}>
           <i />{stateLabel}
@@ -244,51 +247,51 @@ export function RobotControl({ route, onRobotPosition }) {
 
       {!support.supported ? (
         <div class="robot-capability blocked" role="status">
-          <strong>此浏览器无法直连 BLE</strong>
+          <strong>{t('robot.blockedTitle')}</strong>
           <p>{support.reason}</p>
           <ul>
-            <li>电脑：请改用 <b>Chrome / Edge</b>（桌面 Safari 不支持 Web Bluetooth）。</li>
-            <li>Android 平板 / 手机：系统自带 <b>Chrome / Edge</b> 均支持，推荐用于现场演示。</li>
-            <li>iPhone / iPad：Safari 无 Web Bluetooth，可安装 <b>Bluefy</b> 浏览器后直连 car7。</li>
+            <li>{t('robot.blockedDesktop')}</li>
+            <li>{t('robot.blockedAndroid')}</li>
+            <li>{t('robot.blockedIos')}</li>
           </ul>
         </div>
       ) : (
         <>
           <div class="robot-capability ready" role="status">
-            <strong>BLE 直连就绪</strong>
-            <p>点击下方按钮，在系统设备选择器中选择 <b>car7</b>（名称以“{config.deviceNamePrefix || '任意名称'}”开头）。</p>
+            <strong>{t('robot.readyTitle')}</strong>
+            <p>{t('robot.readyHint', { prefix: config.deviceNamePrefix || t('robot.anyName') })}</p>
           </div>
 
           <div class="robot-connection-row">
             <div>
-              <span>设备</span>
-              <strong>{connection.deviceName ?? '尚未选择'}</strong>
+              <span>{t('robot.device')}</span>
+              <strong>{connection.deviceName ?? t('robot.noDevice')}</strong>
             </div>
             {connected ? (
-              <button class="robot-secondary-button" onClick={() => client.disconnect()}>断开</button>
+              <button class="robot-secondary-button" onClick={() => client.disconnect()}>{t('robot.disconnect')}</button>
             ) : (
               <button
                 class="robot-connect-button"
                 onClick={connect}
                 disabled={connectionBusy}
               >
-                {connectionBusy ? '连接中…' : '选择并连接小车'}
+                {connectionBusy ? t('robot.connecting') : t('robot.connect')}
               </button>
             )}
           </div>
 
           <small class="robot-hint">
-            系统选择器只显示正在广播的 BLE 设备：请确认小车已开机、蓝牙在广播，且与平板/电脑在同一空间。
-            {config.deviceNamePrefix ? ' 若看不到设备，可清空“设备名前缀”显示全部附近设备。' : ''}
+            {t('robot.selectorHint')}
+            {config.deviceNamePrefix ? t('robot.selectorHintPrefix') : ''}
           </small>
 
-          <div class="robot-pad" aria-label="手动方向控制">
+          <div class="robot-pad" aria-label={t('robot.pad.aria')}>
             <div class="robot-pad-head">
-              <span>手动方向控制</span>
-              <small>每步 {config.directionStepMeters ?? 0.15} m / {config.directionStepDegrees ?? 15}° · 按住连续</small>
+              <span>{t('robot.pad.title')}</span>
+              <small>{t('robot.pad.step', { meters: config.directionStepMeters ?? 0.15, degrees: config.directionStepDegrees ?? 15 })}</small>
             </div>
             <label class="robot-speed-slider">
-              <span>速度</span>
+              <span>{t('robot.pad.speed')}</span>
               <input
                 type="range"
                 min="0.02"
@@ -297,7 +300,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 value={config.directionSpeedMetersPerSecond ?? 0.06}
                 onInput={(event) => updateConfig('directionSpeedMetersPerSecond', event.currentTarget.value)}
                 disabled={configLocked}
-                aria-label="方向控制速度"
+                aria-label={t('robot.pad.speedAria')}
               />
               <strong>{(config.directionSpeedMetersPerSecond ?? 0.06).toFixed(2)} m/s</strong>
             </label>
@@ -305,64 +308,64 @@ export function RobotControl({ route, onRobotPosition }) {
               <button
                 class="robot-pad-btn pad-up"
                 type="button"
-                aria-label="向前"
+                aria-label={t('robot.pad.forward')}
                 disabled={!connected}
                 onPointerDown={startPadHold('forward', { amountMeters: config.directionStepMeters })}
                 onPointerUp={endPadHold}
                 onPointerLeave={endPadHold}
                 onPointerCancel={endPadHold}
                 onContextMenu={(event) => event.preventDefault()}
-              >↑<small>前</small></button>
+              >↑<small>{t('robot.pad.forwardShort')}</small></button>
               <button
                 class="robot-pad-btn pad-left"
                 type="button"
-                aria-label="左转"
+                aria-label={t('robot.pad.left')}
                 disabled={!connected}
                 onPointerDown={startPadHold('left', { amountDegrees: config.directionStepDegrees })}
                 onPointerUp={endPadHold}
                 onPointerLeave={endPadHold}
                 onPointerCancel={endPadHold}
                 onContextMenu={(event) => event.preventDefault()}
-              >←<small>左</small></button>
+              >←<small>{t('robot.pad.leftShort')}</small></button>
               <button
                 class="robot-pad-btn pad-stop"
                 type="button"
-                aria-label="停止"
+                aria-label={t('robot.pad.stop')}
                 disabled={!connected}
                 onPointerDown={(event) => event.preventDefault()}
                 onClick={stopNow}
-              >■<small>停止</small></button>
+              >■<small>{t('robot.pad.stopShort')}</small></button>
               <button
                 class="robot-pad-btn pad-right"
                 type="button"
-                aria-label="右转"
+                aria-label={t('robot.pad.right')}
                 disabled={!connected}
                 onPointerDown={startPadHold('right', { amountDegrees: config.directionStepDegrees })}
                 onPointerUp={endPadHold}
                 onPointerLeave={endPadHold}
                 onPointerCancel={endPadHold}
                 onContextMenu={(event) => event.preventDefault()}
-              >→<small>右</small></button>
+              >→<small>{t('robot.pad.rightShort')}</small></button>
               <button
                 class="robot-pad-btn pad-down"
                 type="button"
-                aria-label="向后"
+                aria-label={t('robot.pad.backward')}
                 disabled={!connected}
                 onPointerDown={startPadHold('backward', { amountMeters: config.directionStepMeters })}
                 onPointerUp={endPadHold}
                 onPointerLeave={endPadHold}
                 onPointerCancel={endPadHold}
                 onContextMenu={(event) => event.preventDefault()}
-              >↓<small>后</small></button>
+              >↓<small>{t('robot.pad.backwardShort')}</small></button>
             </div>
-            <small class="robot-hint">方向键只走固定步长；小车端自带超时与断连保护。红色停止键停止所有动作并清空未执行的指令，任务级急停用下方 STOP。</small>
+            <small class="robot-hint">{t('robot.pad.hint')}</small>
           </div>
 
           {connection.error && (
             <div class="robot-diagnostic" role="alert">
-              <strong>连接诊断 · {connection.stage}</strong>
+              <strong>{t('robot.diagnostic', { stage: connection.stage ?? '' })}</strong>
               <p>{friendlyError(connection.error)}</p>
-              <small>修改下方 GATT UUID 后重新连接；网页无法自动枚举未授权的自定义 Service。</small>
+              <small>{t('robot.diagnosticHint')}</small>
             </div>
           )}
 
@@ -372,8 +375,12 @@ export function RobotControl({ route, onRobotPosition }) {
               onClick={sendRoute}
               disabled={!connected || !robotRoute || transferring}
             >
-              <span>下发当前路线</span>
-              <small>{robotRoute ? `${route.navigationWaypoints?.length ?? route.path.length} 个路径点${route.navigationWaypoints ? '（2.5 m 加密）' : ''}` : '请先切换机器人模式'}</small>
+              <span>{t('robot.sendRoute')}</span>
+              <small>{robotRoute
+                ? t(route.navigationWaypoints ? 'robot.waypointsDense' : 'robot.waypoints', {
+                    count: route.navigationWaypoints?.length ?? route.path.length,
+                  })
+                : t('robot.needRobotMode')}</small>
             </button>
             <button
               class="robot-stop-button"
@@ -387,36 +394,36 @@ export function RobotControl({ route, onRobotPosition }) {
           {progress && (
             <div class="robot-progress" role="status">
               <span style={{ width: `${(progress.sentChunks / progress.totalChunks) * 100}%` }} />
-              <small>{progress.messageType === 'navigation_task' ? '路线' : '指令'} {progress.sentChunks}/{progress.totalChunks}</small>
+              <small>{t(progress.messageType === 'navigation_task' ? 'robot.progressRoute' : 'robot.progressCommand')} {progress.sentChunks}/{progress.totalChunks}</small>
             </div>
           )}
 
           <div class="robot-position" aria-live="polite">
-            <span>最新位置</span>
+            <span>{t('robot.position')}</span>
             {position ? (
               <strong>
                 {position.latitude.toFixed(7)}, {position.longitude.toFixed(7)}
-                <small>{position.headingDegrees == null ? '航向未知' : `航向 ${Math.round(position.headingDegrees)}°`}</small>
+                <small>{position.headingDegrees == null ? t('robot.headingUnknown') : t('robot.heading', { degrees: Math.round(position.headingDegrees) })}</small>
               </strong>
             ) : (
-              <strong>等待小车通知<small>JSON Lines / WGS84</small></strong>
+              <strong>{t('robot.waitingPosition')}<small>JSON Lines / WGS84</small></strong>
             )}
           </div>
 
           <details class="robot-settings">
-            <summary>GATT 与分包设置</summary>
+            <summary>{t('robot.settings')}</summary>
             <div class="robot-settings-grid">
               <label>
-                <span>设备名前缀（可空）</span>
+                <span>{t('robot.fields.deviceNamePrefix')}</span>
                 <input
                   value={config.deviceNamePrefix}
                   onInput={(event) => updateConfig('deviceNamePrefix', event.currentTarget.value)}
                   disabled={configLocked}
-                  placeholder="例如 LubanBot"
+                  placeholder={t('robot.fields.deviceNamePrefixPlaceholder')}
                 />
               </label>
               <label>
-                <span>Service UUID</span>
+                <span>{t('robot.fields.serviceUuid')}</span>
                 <input
                   value={config.serviceUuid}
                   onInput={(event) => updateConfig('serviceUuid', event.currentTarget.value)}
@@ -424,7 +431,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 />
               </label>
               <label>
-                <span>Command / RX UUID</span>
+                <span>{t('robot.fields.commandUuid')}</span>
                 <input
                   value={config.commandCharacteristicUuid}
                   onInput={(event) => updateConfig('commandCharacteristicUuid', event.currentTarget.value)}
@@ -432,7 +439,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 />
               </label>
               <label>
-                <span>Telemetry / TX UUID</span>
+                <span>{t('robot.fields.telemetryUuid')}</span>
                 <input
                   value={config.telemetryCharacteristicUuid}
                   onInput={(event) => updateConfig('telemetryCharacteristicUuid', event.currentTarget.value)}
@@ -440,7 +447,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 />
               </label>
               <label>
-                <span>每包字节</span>
+                <span>{t('robot.fields.chunkBytes')}</span>
                 <input
                   type="number"
                   min="1"
@@ -451,7 +458,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 />
               </label>
               <label>
-                <span>单步距离 m（前/后）</span>
+                <span>{t('robot.fields.stepMeters')}</span>
                 <input
                   type="number"
                   min="0.05"
@@ -463,7 +470,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 />
               </label>
               <label>
-                <span>单步转角 °（左/右）</span>
+                <span>{t('robot.fields.stepDegrees')}</span>
                 <input
                   type="number"
                   min="5"
@@ -475,7 +482,7 @@ export function RobotControl({ route, onRobotPosition }) {
                 />
               </label>
               <label>
-                <span>包间隔 ms</span>
+                <span>{t('robot.fields.interChunkDelay')}</span>
                 <input
                   type="number"
                   min="0"
@@ -490,16 +497,16 @@ export function RobotControl({ route, onRobotPosition }) {
         </>
       )}
 
-      <div class="robot-log" aria-label="机器人通信记录">
+      <div class="robot-log" aria-label={t('robot.logAria')}>
         {logs.length ? logs.map((item, index) => (
           <p class={item.level} key={`${item.timestamp}-${index}-${item.text}`}>
             <time>{item.timestamp}</time>{item.text}
           </p>
-        )) : <p><time>--:--:--</time>所有任务均需人工点击下发，不会随路线变化自动控制小车。</p>}
+        )) : <p><time>--:--:--</time>{t('robot.logs.idle')}</p>}
       </div>
 
       <p class="robot-safety">
-        浏览器链路不是安全控制器；真实运行仍需小车端看门狗、定位、避障、制动与实体急停。
+        {t('robot.safety')}
       </p>
     </section>
   );

@@ -1,8 +1,8 @@
 import { useState } from 'preact/hooks';
-
-const SUGGESTIONS = ['带我去图书馆', '学校简介', '今天要带伞吗'];
+import { useI18n } from '../lib/i18n.js';
 
 export function ChatAssistant({ messages, onSend }) {
+  const { t } = useI18n();
   const [input, setInput] = useState('');
 
   const submit = (event) => {
@@ -13,10 +13,10 @@ export function ChatAssistant({ messages, onSend }) {
   };
 
   return (
-    <div class="assistant-dialogue" aria-label="AI 导航对话">
+    <div class="assistant-dialogue" aria-label={t('chat.aria')}>
       <div class="assistant-console-heading">
         <span>AI DIALOGUE</span>
-        <small>本地快速解析 · 语音见右上角菜单</small>
+        <small>{t('chat.note')}</small>
       </div>
 
       <div class="conversation" aria-live="polite">
@@ -28,22 +28,22 @@ export function ChatAssistant({ messages, onSend }) {
         ))}
       </div>
 
-      <div class="suggestions" aria-label="示例问题">
-        {SUGGESTIONS.map((suggestion) => (
+      <div class="suggestions" aria-label={t('chat.aria')}>
+        {t('chat.suggestions').map((suggestion) => (
           <button key={suggestion} onClick={() => onSend(suggestion)}>{suggestion}</button>
         ))}
       </div>
 
       <form class="chat-form" onSubmit={submit}>
-        <label class="sr-only" for="navigation-query">输入导航问题</label>
+        <label class="sr-only" for="navigation-query">{t('chat.inputLabel')}</label>
         <input
           id="navigation-query"
           value={input}
           onInput={(event) => setInput(event.currentTarget.value)}
-          placeholder="例如：从主入口怎么去图书馆？"
+          placeholder={t('chat.placeholder')}
           autocomplete="off"
         />
-        <button type="submit" aria-label="发送导航问题">↗</button>
+        <button type="submit" aria-label={t('chat.send')}>↗</button>
       </form>
     </div>
   );
