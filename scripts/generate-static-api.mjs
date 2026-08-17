@@ -57,7 +57,7 @@ await copyFile(
 await writeFile(
   resolve(apiRoot, 'catalog.json'),
   pretty({
-    schemaVersion: '1.7',
+    schemaVersion: '1.8',
     dataset: DATASET,
     modes: Object.values(MODES).map(({ id, label, accessibleOnly }) => ({ id, label, accessibleOnly })),
     routing: {
@@ -65,6 +65,9 @@ await writeFile(
       allowedHighways: ['footway', 'path', 'pedestrian', 'service'],
       indoorHighways: ['corridor', 'elevator'],
       entranceFallback: 'nearest building-boundary point to the routable graph',
+      navigationWaypointSpacingMeters: 2.5,
+      navigationWaypointPolicy:
+        'route.navigationWaypoints is the dense 2–3 m point list for robot dispatch (linear interpolation between graph nodes, interpolated=true); route.path keeps one point per graph node for drawing.',
       indoorOverlay: {
         path: '../../data/campus-indoor.geojson',
         policy: 'Pedestrian by default; robot requires robotValidated=true.',

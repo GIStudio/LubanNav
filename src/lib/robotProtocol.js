@@ -89,6 +89,9 @@ export function createNavigationTask(route, options = {}) {
   if (route.request?.mode !== 'robot') throw new Error('Robot tasks require a robot-mode route');
   const createdAt = options.createdAt ?? new Date().toISOString();
   const taskId = options.taskId ?? createTaskId();
+  // Prefer the dense 2–3 m waypoint list; fall back to the sparse graph path
+  // for older route payloads.
+  const waypoints = route.navigationWaypoints ?? route.path ?? [];
   return {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
@@ -103,14 +106,16 @@ export function createNavigationTask(route, options = {}) {
       coordinateSystem: 'WGS84 longitude/latitude',
       distanceMeters: route.summary.distanceMeters,
       durationSeconds: route.summary.durationSeconds,
-      waypoints: route.path.map((point, sequence) => ({
+      waypointSpacingMeters: route.summary.maxNavigationSpacingMeters ?? null,
+      waypoints: waypoints.map((point, sequence) => ({
         sequence,
-        nodeId: point.id,
+        nodeId: point.id ?? point.nodeId ?? null,
         longitude: roundedCoordinate(point.longitude),
         latitude: roundedCoordinate(point.latitude),
         kind: point.kind,
         indoor: point.indoor === true,
         level: point.level ?? null,
+        interpolated: point.interpolated === true,
       })),
     },
   };
@@ -227,7 +232,8 @@ export function getRobotProtocolDescriptor() {
       navigationTask: {
         type: 'navigation_task',
         required: ['protocol', 'protocolVersion', 'type', 'taskId', 'route'],
-        waypointOrder: 'route.waypoints is ordered and uses WGS84 longitude/latitude.',
+        waypointOrder:
+          'route.waypoints is ordered, WGS84 longitude/latitude, and dense: consecutive waypoints are at most 2.5 m apart (route.waypointSpacingMeters). interpolated=true marks points inserted by linear interpolation between graph nodes; nodeId is null for them.',
       },
       emergencyStop: {
         type: 'emergency_stop',

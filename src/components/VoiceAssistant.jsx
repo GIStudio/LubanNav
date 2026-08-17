@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { NODE_BY_ID } from '../data/campus.js';
 import { buildCampusAssistantInstructions } from '../lib/assistantKnowledge.js';
 import { DEFAULT_VOICE_CONFIG, QwenRealtimeSession } from '../lib/qwenRealtime.js';
+import { fetchWeather } from '../lib/weather.js';
 
 const STATUS_LABELS = {
   idle: '等待连接',
@@ -31,6 +32,7 @@ export function VoiceAssistant({
   const [status, setStatus] = useState('idle');
   const [statusMessage, setStatusMessage] = useState('点击后会请求麦克风权限');
   const [liveTranscript, setLiveTranscript] = useState('');
+  const [weather, setWeather] = useState(null);
   const sessionRef = useRef(null);
   const audioRef = useRef(null);
   const callbacksRef = useRef({
@@ -47,10 +49,24 @@ export function VoiceAssistant({
     toName: NODE_BY_ID[route?.request?.to]?.name,
     modeLabel: route?.request?.mode === 'robot' ? '机器人' : '步行',
     distanceMeters: route?.summary?.distanceMeters,
+    highlights: route?.highlights ?? [],
   }), [route]);
+
+  // Refresh weather when the route changes. fetchWeather caches for 10 min,
+  // and degrades to an "unavailable" object on network failure.
+  useEffect(() => {
+    let cancelled = false;
+    fetchWeather().then((result) => {
+      if (!cancelled) setWeather(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [route?.request?.from, route?.request?.to, route?.request?.mode]);
+
   const instructions = useMemo(
-    () => buildCampusAssistantInstructions(routeContext, event),
-    [event, routeContext],
+    () => buildCampusAssistantInstructions(routeContext, event, weather),
+    [event, routeContext, weather],
   );
 
   const active = !['idle', 'ended', 'error'].includes(status);

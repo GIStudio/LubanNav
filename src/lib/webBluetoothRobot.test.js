@@ -87,7 +87,9 @@ describe('WebBluetoothRobotClient', () => {
     }
     const decoded = JSON.parse(new TextDecoder().decode(bytes).trim());
     expect(decoded.taskId).toBe(sent.taskId);
-    expect(decoded.route.waypoints).toHaveLength(route.path.length);
+    // The dispatched task carries the dense ≤ 2.5 m waypoint list.
+    expect(decoded.route.waypoints).toHaveLength(route.navigationWaypoints.length);
+    expect(decoded.route.waypoints.length).toBeGreaterThan(route.path.length);
 
     fake.telemetry.notify(
       encodeRobotMessage({

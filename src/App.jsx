@@ -18,6 +18,7 @@ import {
 } from './lib/eventMode.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
+import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
 
 const DEFAULT_MESSAGES = [
   {
@@ -116,7 +117,7 @@ export function App() {
     return eventParsed.detected ? eventParsed : parseNavigationQuery(query, from);
   }
 
-  function handleQuery(query, includeUser = true) {
+  async function handleQuery(query, includeUser = true) {
     const parsed = parseQueryWithEvent(query);
     if (includeUser) setMessages((items) => [...items, { role: 'user', text: query }]);
 
@@ -125,11 +126,15 @@ export function App() {
       setFrom(parsed.from);
       setTo(parsed.to);
       setMode(parsed.mode);
+      const highlightsTeaser =
+        nextRoute.highlights.length > 0
+          ? ` 途经${nextRoute.highlights.slice(0, 3).map((item) => item.name).join('、')}等地点。`
+          : '';
       setMessages((items) => [
         ...items,
         {
           role: 'assistant',
-          text: `已解析：${NODE_BY_ID[parsed.from].name} → ${NODE_BY_ID[parsed.to].name}。约 ${nextRoute.summary.distanceMeters} 米，${formatDuration(nextRoute.summary.durationSeconds)}。`,
+          text: `已解析：${NODE_BY_ID[parsed.from].name} → ${NODE_BY_ID[parsed.to].name}。约 ${nextRoute.summary.distanceMeters} 米，${formatDuration(nextRoute.summary.durationSeconds)}。${highlightsTeaser}`,
         },
       ]);
       return;
@@ -150,9 +155,36 @@ export function App() {
 
     const cachedReply = getCachedAssistantReply(query);
     if (cachedReply) {
+      if (cachedReply.key === 'weather') {
+        const weather = await fetchWeather();
+        setMessages((items) => [
+          ...items,
+          {
+            role: 'assistant',
+            text: weather.available ? buildWeatherAdvisory(weather) : cachedReply.text,
+            source: weather.available ? 'open-meteo' : cachedReply.source,
+          },
+        ]);
+        return;
+      }
       setMessages((items) => [
         ...items,
         { role: 'assistant', text: cachedReply.text, source: cachedReply.source },
+      ]);
+      return;
+    }
+
+    if (/(沿途|途经|经过|路过|沿线|顺路).*(什么|介绍|哪里|哪些|地方|建筑|楼)|(什么|介绍|哪里|哪些).*(沿途|经过|途经|沿线|路过)/.test(query)) {
+      const highlights = route.highlights ?? [];
+      setMessages((items) => [
+        ...items,
+        {
+          role: 'assistant',
+          text: highlights.length
+            ? `当前路线${NODE_BY_ID[to].name}方向途经：${highlights.map((item) => `${item.name}（距路线约 ${item.distanceMeters} 米，${item.description ?? '校内地点'}）`).join('；')}。`
+            : `当前路线较短（约 ${route.summary.distanceMeters} 米），没有明显的途经点介绍。`,
+          source: 'route-highlights',
+        },
       ]);
       return;
     }
@@ -235,7 +267,13 @@ export function App() {
       mode: parsed.mode,
       distanceMeters: nextRoute.summary.distanceMeters,
       durationSeconds: nextRoute.summary.durationSeconds,
-      message: 'LubanNav 页面已使用本地寻路图更新路线，请简短告知用户。',
+      highlights: nextRoute.highlights.map((item) => ({
+        id: item.id,
+        name: item.name,
+        distanceMeters: item.distanceMeters,
+        description: item.description,
+      })),
+      message: 'LubanNav 页面已使用本地寻路图更新路线，请简短告知用户；若目的地是 3 楼露天平台或天气需要，可顺带提醒带伞或防晒。',
     };
   }
 

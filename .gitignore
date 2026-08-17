@@ -15,3 +15,6 @@ test-results/
 artifacts/
 tools/car7-ble-simulator/.build/
 .env*.local
+.pyenv/
+.pyenv-py313/
+.ssh_run.py

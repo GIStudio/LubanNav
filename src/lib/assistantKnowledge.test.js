@@ -10,11 +10,11 @@ describe('assistant knowledge cache', () => {
     });
   });
 
-  it('states the weather limitation instead of inventing live conditions', () => {
+  it('answers weather questions with a conservative fallback until live data arrives', () => {
     const reply = getCachedAssistantReply('今天要带伞吗？');
     expect(reply.key).toBe('weather');
-    expect(reply.text).toContain('没有接入实时天气');
-    expect(reply.text).toContain('天气应用');
+    expect(reply.text).toContain('正在获取实时天气');
+    expect(reply.text).toContain('3 楼平台为露天场地');
   });
 
   it('returns stable campus facts from the local cache', () => {
@@ -48,5 +48,58 @@ describe('campus assistant instructions', () => {
     expect(instructions).toContain('八月真机展示活动');
     expect(instructions).toContain('主会场：三楼主会场，3F，地图地点未绑定');
     expect(instructions).toContain('未绑定时应说明并请组织者配置');
+  });
+
+  it('embeds live weather advice and a 3F platform reminder when weather is available', () => {
+    const instructions = buildCampusAssistantInstructions(
+      {
+        fromId: 'main-entrance',
+        fromName: '主入口',
+        toId: 'third-floor-platform',
+        toName: '三楼中央',
+        modeLabel: '步行',
+        distanceMeters: 900,
+      },
+      null,
+      {
+        available: true,
+        temperatureC: 31,
+        conditionLabel: '晴',
+        precipitationMm: 0,
+        precipitationProbabilityMax: 70,
+        rainExpected: true,
+        rainingNow: false,
+        sunny: true,
+        uvIndexMax: 8,
+        umbrella: true,
+        sunscreen: true,
+        cold: false,
+        thunderstorm: false,
+      },
+    );
+
+    expect(instructions).toContain('实时天气');
+    expect(instructions).toContain('建议带伞');
+    expect(instructions).toContain('3 楼露天平台');
+  });
+
+  it('introduces route highlights in arrival order for the voice agent', () => {
+    const instructions = buildCampusAssistantInstructions({
+      fromId: 'main-entrance',
+      fromName: '主入口',
+      toId: 'library',
+      toName: '图书馆',
+      modeLabel: '步行',
+      distanceMeters: 990,
+      highlights: [
+        { id: 'food-court', name: '饭堂', distanceMeters: 40, description: '校园主要餐饮区。' },
+        { id: 'lecture-halls', name: '演讲厅 A/B/C', distanceMeters: 12, description: '讲座与活动场地。' },
+      ],
+    });
+
+    expect(instructions).toContain('途经点');
+    expect(instructions).toContain('饭堂（距路线约 40 米）');
+    expect(instructions).toContain('演讲厅 A/B/C（距路线约 12 米）');
+    expect(instructions).toContain('不要一次性把全部途经点念完');
   });
 });

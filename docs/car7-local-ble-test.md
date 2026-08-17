@@ -1,5 +1,12 @@
 # 用 Mac 模拟 car7，使用 Android 手机验收 LubanNav BLE
 
+> **真机已部署（2026-08）**：car7 NUC（`pc@10.7.181.161`）已运行 Linux/BlueZ 移植版
+> BLE 桥（`/home/pc/campusCar/src/ble_bridge/`，日志 `data/logs/ble_bridge.log`）。
+> 页面（Chrome/Edge 或 Android 平板 Chrome）打开右侧“语音与设备 → 机器人联络”，
+> 选择 `car7` 即可直连，无需本机模拟器。默认 telemetry-only；实车移动验收用
+> `scripts/ble_bridge_start.sh --move-test`（前进 10cm → 停止 → 后退 10cm）。
+> 下方“用 Mac 模拟 car7”流程保留给没有真机的开发场景。
+
 ## 测试边界
 
 本机模拟器实现真实的 BLE 广播、GATT Service、写入、Notify 和分包重组，但只把路线航点回放成位置遥测。它不会发布 ROS2 `/cmd_vel`，也不会驱动电机。因此，这轮测试可以验证网页通信闭环，不能证明真实小车的定位、控制或制动安全。

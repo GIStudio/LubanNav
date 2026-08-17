@@ -193,13 +193,22 @@ export function RobotControl({ route, onRobotPosition }) {
       </div>
 
       {!support.supported ? (
-        <div class="robot-unsupported" role="status">
-          <strong>此浏览器暂时无法连接 BLE</strong>
+        <div class="robot-capability blocked" role="status">
+          <strong>此浏览器无法直连 BLE</strong>
           <p>{support.reason}</p>
-          <small>建议在 Android Chrome，或支持 Web Bluetooth 的电脑 Chromium 浏览器中打开本站。</small>
+          <ul>
+            <li>电脑：请改用 <b>Chrome / Edge</b>（桌面 Safari 不支持 Web Bluetooth）。</li>
+            <li>Android 平板 / 手机：系统自带 <b>Chrome / Edge</b> 均支持，推荐用于现场演示。</li>
+            <li>iPhone / iPad：Safari 无 Web Bluetooth，可安装 <b>Bluefy</b> 浏览器后直连 car7。</li>
+          </ul>
         </div>
       ) : (
         <>
+          <div class="robot-capability ready" role="status">
+            <strong>BLE 直连就绪</strong>
+            <p>点击下方按钮，在系统设备选择器中选择 <b>car7</b>（名称以“{config.deviceNamePrefix || '任意名称'}”开头）。</p>
+          </div>
+
           <div class="robot-connection-row">
             <div>
               <span>设备</span>
@@ -213,10 +222,15 @@ export function RobotControl({ route, onRobotPosition }) {
                 onClick={connect}
                 disabled={connectionBusy}
               >
-                选择并连接小车
+                {connectionBusy ? '连接中…' : '选择并连接小车'}
               </button>
             )}
           </div>
+
+          <small class="robot-hint">
+            系统选择器只显示正在广播的 BLE 设备：请确认小车已开机、蓝牙在广播，且与平板/电脑在同一空间。
+            {config.deviceNamePrefix ? ' 若看不到设备，可清空“设备名前缀”显示全部附近设备。' : ''}
+          </small>
 
           {connection.error && (
             <div class="robot-diagnostic" role="alert">
@@ -233,7 +247,7 @@ export function RobotControl({ route, onRobotPosition }) {
               disabled={!connected || !robotRoute || transferring}
             >
               <span>下发当前路线</span>
-              <small>{robotRoute ? `${route.path.length} 个路径点` : '请先切换机器人模式'}</small>
+              <small>{robotRoute ? `${route.navigationWaypoints?.length ?? route.path.length} 个路径点${route.navigationWaypoints ? '（2.5 m 加密）' : ''}` : '请先切换机器人模式'}</small>
             </button>
             <button
               class="robot-stop-button"

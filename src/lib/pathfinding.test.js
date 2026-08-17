@@ -39,7 +39,7 @@ describe('findRoute', () => {
 
   it('returns a self-contained ordered segment path with coordinates and edge metadata', () => {
     const route = findRoute('dorm-5', 'library', 'pedestrian');
-    expect(route.schemaVersion).toBe('1.3');
+    expect(route.schemaVersion).toBe('1.4');
     expect(route.summary.segmentCount).toBe(route.segments.length);
     expect(route.segments[0]).toMatchObject({
       segmentType: 'location-connector',
@@ -77,6 +77,49 @@ describe('findRoute', () => {
       type: 'LineString',
       coordinates: route.path.map((point) => [point.longitude, point.latitude]),
     });
+  });
+
+  it('densifies the path into navigation waypoints at ≤ 2.5 m spacing for robot dispatch', () => {
+    const route = findRoute('dorm-5', 'library', 'robot');
+    expect(route.schemaVersion).toBe('1.4');
+    expect(route.summary.navigationWaypointCount).toBe(route.navigationWaypoints.length);
+    expect(route.navigationWaypoints.length).toBeGreaterThanOrEqual(route.path.length);
+    expect(route.navigationWaypoints[0]).toMatchObject({
+      sequence: 0,
+      nodeId: 'dorm-5',
+      interpolated: false,
+    });
+    expect(route.navigationWaypoints.at(-1)).toMatchObject({
+      nodeId: 'library',
+      interpolated: false,
+    });
+    for (const waypoint of route.navigationWaypoints) {
+      expect(waypoint.distanceMeters).toBeLessThanOrEqual(2.5 + 1e-6);
+      expect(waypoint.longitude).toEqual(expect.any(Number));
+      expect(waypoint.latitude).toEqual(expect.any(Number));
+    }
+    expect(route.summary.maxNavigationSpacingMeters).toBeLessThanOrEqual(2.5 + 1e-6);
+    expect(route.navigationWaypoints.some((waypoint) => waypoint.interpolated === true)).toBe(true);
+  });
+
+  it('lists nearby points of interest as ordered route highlights with descriptions', () => {
+    const route = findRoute('main-entrance', 'library', 'pedestrian');
+    expect(Array.isArray(route.highlights)).toBe(true);
+    expect(route.highlights.length).toBeGreaterThan(0);
+    const ids = new Set();
+    for (const highlight of route.highlights) {
+      expect(highlight.description).toEqual(expect.any(String));
+      expect(highlight.distanceMeters).toBeLessThanOrEqual(80);
+      expect(highlight.id).not.toBe('main-entrance');
+      expect(highlight.id).not.toBe('library');
+      expect(ids.has(highlight.id)).toBe(false);
+      ids.add(highlight.id);
+    }
+    for (let i = 1; i < route.highlights.length; i += 1) {
+      expect(route.highlights[i].approachIndex).toBeGreaterThanOrEqual(
+        route.highlights[i - 1].approachIndex,
+      );
+    }
   });
 
   it('embeds resolved routing nodes and exports a graph that needs no OSM lookup', () => {

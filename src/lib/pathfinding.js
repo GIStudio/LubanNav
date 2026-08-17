@@ -1,19 +1,15 @@
-import { CAMPUS_BOUNDS, DATASET, MODES, NODE_BY_ID } from '../data/campus.js';
+import { CAMPUS_BOUNDS, DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from '../data/campus.js';
+import { POI_DESCRIPTIONS } from '../data/poiDescriptions.js';
+import { haversineDistanceMeters as distanceMeters, nearestOnPolyline } from './geo.js';
+import { densifyNavigationWaypoints } from './routeDensification.js';
 import OSM_ROUTING from '../data/osm-routing.json' with { type: 'json' };
 
-const EARTH_RADIUS_METERS = 6_371_008.8;
 const ROUTING_NODE_BY_ID = new Map(OSM_ROUTING.graph.nodes.map((node) => [node.id, node]));
 
-function distanceMeters(a, b) {
-  const lat1 = (a.latitude * Math.PI) / 180;
-  const lat2 = (b.latitude * Math.PI) / 180;
-  const deltaLat = ((b.latitude - a.latitude) * Math.PI) / 180;
-  const deltaLon = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const value =
-    Math.sin(deltaLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
-  return 2 * EARTH_RADIUS_METERS * Math.asin(Math.sqrt(value));
-}
+/** POIs closer than this to the route line are offered as 途经点 highlights. */
+const HIGHLIGHT_MAX_DISTANCE_METERS = 80;
+/** Never dump more highlights than this; the assistant introduces them in order. */
+const HIGHLIGHT_MAX_COUNT = 8;
 
 function adjacencyFor(modeId) {
   const graph = new Map(OSM_ROUTING.graph.nodes.map((node) => [node.id, []]));
@@ -398,6 +394,47 @@ function routeGeometry(path) {
   return { type: 'LineString', coordinates };
 }
 
+/**
+ * Points of interest that the route passes near, ordered by when they are
+ * approached along the path. Excludes the origin and destination themselves.
+ * Used by the assistant to introduce 途经点 on long routes.
+ */
+function routeHighlights(path, fromId, toId) {
+  const highlights = [];
+  for (const location of PUBLIC_LOCATIONS) {
+    const id = location.id;
+    if (id === fromId || id === toId) continue;
+    const point = { longitude: location.longitude, latitude: location.latitude };
+    const nearest = nearestOnPolyline(point, path);
+    if (nearest.distanceMeters > HIGHLIGHT_MAX_DISTANCE_METERS) continue;
+    highlights.push({
+      id,
+      name: location.name,
+      en: location.en,
+      category: location.category,
+      poiType: location.poiType ?? null,
+      level: location.level ?? null,
+      description: POI_DESCRIPTIONS[id]?.description ?? null,
+      distanceMeters: Math.round(nearest.distanceMeters),
+      approachIndex: nearest.index,
+      longitude: Number(nearest.longitude.toFixed(7)),
+      latitude: Number(nearest.latitude.toFixed(7)),
+    });
+  }
+  highlights.sort((a, b) => a.approachIndex - b.approachIndex);
+  return highlights.slice(0, HIGHLIGHT_MAX_COUNT);
+}
+
+/**
+ * Dense, robot-friendly waypoint list (≤ 2.5 m spacing) plus its stats.
+ * The `path` field keeps one point per graph node for drawing; this field is
+ * what the static API and the BLE navigation task dispatch to the robot.
+ */
+function denseNavigation(path) {
+  const { waypoints, maxSpacingMeters } = densifyNavigationWaypoints(path);
+  return { waypoints, maxSpacingMeters };
+}
+
 export function findRoute(from, to, modeId = 'pedestrian') {
   if (!NODE_BY_ID[from]?.public || !OSM_ROUTING.locations[from]) {
     throw new Error(`Unknown public origin: ${from}`);
@@ -412,8 +449,9 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   const toBinding = OSM_ROUTING.locations[to];
   if (from === to) {
     const path = [endpointPoint(from, 'origin-destination', modeId)];
+    const navigation = denseNavigation(path);
     return {
-      schemaVersion: '1.3',
+      schemaVersion: '1.4',
       dataset: DATASET.id,
       status: 'ok',
       request: { from, to, mode: modeId },
@@ -426,8 +464,12 @@ export function findRoute(from, to, modeId = 'pedestrian') {
         indoorDistanceMeters: 0,
         outdoorPlatformDistanceMeters: 0,
         segmentCount: 0,
+        navigationWaypointCount: navigation.waypoints.length,
+        maxNavigationSpacingMeters: navigation.maxSpacingMeters,
       },
       path,
+      navigationWaypoints: navigation.waypoints,
+      highlights: [],
       segments: [],
       geometry: routeGeometry(path),
       instructions: makeInstructions(from, to, modeId, []),
@@ -449,7 +491,7 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   );
   if (!roadRoute) {
     return {
-      schemaVersion: '1.3',
+      schemaVersion: '1.4',
       dataset: DATASET.id,
       status: 'no_route',
       request: { from, to, mode: modeId },
@@ -485,10 +527,12 @@ export function findRoute(from, to, modeId = 'pedestrian') {
   const distanceMetersRounded = Math.round(distance);
   const durationSeconds = Math.ceil(distance / mode.speedMetersPerSecond);
   const path = composePath(from, to, modeId, roadRoute.nodeIds);
+  const navigation = denseNavigation(path);
+  const highlights = routeHighlights(path, from, to);
   const segments = routeSegments(from, to, modeId, roadRoute);
 
   return {
-    schemaVersion: '1.3',
+    schemaVersion: '1.4',
     dataset: DATASET.id,
     status: 'ok',
     request: { from, to, mode: modeId },
@@ -501,8 +545,12 @@ export function findRoute(from, to, modeId = 'pedestrian') {
       indoorDistanceMeters: Math.round(indoorDistance),
       outdoorPlatformDistanceMeters: Math.round(outdoorPlatformDistance),
       segmentCount: segments.length,
+      navigationWaypointCount: navigation.waypoints.length,
+      maxNavigationSpacingMeters: navigation.maxSpacingMeters,
     },
     path,
+    navigationWaypoints: navigation.waypoints,
+    highlights,
     segments,
     geometry: routeGeometry(path),
     instructions: makeInstructions(from, to, modeId, roadRoute.edges),

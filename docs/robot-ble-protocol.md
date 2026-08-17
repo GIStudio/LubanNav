@@ -33,6 +33,8 @@
 
 只有 `robot` 模式路线可以下发。网页不会在路线变化时自动发送，必须由操作者点击“下发当前路线”。
 
+`route.waypoints` 来自路线的 **加密导航点列**（`navigationWaypoints`）：对寻路图节点之间的线段做线性插值，使相邻点间距不超过 2.5 米（`route.waypointSpacingMeters`），满足小车每 2–3 米一个点的控制需求。`interpolated=true` 的点是插值点，`nodeId` 为 `null`；小车可以直接按点序跟踪，无需自行补点。
+
 ```json
 {
   "protocol": "luban-nav-ble",
@@ -48,6 +50,7 @@
     "coordinateSystem": "WGS84 longitude/latitude",
     "distanceMeters": 942,
     "durationSeconds": 1178,
+    "waypointSpacingMeters": 2.5,
     "waypoints": [
       {
         "sequence": 0,
@@ -56,7 +59,18 @@
         "latitude": 22.8883663,
         "kind": "entrance",
         "indoor": false,
-        "level": null
+        "level": null,
+        "interpolated": false
+      },
+      {
+        "sequence": 1,
+        "nodeId": null,
+        "longitude": 113.4777049,
+        "latitude": 22.8884435,
+        "kind": "interpolated",
+        "indoor": false,
+        "level": null,
+        "interpolated": true
       }
     ]
   }

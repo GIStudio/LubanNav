@@ -956,28 +956,56 @@ h2 {
   box-shadow: 0 0 10px rgba(185, 242, 39, 0.72);
 }
 
-.robot-unsupported {
+.robot-capability {
   margin-top: 17px;
   padding: 14px;
   border: 1px solid rgba(255, 157, 99, 0.32);
   background: rgba(255, 157, 99, 0.055);
 }
 
-.robot-unsupported strong {
+.robot-capability.ready {
+  border-color: rgba(185, 242, 39, 0.32);
+  background: rgba(185, 242, 39, 0.045);
+}
+
+.robot-capability strong {
   color: var(--orange);
   font-size: 12px;
 }
 
-.robot-unsupported p,
-.robot-unsupported small {
+.robot-capability.ready strong {
+  color: var(--acid);
+}
+
+.robot-capability p {
   margin: 7px 0 0;
   color: var(--muted);
   font-size: 10px;
   line-height: 1.55;
 }
 
-.robot-unsupported small {
+.robot-capability p b {
+  color: var(--text);
+}
+
+.robot-capability ul {
+  margin: 9px 0 0;
+  padding: 0 0 0 16px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.robot-capability ul b {
+  color: var(--text);
+}
+
+.robot-hint {
   display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.6;
 }
 
 .robot-connection-row {
@@ -1051,6 +1079,7 @@ h2 {
 }
 
 .robot-connect-button {
+  min-height: 44px;
   padding: 0 13px;
   border: 0;
   color: var(--ink-deep);
@@ -1064,6 +1093,7 @@ h2 {
 }
 
 .robot-secondary-button {
+  min-height: 44px;
   padding: 0 15px;
   color: var(--cyan);
   background: transparent;

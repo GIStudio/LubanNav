@@ -29,14 +29,18 @@ describe('robot BLE protocol', () => {
         coordinateSystem: 'WGS84 longitude/latitude',
       },
     });
-    expect(task.route.waypoints).toHaveLength(route.path.length);
+    expect(task.route.waypoints).toHaveLength(route.navigationWaypoints.length);
+    expect(task.route.waypoints.length).toBeGreaterThanOrEqual(route.path.length);
+    expect(task.route.waypointSpacingMeters).toBeLessThanOrEqual(2.5 + 1e-6);
     expect(task.route.waypoints[0]).toMatchObject({
       sequence: 0,
       nodeId: route.path[0].id,
       longitude: route.path[0].longitude,
       latitude: route.path[0].latitude,
+      interpolated: false,
     });
     expect(task.route.waypoints.at(-1).nodeId).toBe('library');
+    expect(task.route.waypoints.some((waypoint) => waypoint.interpolated === true)).toBe(true);
     expect(() => createNavigationTask(findRoute('dorm-5', 'library', 'pedestrian'))).toThrow(
       'robot-mode',
     );

@@ -18,6 +18,22 @@
 
 桌面端将“去哪里？”路线控制与 AI 文字对话合并在左侧导航工作台中，左栏独立滚动，不会带动中央 OSM/WGS84 地图。实时语音和机器人 BLE 联络的配置收纳在右上角三明治菜单中；地图正下方常驻一个大麦克风快捷控制，已配置后可一键开始或结束对话，未配置时点击会直接打开语音设置。移动端同样固定保留上方地图与麦克风，下方导航面板独立滚动。
 
+## 项目文档
+
+完整文档体系位于 [`docs/`](docs/README.md)，按主题拆分：
+
+| 文档 | 内容 |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | 系统架构、技术栈、目录结构、数据流与设计决策 |
+| [docs/features.md](docs/features.md) | 全部功能的详细介绍与使用方式 |
+| [docs/static-api.md](docs/static-api.md) | 静态 GET API 参考：端点、JSON 字段表、离线 A\* 接入 |
+| [docs/frontend-modules.md](docs/frontend-modules.md) | 前端 `src/lib` 与组件的接口参考 |
+| [docs/data-pipeline.md](docs/data-pipeline.md) | 数据管线：OSM 抓取、路网生成算法、脚本与配置 |
+| [docs/robot-ble-protocol.md](docs/robot-ble-protocol.md) | 机器人 BLE GATT 与 JSON Lines 消息协议 |
+| [docs/car7-local-ble-test.md](docs/car7-local-ble-test.md) | Mac 模拟器 + Android 手机 BLE 验收手册 |
+| [docs/ble-simulator.md](docs/ble-simulator.md) | car7 BLE 模拟器（Swift 包）说明 |
+| [docs/voice-gateway.md](docs/voice-gateway.md) | 语音网关函数计算服务接口 |
+
 ## 为什么静态站点也能提供 GET API
 
 GitHub Pages 不运行服务端代码。构建时，LubanNav 会为所有公开地点组合预计算路径，并输出独立 JSON 文件。因此普通 HTTP 客户端无需执行 JavaScript，也能直接获得路线：
@@ -41,7 +57,7 @@ GET https://<user>.github.io/<repo>/api/v1/routes/w2-elevator/third-floor-platfo
 
 ```json
 {
-  "schemaVersion": "1.3",
+  "schemaVersion": "1.4",
   "dataset": "hkustgz-layered-routing-v4",
   "status": "ok",
   "request": {
@@ -56,7 +72,9 @@ GET https://<user>.github.io/<repo>/api/v1/routes/w2-elevator/third-floor-platfo
     "roadDistanceMeters": 896,
     "connectorDistanceMeters": 46,
     "indoorDistanceMeters": 51,
-    "segmentCount": 38
+    "segmentCount": 38,
+    "navigationWaypointCount": 421,
+    "maxNavigationSpacingMeters": 2.5
   },
   "path": [
     {
@@ -65,6 +83,26 @@ GET https://<user>.github.io/<repo>/api/v1/routes/w2-elevator/third-floor-platfo
       "entranceSource": "osm-entrance",
       "longitude": 113.4776815,
       "latitude": 22.8883663
+    }
+  ],
+  "navigationWaypoints": [
+    {
+      "sequence": 0,
+      "nodeId": "main-entrance",
+      "kind": "entrance",
+      "longitude": 113.4776815,
+      "latitude": 22.8883663,
+      "interpolated": false,
+      "distanceMeters": 0
+    }
+  ],
+  "highlights": [
+    {
+      "id": "food-court",
+      "name": "饭堂",
+      "description": "校园主要餐饮区，位于演讲厅一带。",
+      "distanceMeters": 34,
+      "approachIndex": 12
     }
   ],
   "segments": [
@@ -155,7 +193,7 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 
 ## AI 语音会话
 
-文字助手会优先在浏览器本地回答常见问候、学校简介、四大枢纽、位置、随身物品和通用天气提醒；导航目的地仍由本地解析器和 A* 路网处理。这些请求不调用模型。当前未接入天气 API，助手必须明确无法判断实时温度和降雨，并建议用户查看可靠天气应用。
+文字助手会优先在浏览器本地回答常见问候、学校简介、四大枢纽、位置、随身物品、途经点介绍和天气提醒；导航目的地仍由本地解析器和 A* 路网处理。天气提问会调用免密钥的 Open-Meteo（`src/lib/weather.js`）返回实时温度、降水概率与紫外线，并针对 3 楼露天平台给出带伞 / 防晒 / 雷雨避让提醒；获取失败时明确告知无法判断实时天气并建议查看可靠天气应用。
 
 点击“开始语音”后，浏览器生成 WebRTC Offer SDP，并交给阿里云函数计算完成访问码校验和百炼 SDP 交换；获得 Answer SDP 后，麦克风音频通过 WebRTC 直连阿里云百炼 `qwen3.5-omni-flash-realtime`。百炼浏览器端点不接受跨域 SDP 请求，因此函数计算必须代理这个建连步骤。长期百炼 API Key 与 Workspace ID 只存在于函数计算环境变量中，不进入网页、GitHub 仓库或浏览器。单次会话在前端限制为 3 分钟；访问码只保存在当前页面内存，刷新后清除。
 
