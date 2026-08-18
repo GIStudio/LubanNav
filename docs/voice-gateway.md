@@ -91,7 +91,7 @@ Body: <offerSdp>
 | `RATE_LIMIT_PER_WINDOW` | 否 | 5 分钟窗口内每 `客户端IP:Origin` 的最大请求数，默认 10 |
 | `FC_SERVER_PORT` / `PORT` | 否 | 监听端口，默认 9000 |
 
-**安全要求**：前三项严禁写入 GitHub Pages、仓库或任何 `VITE_*` 变量（所有 `VITE_*` 都会进入构建后的公开 JavaScript）。访问码由访客在页面临时输入，只保存在页面内存。
+**安全要求**：前三项严禁写入 GitHub Pages、仓库或任何 `VITE_*` 变量（所有 `VITE_*` 都会进入构建后的公开 JavaScript）。访问码由访客在页面临时输入，只保存在页面内存；也可由分享链接 `?accessCode=...` 自动预填，页面读取后立即从 URL 移除（不留在地址栏、浏览器历史或复制分享链接中）。
 
 ## 5. 函数计算部署要点
 

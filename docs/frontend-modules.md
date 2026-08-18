@@ -169,7 +169,7 @@
 
 ### App.jsx
 
-应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、机器人位置、系统菜单开关。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。
+应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、机器人位置、系统菜单开关。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。挂载时读取 `?accessCode=` 链接参数并 `voiceSession.setAccessCode(...)` 预填演示访问码，随即从 URL 删除该参数（凭据不留在地址栏、历史或复制分享链接）。
 
 ### components/CampusMap.jsx
 

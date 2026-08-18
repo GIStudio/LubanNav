@@ -15,6 +15,7 @@ import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
 import { useEventProfiles } from './lib/useEventProfiles.js';
 import { useRouteQueryState } from './lib/useRouteQueryState.js';
+import { voiceSession } from './lib/voiceSession.js';
 
 export function App() {
   const { t, lang, setLang } = useI18n();
@@ -54,6 +55,19 @@ export function App() {
   useEffect(() => {
     const query = params.get('q');
     if (query) handleQuery(query, false);
+  }, []);
+
+  // Seed the demo access code from the shared link (?accessCode=...) so
+  // visitors do not have to type it, then strip the credential from the
+  // address bar, browser history and any subsequently copied share links.
+  useEffect(() => {
+    const accessCode = params.get('accessCode');
+    if (accessCode?.trim()) {
+      voiceSession.setAccessCode(accessCode.trim());
+      const url = new URL(window.location.href);
+      url.searchParams.delete('accessCode');
+      window.history.replaceState({}, '', url);
+    }
   }, []);
 
   function parseQueryWithEvent(query) {
