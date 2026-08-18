@@ -109,7 +109,7 @@
 | `voiceSession` | 模块级 store：`{subscribe, snapshot, setAccessCode, attachAudio, setHandlers, updateInstructions, start, stop}`。`start()` 用当前 `accessCode` + `attachAudio` 注册的音频元素 + `setHandlers` 注册的回调（`onUserTranscript` / `onAssistantTranscript` / `onNavigationCommand`）创建 `QwenRealtimeSession` |
 | `useVoiceSession()` | `useSyncExternalStore` 封装，返回 `{status, statusMessage, liveTranscript, accessCode, supported, active, configured, start, stop, setAccessCode}` |
 
-要点：`updateInstructions` 在会话已启动时走 `session.updateInstructions`；`start` 在非活跃状态、不支持或未填访问码时是安全的 no-op。配套 `voiceSession.test.js`。
+要点：`updateInstructions` 在会话已启动时走 `session.updateInstructions`；`start` 在非活跃状态、不支持或未填访问码时是安全的 no-op。访问码持久化到 localStorage（键 `luban-nav:voice-access-code`）：`setAccessCode` 保存、清空输入移除、模块初始化时自动读回；localStorage 不可用时优雅降级为仅内存。配套 `voiceSession.test.js`。
 
 ## 8. 机器人协议 src/lib/robotProtocol.js
 
@@ -169,7 +169,7 @@
 
 ### App.jsx
 
-应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、机器人位置、系统菜单开关。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。挂载时读取 `?accessCode=` 链接参数并 `voiceSession.setAccessCode(...)` 预填演示访问码，随即从 URL 删除该参数（凭据不留在地址栏、历史或复制分享链接）。
+应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、机器人位置、系统菜单开关。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。挂载时读取 `?accessCode=` 链接参数并 `voiceSession.setAccessCode(...)` 预填/覆盖保存演示访问码，随即从 URL 删除该参数（凭据不留在地址栏、历史或复制分享链接）。
 
 ### components/CampusMap.jsx
 

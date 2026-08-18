@@ -9,9 +9,25 @@ import { QwenRealtimeSession } from './qwenRealtime.js';
  * longer bridges control refs and state between them. VoiceAssistant
  * registers the audio element, instruction builder output, and transcript /
  * navigation handlers; either UI can then start/stop the session.
+ *
+ * The demo access code is persisted to localStorage (key
+ * `luban-nav:voice-access-code`) so returning visitors do not have to type
+ * it again; clearing the input removes the stored value.
  */
 
 const INACTIVE_STATUSES = ['idle', 'ended', 'error'];
+
+const ACCESS_CODE_STORAGE_KEY = 'luban-nav:voice-access-code';
+
+function loadStoredAccessCode() {
+  try {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem(ACCESS_CODE_STORAGE_KEY) ?? '';
+  } catch {
+    // localStorage may be unavailable (private mode, disabled storage)
+    return '';
+  }
+}
 
 let session = null;
 let audioElement = null;
@@ -22,7 +38,7 @@ const initialState = {
   status: 'idle',
   statusMessage: '',
   liveTranscript: '',
-  accessCode: '',
+  accessCode: loadStoredAccessCode(),
   supported: Boolean(
     typeof window !== 'undefined'
       && window.isSecureContext
@@ -54,7 +70,15 @@ function snapshot() {
 }
 
 function setAccessCode(accessCode) {
-  patch({ accessCode });
+  const next = String(accessCode ?? '').trim();
+  try {
+    if (typeof window === 'undefined') return patch({ accessCode: next });
+    if (next) window.localStorage.setItem(ACCESS_CODE_STORAGE_KEY, next);
+    else window.localStorage.removeItem(ACCESS_CODE_STORAGE_KEY);
+  } catch {
+    // ignore persistence failures (private mode, disabled storage)
+  }
+  patch({ accessCode: next });
 }
 
 function attachAudio(element) {

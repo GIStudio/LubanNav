@@ -197,7 +197,7 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 
 文字助手会优先在浏览器本地回答常见问候、学校简介、四大枢纽、位置、随身物品、途经点介绍和天气提醒；导航目的地仍由本地解析器和 A* 路网处理。天气提问会调用免密钥的 Open-Meteo（`src/lib/weather.js`）返回实时温度、降水概率与紫外线，并针对 3 楼露天平台给出带伞 / 防晒 / 雷雨避让提醒；获取失败时明确告知无法判断实时天气并建议查看可靠天气应用。
 
-点击“开始语音”后，浏览器生成 WebRTC Offer SDP，并交给阿里云函数计算完成访问码校验和百炼 SDP 交换；获得 Answer SDP 后，麦克风音频通过 WebRTC 直连阿里云百炼 `qwen3.5-omni-flash-realtime`。百炼浏览器端点不接受跨域 SDP 请求，因此函数计算必须代理这个建连步骤。长期百炼 API Key 与 Workspace ID 只存在于函数计算环境变量中，不进入网页、GitHub 仓库或浏览器。单次会话在前端限制为 3 分钟；访问码只保存在当前页面内存，刷新后清除。演示组织者可以在分享链接里带上 `?accessCode=...` 自动预填访问码，页面读取后会立即把它从地址栏移除（凭据不留在浏览器历史或“复制分享链接”里）。
+点击“开始语音”后，浏览器生成 WebRTC Offer SDP，并交给阿里云函数计算完成访问码校验和百炼 SDP 交换；获得 Answer SDP 后，麦克风音频通过 WebRTC 直连阿里云百炼 `qwen3.5-omni-flash-realtime`。百炼浏览器端点不接受跨域 SDP 请求，因此函数计算必须代理这个建连步骤。长期百炼 API Key 与 Workspace ID 只存在于函数计算环境变量中，不进入网页、GitHub 仓库或浏览器。单次会话在前端限制为 3 分钟；演示访问码保存在本浏览器 localStorage（键 `luban-nav:voice-access-code`），下次打开自动填入，清空输入框即删除。演示组织者也可以在分享链接里带上 `?accessCode=...` 自动预填并覆盖保存，页面读取后会立即把它从地址栏移除（凭据不留在浏览器历史或“复制分享链接”里）。
 
 语音模型通过 Function Calling 调用 `set_navigation_route`，只返回白名单内的 `{from, to, mode}` 地点 ID。页面验证这些参数后调用现有本地 A* 寻路并刷新地图，再把真实距离和耗时作为工具结果返回给模型进行语音确认。模型不会生成路径坐标，也不能绕过本地地点白名单和寻路内核。
 
@@ -232,7 +232,7 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 VITE_VOICE_GATEWAY_URL=https://your-domain.example/voice/session
 ```
 
-访问码、Workspace ID 和 API Key 都不要写入 Vite 环境变量，因为所有 `VITE_*` 值都会出现在构建后的公开 JavaScript 中。访问码由访客在页面临时输入，或通过 `?accessCode=` 链接参数预填（读取后即从 URL 移除）；另外两项只配置在函数计算。
+访问码、Workspace ID 和 API Key 都不要写入 Vite 环境变量，因为所有 `VITE_*` 值都会出现在构建后的公开 JavaScript 中。访问码保存在本浏览器 localStorage，也可通过 `?accessCode=` 链接参数预填并覆盖保存（读取后即从 URL 移除）；另外两项只配置在函数计算。
 
 GitHub Pages 部署时，在仓库 **Settings → Secrets and variables → Actions → Variables** 中设置：
 
