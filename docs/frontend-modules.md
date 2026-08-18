@@ -77,7 +77,11 @@
 | --- | --- |
 | `CACHED_REPLIES` | 本地缓存回答文本表：`greeting/thanks/goodbye/capabilities/school/hubs/location/weather/carry` |
 | `getCachedAssistantReply(query)` | 归一化后按精确组匹配，再用正则兜底天气 / 随身物品类问题；命中返回 `{key, text, source:'local-cache'}`，否则 `null` |
-| `buildCampusAssistantInstructions(routeContext, event, weather)` | 拼装实时语音会话的 system instructions：身份与语气、稳定事实、能力与天气边界（Open-Meteo 开源数据，广州南沙区·校园中心）、**会话开场带伞提醒**、**到达目的地随身物品提醒**、3 楼露天平台提醒（按目的地）、导航工具强制调用规则、当前路线上下文、地点清单、活动上下文 |
+| `formatCampusDateTime(now)` / `formatCampusTime(now)` | `Asia/Shanghai`（固定 UTC+8）的日期时间格式化：`2026年8月18日 星期二 16:50` / `16:50` |
+| `buildLiveContext({now, startedAt, routeContext, robotPosition})` | 自动刷新的实时语音上下文：当前时间 + 导航进度。有 `robotPosition` 时用 BLE 遥测沿路线算真实进度（`routeContext.path`）；否则按 `startedAt`（路线开始时间）与 `durationSeconds` 做匀速估算；接近目的地时附加"可主动提醒带好随身物品" |
+| `buildCampusAssistantInstructions(routeContext, event, weather, liveContext)` | 拼装实时语音会话的 system instructions：身份与语气、稳定事实、能力与天气边界（Open-Meteo 开源数据，广州南沙区·校园中心）、**会话开场带伞提醒**、**到达目的地随身物品提醒**、`liveContext` 实时导航上下文（网页自动刷新，估算/遥测进度）、3 楼露天平台提醒（按目的地）、导航工具强制调用规则、当前路线上下文、地点清单、活动上下文 |
+
+几何辅助（供 `buildLiveContext` 计算沿路线进度）：`src/lib/geo.js` 新增 `polylineLengthMeters(polyline)` 与 `distanceAlongPolylineMeters(point, polyline)`（投影点到折线起点的累计距离）。
 
 ## 6.1 天气 src/lib/weather.js
 
@@ -206,7 +210,7 @@
 
 ### components/VoiceAssistant.jsx
 
-`props: {route, event, onUserTranscript, onAssistantTranscript, onNavigationCommand}`。访问码输入与会话开始/结束界面。会话本身在共享 store（§7.5）：本组件只把 `<audio>` 元素、转写/导航回调与 instructions 流注册进 store，按钮直接调 `useVoiceSession()` 的 `start/stop`；instructions 随路线与活动变化自动 `updateInstructions`。
+`props: {route, event, routeStartedAt, robotPosition, onUserTranscript, onAssistantTranscript, onNavigationCommand}`。访问码输入与会话开始/结束界面。会话本身在共享 store（§7.5）：本组件只把 `<audio>` 元素、转写/导航回调与 instructions 流注册进 store，按钮直接调 `useVoiceSession()` 的 `start/stop`；instructions 随路线、活动、天气变化自动 `updateInstructions`，并每 30 秒重建一次包含当前时间与导航进度（`routeStartedAt` + `robotPosition`）的实时上下文（§6 `buildLiveContext`）。
 
 ### components/VoiceQuickControl.jsx
 
@@ -214,7 +218,7 @@
 
 ### components/SystemMenu.jsx
 
-`props: {open, onClose, activePanel, onSelectPanel, route, event, onVoiceUserTranscript, onVoiceAssistantTranscript, onVoiceNavigationCommand, onRobotPosition}`。右上角模态对话框，两个 tab（实时语音 / 机器人联络），Esc 或点击遮罩关闭，焦点管理。语音面板只传回调，不再透传 `voiceControlRef` / `onVoiceControlStateChange`。
+`props: {open, onClose, activePanel, onSelectPanel, route, event, onVoiceUserTranscript, onVoiceAssistantTranscript, onVoiceNavigationCommand, onRobotPosition, robotPosition, routeStartedAt}`。右上角模态对话框，两个 tab（实时语音 / 机器人联络），Esc 或点击遮罩关闭，焦点管理。语音面板只传回调（`robotPosition` / `routeStartedAt` 供实时上下文用），不再透传 `voiceControlRef` / `onVoiceControlStateChange`。
 
 ### components/RobotControl.jsx
 

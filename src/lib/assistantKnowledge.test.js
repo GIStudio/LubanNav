@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { defaultEventProfiles } from './eventMode.js';
-import { buildCampusAssistantInstructions, getCachedAssistantReply } from './assistantKnowledge.js';
+import {
+  buildCampusAssistantInstructions,
+  buildLiveContext,
+  formatCampusDateTime,
+  formatCampusTime,
+  getCachedAssistantReply,
+} from './assistantKnowledge.js';
 
 describe('assistant knowledge cache', () => {
   it('answers common greetings without a model call', () => {
@@ -116,5 +122,82 @@ describe('campus assistant instructions', () => {
     expect(instructions).toContain('饭堂（距路线约 40 米）');
     expect(instructions).toContain('演讲厅 A/B/C（距路线约 12 米）');
     expect(instructions).toContain('不要一次性把全部途经点念完');
+  });
+
+  it('embeds an auto-refreshed live context line when provided', () => {
+    const instructions = buildCampusAssistantInstructions({}, null, null, '当前时间：2026年8月18日 星期二 16:50（Asia/Shanghai）。');
+    expect(instructions).toContain('实时导航上下文');
+    expect(instructions).toContain('不得当作精确位置');
+    expect(instructions).toContain('当前时间：2026年8月18日 星期二 16:50');
+  });
+
+  it('omits the live context line when none is provided', () => {
+    const instructions = buildCampusAssistantInstructions({}, null, null);
+    expect(instructions).not.toContain('实时导航上下文');
+  });
+});
+
+describe('live navigation context', () => {
+  const NOW = Date.UTC(2026, 7, 18, 8, 50, 0); // 2026-08-18 16:50 Asia/Shanghai
+
+  it('formats Asia/Shanghai date and time deterministically', () => {
+    expect(formatCampusDateTime(NOW)).toBe('2026年8月18日 星期二 16:50');
+    expect(formatCampusTime(NOW)).toBe('16:50');
+  });
+
+  it('reports the current time even without progress data', () => {
+    const context = buildLiveContext({ now: NOW });
+    expect(context).toContain('当前时间：2026年8月18日 星期二 16:50');
+  });
+
+  it('estimates progress and remaining time from the route clock', () => {
+    const context = buildLiveContext({
+      now: NOW,
+      startedAt: NOW - 3 * 60 * 1000, // 3 minutes into a 6-minute walk
+      routeContext: { durationSeconds: 360 },
+    });
+    expect(context).toContain('进度约 50%');
+    expect(context).toContain('剩余约 3 分钟');
+    expect(context).toContain('估算，不代表实际位置');
+  });
+
+  it('flags near-arrival and prompts a proactive belongings reminder', () => {
+    const context = buildLiveContext({
+      now: NOW,
+      startedAt: NOW - 6 * 60 * 1000, // elapsed == duration
+      routeContext: { durationSeconds: 360 },
+    });
+    expect(context).toContain('已到达或接近目的地');
+    expect(context).toContain('主动提醒用户带好随身物品');
+  });
+
+  it('uses the BLE robot telemetry for real progress along the route', () => {
+    const path = [
+      { longitude: 113.474, latitude: 22.8855 },
+      { longitude: 113.479, latitude: 22.89025 },
+    ];
+    const robotAt = { longitude: 113.4765, latitude: 22.887875 }; // ~middle of the route
+    const context = buildLiveContext({
+      now: NOW,
+      routeContext: { path },
+      robotPosition: robotAt,
+    });
+    expect(context).toContain('机器人最新位置沿路线约');
+    expect(context).toContain('进度约 50%');
+    expect(context).toContain('BLE 遥测');
+  });
+
+  it('prompts a proactive belongings reminder when the robot nears the end', () => {
+    const path = [
+      { longitude: 113.474, latitude: 22.8855 },
+      { longitude: 113.479, latitude: 22.89025 },
+    ];
+    const robotNearEnd = { longitude: 113.4789, latitude: 22.8901 };
+    const context = buildLiveContext({
+      now: NOW,
+      routeContext: { path },
+      robotPosition: robotNearEnd,
+    });
+    expect(context).toContain('主动提醒带好随身物品');
   });
 });

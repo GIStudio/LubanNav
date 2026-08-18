@@ -1,6 +1,7 @@
 import { campusLocationCatalog } from './voiceNavigation.js';
 import { eventAssistantContext } from './eventMode.js';
 import { buildWeatherAdvisory, CAMPUS_WEATHER_REGION } from './weather.js';
+import { distanceAlongPolylineMeters, polylineLengthMeters } from './geo.js';
 
 /** Locations whose destination sits on the open-air 3F platform. */
 const OPEN_AIR_PLATFORM_DESTINATIONS = new Set([
@@ -101,7 +102,96 @@ function highlightsInstructionLine(routeContext) {
   return `当前路线途经点（按到达顺序）：${list}。当路线较长（约 800 米以上）或用户询问“沿途有什么／现在到哪了／经过哪些地方”时，按顺序用一两句话简要介绍这些途经点的用途；不要一次性把全部途经点念完。`;
 }
 
-export function buildCampusAssistantInstructions(routeContext = {}, event = null, weather = null) {
+// ── live navigation context (auto-refreshed) ─────────────────────────────
+
+const WEEKDAYS_ZH = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+/** Asia/Shanghai is fixed UTC+8 (no DST), so shifting UTC is exact. */
+const SHANGHAI_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+function shanghaiParts(now) {
+  const local = new Date(now + SHANGHAI_UTC_OFFSET_MS);
+  return {
+    year: local.getUTCFullYear(),
+    month: local.getUTCMonth() + 1,
+    day: local.getUTCDate(),
+    weekday: WEEKDAYS_ZH[local.getUTCDay()],
+    hours: String(local.getUTCHours()).padStart(2, '0'),
+    minutes: String(local.getUTCMinutes()).padStart(2, '0'),
+  };
+}
+
+/** "2026年8月18日 星期二 16:50" in Asia/Shanghai for a timestamp. */
+export function formatCampusDateTime(now = Date.now()) {
+  const { year, month, day, weekday, hours, minutes } = shanghaiParts(now);
+  return `${year}年${month}月${day}日 ${weekday} ${hours}:${minutes}`;
+}
+
+/** "16:50" in Asia/Shanghai for a timestamp. */
+export function formatCampusTime(now = Date.now()) {
+  const { hours, minutes } = shanghaiParts(now);
+  return `${hours}:${minutes}`;
+}
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+const NEAR_ARRIVAL_PERCENT = 90;
+const NEAR_ARRIVAL_REMAINING_METERS = 50;
+
+function robotProgressSentence(routeContext, robotPosition) {
+  const path = routeContext.path;
+  if (!Array.isArray(path) || path.length < 2) return '';
+  const { latitude, longitude } = robotPosition;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return '';
+  const total = polylineLengthMeters(path);
+  if (total <= 0) return '';
+  const along = distanceAlongPolylineMeters({ longitude, latitude }, path);
+  const percent = clampPercent((along / total) * 100);
+  const remaining = Math.max(0, total - along);
+  const sentence =
+    `机器人最新位置沿路线约 ${Math.round(along)} 米，路线进度约 ${percent}%，距终点约 ${Math.round(remaining)} 米（进度来自 BLE 遥测位置）。`;
+  if (percent >= NEAR_ARRIVAL_PERCENT || remaining <= NEAR_ARRIVAL_REMAINING_METERS) {
+    return `${sentence} 用户已接近目的地——若尚未提醒，可主动提醒带好随身物品。`;
+  }
+  return sentence;
+}
+
+function timeProgressSentence({ now, startedAt, routeContext }) {
+  const durationSeconds = routeContext.durationSeconds;
+  if (!startedAt || !Number.isFinite(durationSeconds) || durationSeconds <= 0) return '';
+  const elapsedSeconds = Math.max(0, (now - startedAt) / 1000);
+  const percent = clampPercent((elapsedSeconds / durationSeconds) * 100);
+  const remainingSeconds = Math.max(0, durationSeconds - elapsedSeconds);
+  const durationMinutes = Math.max(1, Math.ceil(durationSeconds / 60));
+  const head = `导航于 ${formatCampusTime(startedAt)} 开始，全程约 ${durationMinutes} 分钟`;
+  if (remainingSeconds <= 60 || percent >= NEAR_ARRIVAL_PERCENT) {
+    return `${head}；按匀速估算应已到达或接近目的地（估算，不代表实际位置）。 若尚未提醒，可主动提醒用户带好随身物品。`;
+  }
+  const remainingMinutes = Math.max(1, Math.ceil(remainingSeconds / 60));
+  return `${head}；按匀速估算当前进度约 ${percent}%，预计剩余约 ${remainingMinutes} 分钟（估算，不代表实际位置）。`;
+}
+
+/**
+ * Auto-refreshed voice context: current Asia/Shanghai date/time plus
+ * navigation progress. Progress is either the real BLE telemetry position of
+ * the robot along the route, or a time-based estimate since the route was
+ * set (always framed as an estimate — the page has no GPS for pedestrians).
+ */
+export function buildLiveContext({
+  now = Date.now(),
+  startedAt = null,
+  routeContext = {},
+  robotPosition = null,
+} = {}) {
+  const time = `当前时间：${formatCampusDateTime(now)}（Asia/Shanghai）。`;
+  const progress = robotPosition
+    ? robotProgressSentence(routeContext, robotPosition)
+    : timeProgressSentence({ now, startedAt, routeContext });
+  return progress ? `${time} ${progress}` : time;
+}
+
+export function buildCampusAssistantInstructions(routeContext = {}, event = null, weather = null, liveContext = '') {
   const from = routeContext.fromName || '当前起点';
   const to = routeContext.toName || '当前目的地';
   const fromId = routeContext.fromId || 'main-entrance';
@@ -124,6 +214,9 @@ export function buildCampusAssistantInstructions(routeContext = {}, event = null
       : []),
     '导航工具：只要用户表达去某处、从某地到某地、规划路线或让机器人前往某处的意图，必须调用 set_navigation_route；不得只在口头上确认。工具只提取地点 ID 和模式，距离与路径由 LubanNav 本地计算。目的地不明确时先追问，不得猜测。',
     `当前地图路线：${from}到${to}，模式为${mode}${distance}（地点 ID：${fromId} → ${toId}）。用户没有说明起点时，可省略工具的 from 参数以沿用当前起点。`,
+    ...(liveContext
+      ? [`实时导航上下文（由网页自动刷新，进度为估算或 BLE 遥测，不得当作精确位置）：${liveContext}`]
+      : []),
     highlightsInstructionLine(routeContext),
     `可导航地点 ID：${campusLocationCatalog()}。`,
     eventAssistantContext(event),

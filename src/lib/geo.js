@@ -93,3 +93,32 @@ export function nearestOnPolyline(point, polyline) {
   }
   return { distanceMeters: bestDistance, index: bestIndex, longitude: bestLongitude, latitude: bestLatitude };
 }
+
+/**
+ * Total great-circle length in meters of a polyline of
+ * { longitude, latitude } points.
+ */
+export function polylineLengthMeters(polyline) {
+  let total = 0;
+  for (let i = 0; i < polyline.length - 1; i += 1) {
+    total += haversineDistanceMeters(polyline[i], polyline[i + 1]);
+  }
+  return total;
+}
+
+/**
+ * Distance in meters travelled along a polyline from its start to the
+ * projection of `point` onto it (0 for a point before the start, the full
+ * length for a point past the end).
+ */
+export function distanceAlongPolylineMeters(point, polyline) {
+  if (!polyline?.length) return 0;
+  const nearest = nearestOnPolyline(point, polyline);
+  const closest = { longitude: nearest.longitude, latitude: nearest.latitude };
+  let distance = 0;
+  for (let i = 0; i < nearest.index; i += 1) {
+    distance += haversineDistanceMeters(polyline[i], polyline[i + 1]);
+  }
+  distance += haversineDistanceMeters(polyline[nearest.index], closest);
+  return distance;
+}

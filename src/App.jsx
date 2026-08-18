@@ -35,6 +35,7 @@ export function App() {
   ]);
   const [showDetails, setShowDetails] = useState(false);
   const [robotPosition, setRobotPosition] = useState(null);
+  const [routeStartedAt, setRouteStartedAt] = useState(() => Date.now());
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
   const systemMenuButtonRef = useRef(null);
@@ -51,6 +52,12 @@ export function App() {
 
   const route = useMemo(() => findRoute(from, to, mode), [from, to, mode]);
   const staticApiUrl = `./api/v1/routes/${from}/${to}.${mode}.json`;
+
+  // Restart the navigation progress clock whenever the route changes, so the
+  // voice assistant's live context estimates progress from this moment.
+  useEffect(() => {
+    setRouteStartedAt(Date.now());
+  }, [from, to, mode]);
 
   useEffect(() => {
     const query = params.get('q');
@@ -403,6 +410,8 @@ export function App() {
         onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
         onVoiceNavigationCommand={handleVoiceNavigationCommand}
         onRobotPosition={setRobotPosition}
+        robotPosition={robotPosition}
+        routeStartedAt={routeStartedAt}
       />
 
       <footer class="footer">

@@ -19,6 +19,8 @@ export function SystemMenu({
   onVoiceAssistantTranscript,
   onVoiceNavigationCommand,
   onRobotPosition,
+  robotPosition,
+  routeStartedAt,
 }) {
   const { t } = useI18n();
   const closeButtonRef = useRef(null);
@@ -95,6 +97,8 @@ export function SystemMenu({
               onAssistantTranscript={onVoiceAssistantTranscript}
               onNavigationCommand={onVoiceNavigationCommand}
               event={event}
+              routeStartedAt={routeStartedAt}
+              robotPosition={robotPosition}
             />
           </section>
 

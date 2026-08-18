@@ -119,12 +119,13 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 
 `idle → requesting-microphone → connecting → authorizing → listening ⇄ user-speaking / thinking / assistant-speaking → ended / error / time-limit`。浏览器不支持 WebRTC、麦克风被拒、网关 4xx/5xx、模型错误都有对应的中文提示。
 
-### 5.5 语音模板（主动提醒）
+### 5.5 语音模板（主动提醒 + 实时上下文）
 
-`buildCampusAssistantInstructions`（`src/lib/assistantKnowledge.js`）内置两条主动提醒，随 instructions 下发给模型：
+`buildCampusAssistantInstructions`（`src/lib/assistantKnowledge.js`）内置主动提醒与自动刷新的实时上下文，随 instructions 下发给模型：
 
 - **会话开场提醒**：每次会话第一句先给出出发提醒——正在降雨或今日降水概率较高时明确提醒“出门带伞、注意湿滑”；晴热或紫外线强时提醒防晒补水；天气平稳时也自然带一句“出门记得带伞”。数据来自开源 Open-Meteo（广州南沙区·校园中心）。
 - **到达提醒**：当用户表示接近或已到达目的地（如“快到了”“还有多远”“到门口了”“到了”），像公交到站提示一样简短提醒“请带好随身物品”（背包、手机、校园卡、钥匙等）；没有到达迹象时不反复提醒。
+- **实时上下文自动刷新**：`buildLiveContext` 每 30 秒重建一次并推送 `session.update`——包含当前日期时间（`Asia/Shanghai`）与导航进度。进度优先用机器人 BLE 遥测位置沿路线计算（`distanceAlongPolylineMeters`，真实进度）；无遥测时按“路线开始时间 + 全程耗时”做匀速估算（明确标注估算、不得当作精确位置）。进度显示接近目的地时，指令提示模型可主动提醒“带好随身物品”（若尚未提醒）。
 - 目的地是 3 楼露天平台时额外加入**平台提醒**（带伞 / 防滑 / 防晒 / 雷雨避让）。
 
 ## 6. 会议与活动专属导航
