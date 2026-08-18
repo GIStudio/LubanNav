@@ -71,7 +71,8 @@ LubanNav/
 │   ├── styles.css                 # 全部样式
 │   ├── components/                # CampusMap / EventPanel / ChatAssistant /
 │   │                              # VoiceAssistant / VoiceQuickControl /
-│   │                              # SystemMenu / RobotControl
+│   │                              # SystemMenu / RobotControl /
+│   │                              # RobotDirectionPad
 │   ├── data/
 │   │   ├── campus.js              # 稳定地点目录、别名、OSM 建筑映射、模式
 │   │   ├── events.js              # 内置活动模式数据

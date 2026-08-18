@@ -381,11 +381,18 @@ src/lib/destinationParser.js   本地中英文意图/地点解析
 src/lib/eventMode.js           活动配置校验、本地存储与活动地点解析
 src/lib/voiceNavigation.js     语音导航工具定义、地点白名单与参数验证
 src/lib/qwenRealtime.js        WebRTC 会话、Function Calling 与工具结果回传
+src/lib/voiceSession.js        共享语音会话 store（两个语音 UI 共用）
+src/lib/mapLayers.js           纯 Leaflet 图层构造（OSM + 室内分层渲染）
+src/lib/useRouteQueryState.js  路线状态 + URL 同步 + applyNavigation
+src/lib/useEventProfiles.js    活动档案 CRUD 与激活状态 hook
 src/components/CampusMap.jsx   Leaflet Canvas 地图、地点和路线叠加
 src/components/EventPanel.jsx  活动选择、会场清单与本地配置界面
 src/components/ChatAssistant.jsx  对话入口
-src/components/VoiceAssistant.jsx 实时语音连接、转写与导航工具桥接
+src/components/VoiceAssistant.jsx 语音会话配置界面（会话在共享 store）
+src/components/VoiceQuickControl.jsx 地图麦克风坞（直接读共享会话）
+src/components/SystemMenu.jsx   语音/机器人模态面板
 src/components/RobotControl.jsx     Web Bluetooth 连接、任务下发与遥测面板
+src/components/RobotDirectionPad.jsx 手动方向盘 + 速度滑块
 services/voice-gateway/server.mjs  函数计算 SDP 代理、访问码与 CORS 防护
 scripts/fetch-osm-campus.mjs      OSM / Overpass 快照刷新器
 scripts/lib/osm-routing.mjs       道路转图、连通分量与入口吸附算法

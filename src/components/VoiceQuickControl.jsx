@@ -1,20 +1,49 @@
 import { useI18n } from '../lib/i18n.js';
+import { useVoiceSession } from '../lib/voiceSession.js';
 
-export function VoiceQuickControl({ state, onToggle, onConfigure }) {
+/**
+ * On-map microphone dock.
+ *
+ * Reads the shared voice session store directly, so it needs no state or
+ * control-ref props from App: start/stop and status/transcript all come from
+ * the same session the in-menu VoiceAssistant panel drives. Only the
+ * "open settings" callback remains, to reveal the configuration panel.
+ */
+export function VoiceQuickControl({ onConfigure }) {
   const { t } = useI18n();
-  const active = Boolean(state.active);
-  const configured = Boolean(state.configured);
-  const supported = state.supported !== false;
+  const {
+    status,
+    statusMessage,
+    liveTranscript,
+    configured,
+    supported,
+    active,
+    start,
+    stop,
+  } = useVoiceSession();
+
   const needsConfiguration = !configured || !supported;
   const headline = active
-    ? (t(`voiceQuick.status.${state.status}`) || t('voiceQuick.headlineActive'))
+    ? (t(`voiceQuick.status.${status}`) || t('voiceQuick.headlineActive'))
     : (configured && supported ? t('voiceQuick.headlineReady') : t('voiceQuick.headlineConfig'));
-  const detail = state.liveTranscript
-    || (active ? state.statusMessage : '')
+  const detail = liveTranscript
+    || (active ? statusMessage : '')
     || (supported ? t('voiceQuick.hintSupported') : t('voiceQuick.hintUnsupported'));
   const actionLabel = active
     ? t('voiceQuick.stop')
     : (needsConfiguration ? t('voiceQuick.configure') : t('voiceQuick.start'));
+
+  function handleToggle() {
+    if (active) {
+      stop();
+      return;
+    }
+    if (needsConfiguration) {
+      onConfigure();
+      return;
+    }
+    start();
+  }
 
   return (
     <section
@@ -30,7 +59,7 @@ export function VoiceQuickControl({ state, onToggle, onConfigure }) {
       <button
         type="button"
         class="voice-mic-button"
-        onClick={onToggle}
+        onClick={handleToggle}
         aria-label={actionLabel}
         aria-pressed={active}
         title={actionLabel}

@@ -1,6 +1,6 @@
 # 前端模块接口参考
 
-本文列出 `src/` 下每个模块的职责与对外接口（导出函数、类、常量、组件 props 与事件）。所有 `src/lib` 模块均为纯逻辑模块，配合同名 `*.test.js` 单元测试使用。
+本文列出 `src/` 下每个模块的职责与对外接口（导出函数、类、常量、组件 props 与事件）。所有 `src/lib` 模块均为纯逻辑模块（配合同名 `*.test.js` 单元测试使用）；少数 React hooks 也放在 `src/lib/`，它们只是纯函数之上的薄胶水（见 §9.6、§7.5）。
 
 ## 1. 数据模块
 
@@ -100,6 +100,17 @@
 - 安全机制：`event_id` 去重（`seenEventIds`）、`call_id` 去重（`completedFunctionCalls`）；未注册工具返回 `unsupported_tool`；工具执行异常返回 `tool_execution_failed`。
 - WebRTC `connectionState` 变为 `failed/disconnected` 时自动 `fail()` 并清理。
 
+## 7.5 共享语音会话 src/lib/voiceSession.js
+
+两个语音 UI（菜单内的 `VoiceAssistant` 面板与地图上的 `VoiceQuickControl` 麦克风坞）共享的实时会话 store。会话生命周期、`status`、转写、`accessCode`、`supported` 收归一处，App 不再用 `ref` + 状态回调在两个组件之间传话。
+
+| 导出 | 说明 |
+| --- | --- |
+| `voiceSession` | 模块级 store：`{subscribe, snapshot, setAccessCode, attachAudio, setHandlers, updateInstructions, start, stop}`。`start()` 用当前 `accessCode` + `attachAudio` 注册的音频元素 + `setHandlers` 注册的回调（`onUserTranscript` / `onAssistantTranscript` / `onNavigationCommand`）创建 `QwenRealtimeSession` |
+| `useVoiceSession()` | `useSyncExternalStore` 封装，返回 `{status, statusMessage, liveTranscript, accessCode, supported, active, configured, start, stop, setAccessCode}` |
+
+要点：`updateInstructions` 在会话已启动时走 `session.updateInstructions`；`start` 在非活跃状态、不支持或未填访问码时是安全的 no-op。配套 `voiceSession.test.js`。
+
 ## 8. 机器人协议 src/lib/robotProtocol.js
 
 协议常量：`ROBOT_PROTOCOL_NAME='luban-nav-ble'`、`ROBOT_PROTOCOL_VERSION=1`。
@@ -136,11 +147,29 @@
 - 事件（`subscribe(listener)`）：`{type:'state'|'message'|'position'|'transfer-progress'|'sent'|'transfer-error'|'telemetry-error', ...}`；`transfer-progress` 含 `sentChunks/totalChunks`。
 - `setConfig(config)`：连接中禁止修改。
 
+## 9.5 地图图层构造 src/lib/mapLayers.js
+
+纯 Leaflet 图层构造（不碰 React），从 `CampusMap.jsx` 移出：
+
+| 导出 | 说明 |
+| --- | --- |
+| `addOsmLayers(map, data)` | 把 OSM GeoJSON 按要素类分层渲染（水、水系、道路底/面、建筑），tooltip 用要素自带名称 |
+| `addIndoorLayers(map, data, t=translate)` | 室内路径/网络链接与垂直连接器图层；tooltip 绑定为**函数**（Leaflet 每次打开 tooltip 时重新求值），`t` 默认是 `i18n.js` 的 `translate`——在打开时读取当前语言，因此室内 tooltip 会随 zh/en 切换，无需重建图层 |
+
+## 9.6 应用外壳 hooks（src/lib/useEventProfiles.js / src/lib/useRouteQueryState.js）
+
+`App.jsx` 编排中枢瘦身后的两块胶水，纯逻辑仍全部在 `eventMode.js` / `pathfinding.js`：
+
+| 导出 | 说明 |
+| --- | --- |
+| `useEventProfiles(params)` | `events` / `activeEventId`（`event` URL 参数初始化，含 `none`）/ `activeEvent`；`saveEvent(input)`（normalize → upsert → 持久化 → 激活）、`restoreDefault(eventId)`；`activeEventId` 同步回 URL |
+| `useRouteQueryState(params)` | `from` / `to` / `mode`（URL 参数初始化）+ 双向 URL 同步；`applyNavigation(parsed)` —— 统一的"解析意图 → `findRoute` → 提交为当前路线"入口（文字对话、语音转写、语音工具三个入口共用），`status !== 'ok'` 时不提交状态 |
+
 ## 10. 组件
 
 ### App.jsx
 
-应用外壳与全局状态：`from/to/mode`、活动列表与当前活动、对话消息、机器人位置、系统菜单开关、语音快捷控制状态。负责 URL 参数初始化与同步、`handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → 寻路验证 → 更新状态并返回工具结果）。
+应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、机器人位置、系统菜单开关。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。
 
 ### components/CampusMap.jsx
 
@@ -151,7 +180,7 @@
 | `robotPosition` | BLE 位置消息（橙色标记 + 航向 tooltip） |
 | `onSelectDestination(id)` | 点击地点标记回调 |
 
-内部：初始化 Leaflet 地图（自定义 pane、边界、缩放范围 16–21）、加载两份 GeoJSON 并按要素类分层渲染、分类过滤按钮、`ResizeObserver` 自适应、加载/失败状态提示。
+内部：初始化 Leaflet 地图（自定义 pane、边界、缩放范围 16–21）、加载两份 GeoJSON 并交给 `src/lib/mapLayers.js`（§9.5）分层渲染、分类过滤按钮、`ResizeObserver` 自适应、加载/失败状态提示。
 
 ### components/ChatAssistant.jsx
 
@@ -163,19 +192,23 @@
 
 ### components/VoiceAssistant.jsx
 
-`props: {route, event, controlRef, onUserTranscript, onAssistantTranscript, onNavigationCommand, onControlStateChange}`。访问码输入与会话开始/结束；`controlRef.current` 暴露 `{start, stop}` 供快捷麦克风调用；`onControlStateChange` 上报 `{status, active, configured, supported, liveTranscript, statusMessage}`；instructions 随路线与活动变化自动 `updateInstructions`。
+`props: {route, event, onUserTranscript, onAssistantTranscript, onNavigationCommand}`。访问码输入与会话开始/结束界面。会话本身在共享 store（§7.5）：本组件只把 `<audio>` 元素、转写/导航回调与 instructions 流注册进 store，按钮直接调 `useVoiceSession()` 的 `start/stop`；instructions 随路线与活动变化自动 `updateInstructions`。
 
 ### components/VoiceQuickControl.jsx
 
-`props: {state, onToggle, onConfigure}`。地图下方常驻麦克风：未配置 → 打开设置；已配置 → 一键开始/结束；会话中显示转写与状态文案。
+`props: {onConfigure}`。地图下方常驻麦克风，直接读共享会话 store（§7.5）：未配置/不支持 → 打开设置（`onConfigure`）；已配置 → 一键开始/结束；会话中显示转写与状态文案。不再接收 `state` / `onToggle`。
 
 ### components/SystemMenu.jsx
 
-`props: {open, onClose, activePanel, onSelectPanel, route, event, onVoice*, onRobotPosition, voiceControlRef, onVoiceControlStateChange}`。右上角模态对话框，两个 tab（实时语音 / 机器人联络），Esc 或点击遮罩关闭，焦点管理。
+`props: {open, onClose, activePanel, onSelectPanel, route, event, onVoiceUserTranscript, onVoiceAssistantTranscript, onVoiceNavigationCommand, onRobotPosition}`。右上角模态对话框，两个 tab（实时语音 / 机器人联络），Esc 或点击遮罩关闭，焦点管理。语音面板只传回调，不再透传 `voiceControlRef` / `onVoiceControlStateChange`。
 
 ### components/RobotControl.jsx
 
-`props: {route, onRobotPosition}`。BLE 配置表单（localStorage 键 `luban-nav:ble-config:v2`）、连接/断开、下发路线、STOP、传输进度条、最新位置、最近 5 条通信记录；按连接阶段输出友好中文错误（见 §9 阶段）。
+`props: {route, onRobotPosition}`。BLE 配置表单（localStorage 键 `luban-nav:ble-config:v2`）、连接/断开、下发路线、STOP、传输进度条、最新位置、最近 5 条通信记录；按连接阶段输出友好中文错误（见 §9 阶段）。手动方向盘已拆为 `RobotDirectionPad`。
+
+### components/RobotDirectionPad.jsx
+
+`props: {connected, configLocked, client, config, onUpdateConfig}`。手动方向控制（前/左/停/右/后，按住 450ms 连续）与速度滑块；步长/速度来自 `config`，滑块写回走 `onUpdateConfig`，`configLocked` 时滑块禁用。自包含组件，仅依赖 BLE client 发 `sendDirection`。
 
 ## 11. 样式与入口
 

@@ -1,26 +1,39 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { NODE_BY_ID } from '../data/campus.js';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { MODES, NODE_BY_ID } from '../data/campus.js';
 import { buildCampusAssistantInstructions } from '../lib/assistantKnowledge.js';
 import { useI18n } from '../lib/i18n.js';
-import { DEFAULT_VOICE_CONFIG, QwenRealtimeSession } from '../lib/qwenRealtime.js';
+import { voiceSession, useVoiceSession } from '../lib/voiceSession.js';
 import { fetchWeather } from '../lib/weather.js';
 
+/**
+ * Voice configuration + session panel (shown inside the system menu).
+ *
+ * The realtime session itself lives in the shared `voiceSession` store, so the
+ * on-map VoiceQuickControl dock and this panel drive the exact same session
+ * without App bridging control refs or state between them. This component only
+ * registers its audio element, transcript/navigation callbacks and the
+ * instruction stream with the store, and renders the access-code form.
+ */
 export function VoiceAssistant({
   route,
   onUserTranscript,
   onAssistantTranscript,
   onNavigationCommand,
   event,
-  controlRef,
-  onControlStateChange,
 }) {
   const { t } = useI18n();
-  const [accessCode, setAccessCode] = useState('');
-  const [status, setStatus] = useState('idle');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [liveTranscript, setLiveTranscript] = useState('');
+  const {
+    status,
+    statusMessage,
+    liveTranscript,
+    accessCode,
+    supported,
+    active,
+    start,
+    stop,
+    setAccessCode,
+  } = useVoiceSession();
   const [weather, setWeather] = useState(null);
-  const sessionRef = useRef(null);
   const audioRef = useRef(null);
   const callbacksRef = useRef({
     onUserTranscript,
@@ -29,15 +42,18 @@ export function VoiceAssistant({
   });
   callbacksRef.current = { onUserTranscript, onAssistantTranscript, onNavigationCommand };
 
-  const routeContext = useMemo(() => ({
-    fromId: route?.request?.from,
-    fromName: NODE_BY_ID[route?.request?.from]?.name,
-    toId: route?.request?.to,
-    toName: NODE_BY_ID[route?.request?.to]?.name,
-    modeLabel: route?.request?.mode === 'robot' ? '机器人' : '步行',
-    distanceMeters: route?.summary?.distanceMeters,
-    highlights: route?.highlights ?? [],
-  }), [route]);
+  const routeContext = useMemo(() => {
+    const mode = MODES[route?.request?.mode];
+    return {
+      fromId: route?.request?.from,
+      fromName: NODE_BY_ID[route?.request?.from]?.name,
+      toId: route?.request?.to,
+      toName: NODE_BY_ID[route?.request?.to]?.name,
+      modeLabel: mode?.label ?? '步行',
+      distanceMeters: route?.summary?.distanceMeters,
+      highlights: route?.highlights ?? [],
+    };
+  }, [route]);
 
   // Refresh weather when the route changes. fetchWeather caches for 10 min,
   // and degrades to an "unavailable" object on network failure.
@@ -56,90 +72,29 @@ export function VoiceAssistant({
     [event, routeContext, weather],
   );
 
-  const active = !['idle', 'ended', 'error'].includes(status);
-  const supported = Boolean(
-    window.isSecureContext && navigator.mediaDevices?.getUserMedia && window.RTCPeerConnection,
-  );
-  const configured = Boolean(accessCode.trim());
-
+  // Register this panel's audio element, callbacks and instruction stream with
+  // the shared session store.
   useEffect(() => {
-    sessionRef.current?.updateInstructions(instructions);
-  }, [instructions]);
-
-  useEffect(() => () => sessionRef.current?.stop('unmount', false), []);
-
-  const startSession = useCallback(async (event = null) => {
-    event?.preventDefault();
-    if (active) return;
-    setLiveTranscript('');
-
-    const session = new QwenRealtimeSession({
-      accessCode,
-      instructions,
-      audioElement: audioRef.current,
-      functionHandlers: {
-        set_navigation_route: (...argumentsList) =>
-          callbacksRef.current.onNavigationCommand?.(...argumentsList),
-      },
-    });
-    sessionRef.current = session;
-
-    session.addEventListener('status', (statusEvent) => {
-      setStatus(statusEvent.detail.status);
-      setStatusMessage(statusEvent.detail.message || t(`voice.status.${statusEvent.detail.status}`) || '');
-    });
-    session.addEventListener('user-transcript-delta', (transcriptEvent) => {
-      setLiveTranscript((current) => `${current}${transcriptEvent.detail.text}`);
-    });
-    session.addEventListener('user-transcript', (transcriptEvent) => {
-      const text = transcriptEvent.detail.text.trim();
-      if (text) callbacksRef.current.onUserTranscript?.(text);
-      setLiveTranscript('');
-    });
-    session.addEventListener('assistant-transcript-delta', (transcriptEvent) => {
-      setLiveTranscript((current) => `${current}${transcriptEvent.detail.text}`);
-    });
-    session.addEventListener('assistant-transcript', (transcriptEvent) => {
-      const text = transcriptEvent.detail.text.trim();
-      if (text) callbacksRef.current.onAssistantTranscript?.(text);
-      setLiveTranscript('');
-    });
-    session.addEventListener('error', () => {
-      sessionRef.current = null;
-    });
-
-    try {
-      await session.start();
-    } catch {
-      // The session emits a user-facing status and performs its own cleanup.
-    }
-  }, [accessCode, active, instructions]);
-
-  const stopSession = useCallback(() => {
-    sessionRef.current?.stop('user');
-    sessionRef.current = null;
-    setLiveTranscript('');
+    voiceSession.attachAudio(audioRef.current);
   }, []);
 
   useEffect(() => {
-    if (!controlRef) return undefined;
-    const controls = { start: startSession, stop: stopSession };
-    controlRef.current = controls;
-    return () => {
-      if (controlRef.current === controls) controlRef.current = null;
-    };
-  }, [controlRef, startSession, stopSession]);
+    voiceSession.setHandlers({
+      onUserTranscript: (text) => callbacksRef.current.onUserTranscript?.(text),
+      onAssistantTranscript: (text) => callbacksRef.current.onAssistantTranscript?.(text),
+      onNavigationCommand: (...argumentsList) =>
+        callbacksRef.current.onNavigationCommand?.(...argumentsList),
+    });
+  }, []);
 
   useEffect(() => {
-    onControlStateChange?.({
-      status,
-      active,
-      configured,
-      supported,
-      liveTranscript,
-      statusMessage,
-    });
-  }, [active, configured, liveTranscript, onControlStateChange, status, statusMessage, supported]);
+    voiceSession.updateInstructions(instructions);
+  }, [instructions]);
+
+  function startSession(event) {
+    event?.preventDefault();
+    start();
+  }
 
   return (
     <div class="voice-assistant">
@@ -169,7 +124,7 @@ export function VoiceAssistant({
           <button
             type={active ? 'button' : 'submit'}
             class={active ? 'voice-stop' : 'voice-start'}
-            onClick={active ? stopSession : undefined}
+            onClick={active ? stop : undefined}
             disabled={!active && !accessCode.trim()}
           >
             <span aria-hidden="true">{active ? '■' : '●'}</span>

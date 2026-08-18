@@ -1,7 +1,8 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { CAMPUS_BOUNDS, NODE_BY_ID, PUBLIC_LOCATIONS } from '../data/campus.js';
+import { CAMPUS_BOUNDS, PUBLIC_LOCATIONS } from '../data/campus.js';
+import { addIndoorLayers, addOsmLayers } from '../lib/mapLayers.js';
 import { getLocationBinding } from '../lib/pathfinding.js';
 import { useI18n, localizedName } from '../lib/i18n.js';
 
@@ -10,143 +11,6 @@ const CATEGORY_IDS = ['entrance', 'academic', 'indoor', 'service', 'residence', 
 const OSM_DATA_URL = `${import.meta.env.BASE_URL}data/campus-osm.geojson`;
 const INDOOR_DATA_URL = `${import.meta.env.BASE_URL}data/campus-indoor.geojson`;
 const CAMPUS_CENTER = [22.8902, 113.4791];
-
-function roadWeight(highway) {
-  if (['motorway', 'trunk', 'primary', 'secondary', 'tertiary'].includes(highway)) return 5;
-  if (['residential', 'unclassified'].includes(highway)) return 3.8;
-  if (['service', 'pedestrian'].includes(highway)) return 3;
-  return 2;
-}
-
-function roadColor(highway) {
-  if (['motorway', 'trunk', 'primary', 'secondary', 'tertiary'].includes(highway)) return '#73888b';
-  if (['footway', 'path', 'steps', 'pedestrian'].includes(highway)) return '#5f8f8a';
-  return '#526f74';
-}
-
-function tooltipName(feature) {
-  return feature.properties.name ?? feature.properties['name:en'] ?? feature.properties.ref;
-}
-
-function addOsmLayers(map, data) {
-  const canvas = L.canvas({ padding: 0.5, tolerance: 5 });
-  const isClass = (featureClass) => (feature) => feature.properties.featureClass === featureClass;
-  const bindTooltip = (feature, layer) => {
-    const name = tooltipName(feature);
-    if (name) layer.bindTooltip(name, { className: 'osm-feature-tooltip', sticky: true });
-  };
-
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'waterPane',
-    filter: isClass('water'),
-    style: {
-      fillColor: '#145869',
-      fillOpacity: 0.72,
-      color: '#23798a',
-      opacity: 0.8,
-      weight: 1.2,
-    },
-    onEachFeature: bindTooltip,
-  }).addTo(map);
-
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'roadPane',
-    filter: isClass('waterway'),
-    style: {
-      color: '#277b89',
-      opacity: 0.76,
-      weight: 3,
-    },
-    onEachFeature: bindTooltip,
-  }).addTo(map);
-
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'roadPane',
-    filter: isClass('road'),
-    style: (feature) => ({
-      color: '#061722',
-      opacity: 0.78,
-      weight: roadWeight(feature.properties.highway) + 3.4,
-      lineCap: 'round',
-      lineJoin: 'round',
-    }),
-  }).addTo(map);
-
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'roadDetailPane',
-    filter: isClass('road'),
-    style: (feature) => ({
-      color: roadColor(feature.properties.highway),
-      opacity: feature.properties.tunnel === 'yes' ? 0.36 : 0.92,
-      weight: roadWeight(feature.properties.highway),
-      dashArray: ['footway', 'path', 'steps'].includes(feature.properties.highway) ? '5 6' : null,
-      lineCap: 'round',
-      lineJoin: 'round',
-    }),
-    onEachFeature: bindTooltip,
-  }).addTo(map);
-
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'buildingPane',
-    filter: isClass('building'),
-    style: (feature) => ({
-      fillColor: feature.properties.building === 'dormitory' ? '#173f50' : '#1a4655',
-      fillOpacity: 0.92,
-      color: '#4f7880',
-      opacity: 0.94,
-      weight: 1.1,
-    }),
-    onEachFeature: bindTooltip,
-  }).addTo(map);
-}
-
-function addIndoorLayers(map, data) {
-  const canvas = L.canvas({ padding: 0.5, tolerance: 7 });
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'indoorPane',
-    filter: (feature) => ['indoorPath', 'indoorNetworkLink'].includes(feature.properties.featureClass),
-    style: (feature) => ({
-      color: feature.properties.highway === 'elevator' ? '#ff9d63' : '#79ded5',
-      opacity: 0.82,
-      weight: feature.properties.highway === 'elevator' ? 5 : 3,
-      dashArray: feature.properties.highway === 'elevator' ? null : '3 5',
-      lineCap: 'round',
-      lineJoin: 'round',
-    }),
-    onEachFeature: (feature, layer) => {
-      const level = feature.properties.level ?? '?';
-      layer.bindTooltip(`${feature.properties.name} · level ${level} · 待核验`, {
-        className: 'osm-feature-tooltip',
-        sticky: true,
-      });
-    },
-  }).addTo(map);
-
-  L.geoJSON(data, {
-    renderer: canvas,
-    pane: 'indoorPane',
-    filter: (feature) => feature.properties.featureClass === 'indoorVerticalConnector',
-    pointToLayer: (feature, latLng) => L.circleMarker(latLng, {
-      radius: 6,
-      color: '#071c2c',
-      weight: 2,
-      fillColor: '#ff9d63',
-      fillOpacity: 0.96,
-    }),
-    onEachFeature: (feature, layer) => {
-      layer.bindTooltip(
-        `${feature.properties.name} · ${feature.properties.levels.join('–')}F · 位置待核验`,
-        { className: 'osm-feature-tooltip', direction: 'top', offset: [0, -7] },
-      );
-    },
-  }).addTo(map);
-}
 
 function locationLatLng(location, modeId) {
   const binding = getLocationBinding(location.id);

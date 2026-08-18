@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useI18n } from '../lib/i18n.js';
 import { DEFAULT_BLE_CONFIG, normalizeBleConfig } from '../lib/robotProtocol.js';
 import { WebBluetoothRobotClient, webBluetoothSupport } from '../lib/webBluetoothRobot.js';
+import { RobotDirectionPad } from './RobotDirectionPad.jsx';
 
 const CONFIG_STORAGE_KEY = 'luban-nav:ble-config:v2';
 
@@ -166,48 +167,6 @@ export function RobotControl({ route, onRobotPosition }) {
     }
   }
 
-  // ── manual direction pad ────────────────────────────────────────────────
-
-  const padTimer = useRef(null);
-  const padActiveRef = useRef(false);
-
-  function stopPadRepeat() {
-    if (padTimer.current) {
-      clearInterval(padTimer.current);
-      padTimer.current = null;
-    }
-  }
-
-  useEffect(() => () => stopPadRepeat(), []);
-
-  function startPadHold(direction, options) {
-    return (event) => {
-      if (!connected) return;
-      event.preventDefault();
-      if (padActiveRef.current) return; // another button already holds
-      padActiveRef.current = true;
-      const command = {
-        ...options,
-        speedMetersPerSecond: config.directionSpeedMetersPerSecond ?? 0.06,
-      };
-      const send = () => client.sendDirection(direction, command).catch(() => {});
-      send();
-      padTimer.current = setInterval(send, 450);
-    };
-  }
-
-  function endPadHold(event) {
-    event?.preventDefault();
-    padActiveRef.current = false;
-    stopPadRepeat();
-  }
-
-  function stopNow() {
-    stopPadRepeat();
-    padActiveRef.current = false;
-    client.sendDirection('stop').catch(() => {});
-  }
-
   function updateConfig(field, value) {
     setConfig((current) => ({
       ...current,
@@ -285,81 +244,13 @@ export function RobotControl({ route, onRobotPosition }) {
             {config.deviceNamePrefix ? t('robot.selectorHintPrefix') : ''}
           </small>
 
-          <div class="robot-pad" aria-label={t('robot.pad.aria')}>
-            <div class="robot-pad-head">
-              <span>{t('robot.pad.title')}</span>
-              <small>{t('robot.pad.step', { meters: config.directionStepMeters ?? 0.15, degrees: config.directionStepDegrees ?? 15 })}</small>
-            </div>
-            <label class="robot-speed-slider">
-              <span>{t('robot.pad.speed')}</span>
-              <input
-                type="range"
-                min="0.02"
-                max="0.30"
-                step="0.01"
-                value={config.directionSpeedMetersPerSecond ?? 0.06}
-                onInput={(event) => updateConfig('directionSpeedMetersPerSecond', event.currentTarget.value)}
-                disabled={configLocked}
-                aria-label={t('robot.pad.speedAria')}
-              />
-              <strong>{(config.directionSpeedMetersPerSecond ?? 0.06).toFixed(2)} m/s</strong>
-            </label>
-            <div class="robot-pad-grid">
-              <button
-                class="robot-pad-btn pad-up"
-                type="button"
-                aria-label={t('robot.pad.forward')}
-                disabled={!connected}
-                onPointerDown={startPadHold('forward', { amountMeters: config.directionStepMeters })}
-                onPointerUp={endPadHold}
-                onPointerLeave={endPadHold}
-                onPointerCancel={endPadHold}
-                onContextMenu={(event) => event.preventDefault()}
-              >↑<small>{t('robot.pad.forwardShort')}</small></button>
-              <button
-                class="robot-pad-btn pad-left"
-                type="button"
-                aria-label={t('robot.pad.left')}
-                disabled={!connected}
-                onPointerDown={startPadHold('left', { amountDegrees: config.directionStepDegrees })}
-                onPointerUp={endPadHold}
-                onPointerLeave={endPadHold}
-                onPointerCancel={endPadHold}
-                onContextMenu={(event) => event.preventDefault()}
-              >←<small>{t('robot.pad.leftShort')}</small></button>
-              <button
-                class="robot-pad-btn pad-stop"
-                type="button"
-                aria-label={t('robot.pad.stop')}
-                disabled={!connected}
-                onPointerDown={(event) => event.preventDefault()}
-                onClick={stopNow}
-              >■<small>{t('robot.pad.stopShort')}</small></button>
-              <button
-                class="robot-pad-btn pad-right"
-                type="button"
-                aria-label={t('robot.pad.right')}
-                disabled={!connected}
-                onPointerDown={startPadHold('right', { amountDegrees: config.directionStepDegrees })}
-                onPointerUp={endPadHold}
-                onPointerLeave={endPadHold}
-                onPointerCancel={endPadHold}
-                onContextMenu={(event) => event.preventDefault()}
-              >→<small>{t('robot.pad.rightShort')}</small></button>
-              <button
-                class="robot-pad-btn pad-down"
-                type="button"
-                aria-label={t('robot.pad.backward')}
-                disabled={!connected}
-                onPointerDown={startPadHold('backward', { amountMeters: config.directionStepMeters })}
-                onPointerUp={endPadHold}
-                onPointerLeave={endPadHold}
-                onPointerCancel={endPadHold}
-                onContextMenu={(event) => event.preventDefault()}
-              >↓<small>{t('robot.pad.backwardShort')}</small></button>
-            </div>
-            <small class="robot-hint">{t('robot.pad.hint')}</small>
-          </div>
+          <RobotDirectionPad
+            connected={connected}
+            configLocked={configLocked}
+            client={client}
+            config={config}
+            onUpdateConfig={updateConfig}
+          />
 
           {connection.error && (
             <div class="robot-diagnostic" role="alert">

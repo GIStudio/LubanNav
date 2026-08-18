@@ -150,6 +150,8 @@ const zh = {
     zoomAria: '地图缩放',
     robotHere: '机器人当前位置',
     indoorTooltip: '室内 · level {level} · 近似待核验',
+    indoorPathTooltip: '{name} · level {level} · 待核验',
+    indoorConnectorTooltip: '{name} · {levels}F · 位置待核验',
   },
   system: {
     title: '语音与设备',
@@ -469,6 +471,8 @@ const en = {
     zoomAria: 'Map zoom',
     robotHere: 'Robot position',
     indoorTooltip: 'Indoor · level {level} · approximate, unverified',
+    indoorPathTooltip: '{name} · level {level} · unverified',
+    indoorConnectorTooltip: '{name} · {levels}F · location unverified',
   },
   system: {
     title: 'Voice & Devices',

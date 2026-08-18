@@ -4,56 +4,31 @@ import { ChatAssistant } from './components/ChatAssistant.jsx';
 import { EventPanel } from './components/EventPanel.jsx';
 import { SystemMenu } from './components/SystemMenu.jsx';
 import { VoiceQuickControl } from './components/VoiceQuickControl.jsx';
-import { DEFAULT_EVENT_ID } from './data/events.js';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
+import { resolveEventNavigationQuery } from './lib/eventMode.js';
 import { useI18n, localizedName } from './lib/i18n.js';
 import { useTheme } from './lib/theme.js';
-import {
-  loadEventProfiles,
-  normalizeEventConfig,
-  resolveEventNavigationQuery,
-  restoreDefaultEvent,
-  saveEventProfiles,
-  upsertEventProfile,
-} from './lib/eventMode.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
-
-const DEFAULT_VOICE_CONTROL_STATE = {
-  status: 'idle',
-  active: false,
-  configured: false,
-  supported: true,
-  liveTranscript: '',
-  statusMessage: '',
-};
-
-function validPublicLocation(id) {
-  return Boolean(NODE_BY_ID[id]?.public);
-}
+import { useEventProfiles } from './lib/useEventProfiles.js';
+import { useRouteQueryState } from './lib/useRouteQueryState.js';
 
 export function App() {
   const { t, lang, setLang } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
-  const initialFrom = validPublicLocation(params.get('from')) ? params.get('from') : 'main-entrance';
-  const initialTo = validPublicLocation(params.get('to')) ? params.get('to') : 'library';
-  const initialMode = MODES[params.get('mode')] ? params.get('mode') : 'pedestrian';
-  const initialEvents = useMemo(() => loadEventProfiles(window.localStorage), []);
-  const requestedEventId = params.get('event');
-  const initialEventId = requestedEventId === 'none'
-    ? null
-    : (initialEvents.some((event) => event.id === requestedEventId)
-      ? requestedEventId
-      : DEFAULT_EVENT_ID);
-  const [from, setFrom] = useState(initialFrom);
-  const [to, setTo] = useState(initialTo);
-  const [mode, setMode] = useState(initialMode);
-  const [events, setEvents] = useState(initialEvents);
-  const [activeEventId, setActiveEventId] = useState(initialEventId);
+  const { from, to, mode, setFrom, setTo, setMode, applyNavigation } = useRouteQueryState(params);
+  const {
+    events,
+    activeEventId,
+    activeEvent,
+    setActiveEventId,
+    saveEvent,
+    restoreDefault,
+  } = useEventProfiles(params);
   const [messages, setMessages] = useState(() => [
     { role: 'assistant', text: t('chat.welcome') },
   ]);
@@ -61,9 +36,7 @@ export function App() {
   const [robotPosition, setRobotPosition] = useState(null);
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
-  const [voiceControlState, setVoiceControlState] = useState(DEFAULT_VOICE_CONTROL_STATE);
   const systemMenuButtonRef = useRef(null);
-  const voiceControlRef = useRef(null);
 
   const openSystemMenu = useCallback((panel = systemMenuPanel) => {
     setSystemMenuPanel(panel);
@@ -75,41 +48,13 @@ export function App() {
     window.requestAnimationFrame(() => systemMenuButtonRef.current?.focus());
   }, []);
 
-  function handleVoiceQuickAction() {
-    if (voiceControlState.active) {
-      voiceControlRef.current?.stop();
-      return;
-    }
-
-    if (!voiceControlState.configured || !voiceControlState.supported) {
-      openSystemMenu('voice');
-      return;
-    }
-
-    voiceControlRef.current?.start();
-  }
-
   const route = useMemo(() => findRoute(from, to, mode), [from, to, mode]);
-  const activeEvent = useMemo(
-    () => events.find((event) => event.id === activeEventId) || null,
-    [activeEventId, events],
-  );
   const staticApiUrl = `./api/v1/routes/${from}/${to}.${mode}.json`;
 
   useEffect(() => {
     const query = params.get('q');
     if (query) handleQuery(query, false);
   }, []);
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('from', from);
-    url.searchParams.set('to', to);
-    url.searchParams.set('mode', mode);
-    url.searchParams.set('event', activeEventId || 'none');
-    url.searchParams.delete('q');
-    window.history.replaceState({}, '', url);
-  }, [activeEventId, from, to, mode]);
 
   function parseQueryWithEvent(query) {
     const eventParsed = resolveEventNavigationQuery(query, activeEvent, from, mode);
@@ -121,10 +66,7 @@ export function App() {
     if (includeUser) setMessages((items) => [...items, { role: 'user', text: query }]);
 
     if (parsed.understood) {
-      const nextRoute = findRoute(parsed.from, parsed.to, parsed.mode);
-      setFrom(parsed.from);
-      setTo(parsed.to);
-      setMode(parsed.mode);
+      const nextRoute = applyNavigation(parsed);
       const highlightsTeaser =
         nextRoute.highlights.length > 0
           ? t('app.viaHighlights', {
@@ -217,28 +159,7 @@ export function App() {
     setMessages((items) => [...items, { role: 'user', text: query, source: 'voice' }]);
     const parsed = parseQueryWithEvent(query);
     if (!parsed.understood) return;
-    setFrom(parsed.from);
-    setTo(parsed.to);
-    setMode(parsed.mode);
-  }
-
-  function handleSaveEvent(input) {
-    const event = normalizeEventConfig(input);
-    if (!event) return;
-    setEvents((current) => {
-      const next = upsertEventProfile(current, event);
-      saveEventProfiles(next, window.localStorage);
-      return next;
-    });
-    setActiveEventId(event.id);
-  }
-
-  function handleRestoreDefaultEvent(eventId) {
-    setEvents((current) => {
-      const next = restoreDefaultEvent(current, eventId);
-      saveEventProfiles(next, window.localStorage);
-      return next;
-    });
+    applyNavigation(parsed);
   }
 
   function handleEventNavigate(place) {
@@ -260,7 +181,7 @@ export function App() {
       };
     }
 
-    const nextRoute = findRoute(parsed.from, parsed.to, parsed.mode);
+    const nextRoute = applyNavigation(parsed);
     if (nextRoute.status !== 'ok') {
       return {
         ok: false,
@@ -268,10 +189,6 @@ export function App() {
         message: '本地寻路图暂时找不到这两个地点之间的可用路线。',
       };
     }
-
-    setFrom(parsed.from);
-    setTo(parsed.to);
-    setMode(parsed.mode);
 
     return {
       ok: true,
@@ -444,8 +361,8 @@ export function App() {
             events={events}
             activeEventId={activeEventId}
             onSelectEvent={setActiveEventId}
-            onSaveEvent={handleSaveEvent}
-            onRestoreDefault={handleRestoreDefaultEvent}
+            onSaveEvent={saveEvent}
+            onRestoreDefault={restoreDefault}
             onNavigate={handleEventNavigate}
           />
         </aside>
@@ -457,11 +374,7 @@ export function App() {
             robotPosition={robotPosition}
             onSelectDestination={selectDestination}
           />
-          <VoiceQuickControl
-            state={voiceControlState}
-            onToggle={handleVoiceQuickAction}
-            onConfigure={() => openSystemMenu('voice')}
-          />
+          <VoiceQuickControl onConfigure={() => openSystemMenu('voice')} />
         </section>
       </div>
 
@@ -476,8 +389,6 @@ export function App() {
         onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
         onVoiceNavigationCommand={handleVoiceNavigationCommand}
         onRobotPosition={setRobotPosition}
-        voiceControlRef={voiceControlRef}
-        onVoiceControlStateChange={setVoiceControlState}
       />
 
       <footer class="footer">
