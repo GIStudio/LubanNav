@@ -79,8 +79,23 @@ describe('campus assistant instructions', () => {
     );
 
     expect(instructions).toContain('实时天气');
+    expect(instructions).toContain('广州南沙区');
     expect(instructions).toContain('建议带伞');
     expect(instructions).toContain('3 楼露天平台');
+  });
+
+  it('directs an umbrella departure reminder at session start', () => {
+    const instructions = buildCampusAssistantInstructions({}, null, null);
+    expect(instructions).toContain('会话开场提醒');
+    expect(instructions).toContain('出门带伞');
+    expect(instructions).toContain('出门记得带伞');
+  });
+
+  it('directs a take-your-belongings reminder when the user nears the destination', () => {
+    const instructions = buildCampusAssistantInstructions({}, null, null);
+    expect(instructions).toContain('到达提醒');
+    expect(instructions).toContain('带好随身物品');
+    expect(instructions).toContain('背包、手机、校园卡、钥匙');
   });
 
   it('introduces route highlights in arrival order for the voice agent', () => {

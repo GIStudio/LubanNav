@@ -77,7 +77,21 @@
 | --- | --- |
 | `CACHED_REPLIES` | 本地缓存回答文本表：`greeting/thanks/goodbye/capabilities/school/hubs/location/weather/carry` |
 | `getCachedAssistantReply(query)` | 归一化后按精确组匹配，再用正则兜底天气 / 随身物品类问题；命中返回 `{key, text, source:'local-cache'}`，否则 `null` |
-| `buildCampusAssistantInstructions(routeContext, event)` | 拼装实时语音会话的 system instructions：身份与语气、稳定事实、能力与天气边界、导航工具强制调用规则、当前路线上下文、地点清单、活动上下文 |
+| `buildCampusAssistantInstructions(routeContext, event, weather)` | 拼装实时语音会话的 system instructions：身份与语气、稳定事实、能力与天气边界（Open-Meteo 开源数据，广州南沙区·校园中心）、**会话开场带伞提醒**、**到达目的地随身物品提醒**、3 楼露天平台提醒（按目的地）、导航工具强制调用规则、当前路线上下文、地点清单、活动上下文 |
+
+## 6.1 天气 src/lib/weather.js
+
+| 导出 | 说明 |
+| --- | --- |
+| `CAMPUS_WEATHER_REGION` | `'广州南沙区'` —— 天气区域的展示名 |
+| `CAMPUS_WEATHER_COORDINATES` | `{latitude: 22.89025, longitude: 113.479}` —— 港科广校园中心（广州南沙区） |
+| `WEATHER_CACHE_TTL_MS` | 10 分钟 TTL 缓存 |
+| `OPEN_METEO_ENDPOINT` | `https://api.open-meteo.com/v1/forecast`（开源免密钥、带 CORS） |
+| `RAIN_WEATHER_CODES` / `weatherConditionLabel(code, isDay)` | WMO 天气码分类 / 中文标签 |
+| `buildWeatherUrl(coordinates)` | 拼 Open-Meteo URL：`current` 温度/湿度/体感/降水/天气码 + `daily` 降水概率/紫外线，`timezone=Asia/Shanghai`，无任何 key |
+| `normalizeWeatherPayload(payload)` | 归一化响应 → `{available, source:'open-meteo', temperatureC, conditionLabel, precipitationProbabilityMax, uvIndexMax, umbrella, sunscreen, rainingNow, rainExpected, thunderstorm, cold, ...}` |
+| `buildWeatherAdvisory(weather)` | 生成口语化天气建议（含 3 楼露天平台的带伞 / 防滑 / 防晒 / 雷暴提醒） |
+| `fetchWeather({coordinates, fetchImpl, timeoutMs, cache})` | 4 s 超时 + TTL 缓存拉取；任何失败返回 `{available:false, source:'unavailable', error}`（助手不得编造天气） |
 
 ## 7. Qwen 实时会话 src/lib/qwenRealtime.js
 

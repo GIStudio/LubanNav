@@ -73,7 +73,7 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 | 随身物品 | `出门带什么` | 通用清单提醒 |
 | 途经点介绍 | `沿途有什么` | 用当前路线 `highlights` 按到达顺序介绍附近 POI 及用途 |
 
-- **嘘寒问暖**：语音与文字助手都会拿到实时天气（`src/lib/weather.js`，Open-Meteo，校园中心坐标，10 分钟缓存）。下雨/高降水概率提醒带伞、注意平台湿滑，晴热或紫外线强提醒防晒补水，雷暴提醒避开空旷平台；目的地是 3 楼露天平台（`third-floor-platform` / `platform-restaurant`）时强制加入平台天气提醒。
+- **嘘寒问暖**：语音与文字助手都会拿到实时天气（`src/lib/weather.js`，开源免密钥 Open-Meteo，坐标锁定广州南沙区·港科广校园中心，`Asia/Shanghai` 时区，10 分钟缓存）。下雨/高降水概率提醒带伞、注意平台湿滑，晴热或紫外线强提醒防晒补水，雷暴提醒避开空旷平台；目的地是 3 楼露天平台（`third-floor-platform` / `platform-restaurant`）时强制加入平台天气提醒。
 - **途经点介绍**：每条路线附带 `highlights`（路线 80 米内、按到达顺序、最多 8 个公开 POI 及用途描述）。长路线（约 800 米以上）语音助手会按顺序一两句话介绍途经点，也可直接问“沿途有什么”。
 - **加密航点**：机器人模式下发使用 `navigationWaypoints`——对 `path` 线性插值加密到相邻点 ≤ 2.5 m（`src/lib/routeDensification.js`），满足小车每 2–3 m 一个点的控制需求；原 `path` 仍保留供画线与路段引用。
 
@@ -95,7 +95,7 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 ```
 
 - 模型：`qwen3.5-omni-flash-realtime`，音色 `Tina`；输入 PCM 16 kHz、输出 PCM 24 kHz；ASR 转写模型 `qwen3-asr-flash-realtime`；`semantic_vad`（threshold 0.5，静音 800 ms）。
-- **单次会话前端限制 3 分钟**，到时自动结束；访问码只保存在当前页面内存。
+- **单次会话前端限制 3 分钟**，到时自动结束；访问码保存在本浏览器 localStorage（键 `luban-nav:voice-access-code`，清空输入框即删除），也可用 `?accessCode=` 链接参数预填并覆盖保存。
 - 音频由浏览器与百炼直连；只有 SDP 交换经过函数计算（见 [voice-gateway.md](voice-gateway.md)）。
 
 ### 5.2 界面
@@ -118,6 +118,14 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 ### 5.4 状态机
 
 `idle → requesting-microphone → connecting → authorizing → listening ⇄ user-speaking / thinking / assistant-speaking → ended / error / time-limit`。浏览器不支持 WebRTC、麦克风被拒、网关 4xx/5xx、模型错误都有对应的中文提示。
+
+### 5.5 语音模板（主动提醒）
+
+`buildCampusAssistantInstructions`（`src/lib/assistantKnowledge.js`）内置两条主动提醒，随 instructions 下发给模型：
+
+- **会话开场提醒**：每次会话第一句先给出出发提醒——正在降雨或今日降水概率较高时明确提醒“出门带伞、注意湿滑”；晴热或紫外线强时提醒防晒补水；天气平稳时也自然带一句“出门记得带伞”。数据来自开源 Open-Meteo（广州南沙区·校园中心）。
+- **到达提醒**：当用户表示接近或已到达目的地（如“快到了”“还有多远”“到门口了”“到了”），像公交到站提示一样简短提醒“请带好随身物品”（背包、手机、校园卡、钥匙等）；没有到达迹象时不反复提醒。
+- 目的地是 3 楼露天平台时额外加入**平台提醒**（带伞 / 防滑 / 防晒 / 雷雨避让）。
 
 ## 6. 会议与活动专属导航
 

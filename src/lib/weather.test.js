@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   CAMPUS_WEATHER_COORDINATES,
+  CAMPUS_WEATHER_REGION,
   buildWeatherAdvisory,
   buildWeatherUrl,
   fetchWeather,
@@ -126,11 +127,16 @@ describe('fetchWeather', () => {
     expect(weather.error).toBe('weather-network');
   });
 
-  it('builds a keyless Open-Meteo forecast URL for the campus center', () => {
+  it('builds a keyless Open-Meteo forecast URL for the campus center in Nansha', () => {
     const url = buildWeatherUrl(CAMPUS_WEATHER_COORDINATES);
     expect(url).toContain('https://api.open-meteo.com/v1/forecast?');
     expect(url).toContain('latitude=22.89025');
     expect(url).toContain('longitude=113.479');
+    expect(url).toContain('timezone=Asia%2FShanghai');
     expect(url).not.toContain('apikey');
+  });
+
+  it('pins the weather region to Guangzhou Nansha District', () => {
+    expect(CAMPUS_WEATHER_REGION).toBe('广州南沙区');
   });
 });

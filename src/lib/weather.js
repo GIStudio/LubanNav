@@ -1,5 +1,6 @@
 /**
- * Realtime weather for the campus via the open, keyless Open-Meteo API.
+ * Realtime weather for 广州南沙区（港科广校园中心）via the open, keyless
+ * Open-Meteo API.
  *
  * Why Open-Meteo: it is free and open access, requires no API key, and sends
  * permissive CORS headers, so the static GitHub Pages build can call it
@@ -7,12 +8,19 @@
  * at request time (with a short TTL cache) instead of being baked into the
  * precomputed static API.
  *
+ * The campus sits in Nansha District, Guangzhou; coordinates are fixed to the
+ * campus center (within CAMPUS_BOUNDS) and the timezone is pinned to
+ * Asia/Shanghai so the returned data is unambiguous for the region.
+ *
  * The 3F platform ("三楼中央") is an open-air deck, so the advisory pays
  * special attention to rain (umbrella + slip risk) and strong sun / UV.
  */
 
+/** Display name of the weather region (Guangzhou Nansha District). */
+export const CAMPUS_WEATHER_REGION = '广州南沙区';
+
 export const CAMPUS_WEATHER_COORDINATES = {
-  // Center of CAMPUS_BOUNDS [[22.8855, 113.474], [22.895, 113.484]].
+  // Center of CAMPUS_BOUNDS [[22.8855, 113.474], [22.895, 113.484]] — HKUST(GZ) campus center, Nansha, Guangzhou.
   latitude: 22.89025,
   longitude: 113.479,
 };
@@ -72,7 +80,7 @@ export function buildWeatherUrl(coordinates = CAMPUS_WEATHER_COORDINATES) {
     longitude: String(coordinates.longitude),
     current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code',
     daily: 'precipitation_probability_max,uv_index_max',
-    timezone: 'auto',
+    timezone: 'Asia/Shanghai',
     forecast_days: '1',
     wind_speed_unit: 'kmh',
   });
