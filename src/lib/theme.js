@@ -15,7 +15,7 @@ function detectInitialTheme() {
   } catch {
     // localStorage may be unavailable
   }
-  return 'dark';
+  return 'light';
 }
 
 let currentTheme = detectInitialTheme();
