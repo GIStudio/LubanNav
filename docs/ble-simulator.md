@@ -49,10 +49,11 @@ npm scripts 已设置独立模块缓存（`/tmp/lubannav-swift-module-cache`）�
 | --- | --- |
 | `Car7ProtocolConstants` | `protocolName="luban-nav-ble"`、`protocolVersion=1`、NUS 三 UUID（Service / Command / Telemetry） |
 | `Car7Command` | `navigationTask(NavigationTask)` / `emergencyStop(EmergencyStop)`，附 `taskId` |
-| `NavigationTask` / `NavigationRoute` / `NavigationWaypoint` | 任务模型：`taskId`、`route.{from,to,mode,distanceMeters,durationSeconds,waypoints[]}`；航点 `{sequence,nodeId,longitude,latitude}` |
+| `NavigationTask` / `NavigationRoute` / `NavigationWaypoint` | 任务模型：`taskId`、`route.{from,to,mode,distanceMeters,durationSeconds,waypoints[]}`；航点 `{sequence,nodeId,longitude,latitude,kind,indoor,level,interpolated,distanceMeters}` |
+| `NavigationStart` / `StreamWaypoint` / `NavigationEnd` | 流式下发模型：`navigation_start`（任务头 + `waypointCount`）、`waypoint`（每条一行）、`navigation_end`（校验计数） |
 | `EmergencyStop` | `commandId`、`taskId?`、`reason?` |
-| `Car7CommandParser.parse(Data)` | 校验协议名/版本 → 按 `type` 解码；`navigation_task` 要求 `mode=robot`、航点非空、每个航点经纬度有限且在 WGS84 范围内 |
-| `Car7CommandError` | `invalidProtocol` / `invalidVersion` / `unsupportedType` / `emptyRoute` / `invalidMode` / `invalidWaypoint(sequence:)` |
+| `Car7CommandParser.parse(Data)` | 校验协议名/版本 → 按 `type` 解码；`navigation_task`/`navigation_start` 要求 `mode=robot`，航点经纬度有限且在 WGS84 范围内 |
+| `Car7CommandError` | `invalidProtocol` / `invalidVersion` / `unsupportedType` / `emptyRoute` / `invalidMode` / `invalidWaypoint(sequence:)` / `invalidWaypointCount(Int)` |
 | `JSONLineFramer` | 字节流拼包、按 LF（`0x0A`）切帧；缓冲上限默认 1 MB，超限清空并抛 `bufferLimitExceeded`；`reset()` 丢弃半行 |
 | `Acknowledgement` / `StatusMessage` / `PositionMessage` | 遥测消息模型（`Encodable`） |
 | `Car7JSONEncoder.line(_:)` | JSON（sortedKeys）+ LF，用于 Notify |
@@ -73,7 +74,8 @@ GATT 表（与网页默认配置一致）：
 1. **广播**：设备名 + Service UUID 广告。
 2. **订阅**：手机订阅 TX 后打印 `[LINK] ... mtu=N`，并发送 `status=ready`。
 3. **接收任务**：RX 写入经 `JSONLineFramer` 拼包切帧 → `Car7CommandParser` 解析：
-   - `navigation_task`：打印 `[TASK] accepted ...`，（可选）导出 campusCar 航点文件，回 `ack=accepted` + `status=navigating`，随后按 `--step-ms` 逐航点发送 `position`（含航向角、`accuracyMeters=1.5`、ISO8601 时间戳），结束时 `status=arrived`。
+   - `navigation_task`（旧式单文档）：打印 `[TASK] accepted ...`，（可选）导出 campusCar 航点文件，回 `ack=accepted` + `status=navigating`，随后按 `--step-ms` 逐航点发送 `position`（含航向角、`accuracyMeters=1.5`、ISO8601 时间戳），结束时 `status=arrived`。
+   - **流式下发（默认）**：`navigation_start` 立即回 `ack=accepted`；每条 `waypoint` 行独立校验并追加进缓冲，收到第一个航点即回 `status=navigating` 并开始回放（缓冲未满时等待下一行）；`navigation_end` 校验航点数，不匹配回 `status=fault`，campusCar 导出仅在路线完整后执行。详见 [robot-ble-protocol.md](robot-ble-protocol.md)。
    - `emergency_stop`：停止回放，回 `ack=stopped` + `status=stopped`。
    - 无法解析的行打印 `[DROP]`——STOP 前的引导 LF 产生的残行即按此丢弃（与网页 `sendEmergencyStop` 的 `prefixDelimiter` 行为对应）。
 4. **断连**：所有订阅者退订后清空待发队列并停止回放（`[LINK] phone unsubscribed`）。

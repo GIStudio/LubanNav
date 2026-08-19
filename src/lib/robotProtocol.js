@@ -1,6 +1,15 @@
 export const ROBOT_PROTOCOL_NAME = 'luban-nav-ble';
 export const ROBOT_PROTOCOL_VERSION = 1;
 
+// Streaming JSONL route delivery: one JSON object per line. `navigation_start`
+// carries the task header so the robot can acknowledge immediately; every
+// `waypoint` line is parsed as it arrives (动态解包, no waiting for the whole
+// file); `navigation_end` closes the task. `navigation_task` (one document
+// with all waypoints) stays supported as the legacy single-shot form.
+export const NAVIGATION_START_TYPE = 'navigation_start';
+export const WAYPOINT_TYPE = 'waypoint';
+export const NAVIGATION_END_TYPE = 'navigation_end';
+
 // Nordic UART Service-compatible defaults. They are editable in the UI because
 // the robot firmware remains the source of truth for its GATT UUIDs.
 export const DEFAULT_BLE_CONFIG = Object.freeze({
@@ -105,14 +114,90 @@ export function createTaskId(now = Date.now(), random = Math.random()) {
     .padStart(5, '0')}`;
 }
 
+function routeWaypoints(route) {
+  // Prefer the dense 2–3 m waypoint list; fall back to the sparse graph path
+  // for older route payloads.
+  return route.navigationWaypoints ?? route.path ?? [];
+}
+
+function waypointObject(point, sequence) {
+  return {
+    sequence,
+    nodeId: point.id ?? point.nodeId ?? null,
+    longitude: roundedCoordinate(point.longitude),
+    latitude: roundedCoordinate(point.latitude),
+    kind: point.kind ?? 'interpolated',
+    indoor: point.indoor === true,
+    level: point.level ?? null,
+    interpolated: point.interpolated === true,
+  };
+}
+
+function routeHeaderFields(route, waypoints) {
+  return {
+    from: route.request.from,
+    to: route.request.to,
+    mode: route.request.mode,
+    coordinateSystem: 'WGS84 longitude/latitude',
+    distanceMeters: route.summary.distanceMeters,
+    durationSeconds: route.summary.durationSeconds,
+    waypointSpacingMeters: route.summary.maxNavigationSpacingMeters ?? null,
+  };
+}
+
+/**
+ * Streaming JSONL route delivery: one JSON object per line. The first line is
+ * `navigation_start` (task header + waypointCount), followed by one `waypoint`
+ * line per dense waypoint, and a final `navigation_end` line. A robot can
+ * acknowledge the header and start acting on the first waypoints without
+ * buffering the whole document, and `emergency_stop` can interleave at any
+ * point.
+ */
+export function createNavigationTaskStream(route, options = {}) {
+  if (route?.status !== 'ok') throw new Error('Only a successful route can be sent to a robot');
+  if (route.request?.mode !== 'robot') throw new Error('Robot tasks require a robot-mode route');
+  const createdAt = options.createdAt ?? new Date().toISOString();
+  const taskId = options.taskId ?? createTaskId();
+  const waypoints = routeWaypoints(route);
+  if (waypoints.length === 0) throw new Error('A navigation route contains no waypoints');
+
+  const lines = [
+    {
+      protocol: ROBOT_PROTOCOL_NAME,
+      protocolVersion: ROBOT_PROTOCOL_VERSION,
+      type: NAVIGATION_START_TYPE,
+      taskId,
+      createdAt,
+      dataset: route.dataset,
+      route: {
+        ...routeHeaderFields(route, waypoints),
+        waypointCount: waypoints.length,
+      },
+    },
+    ...waypoints.map((point, sequence) => ({
+      protocol: ROBOT_PROTOCOL_NAME,
+      protocolVersion: ROBOT_PROTOCOL_VERSION,
+      type: WAYPOINT_TYPE,
+      taskId,
+      ...waypointObject(point, sequence),
+    })),
+    {
+      protocol: ROBOT_PROTOCOL_NAME,
+      protocolVersion: ROBOT_PROTOCOL_VERSION,
+      type: NAVIGATION_END_TYPE,
+      taskId,
+      waypointCount: waypoints.length,
+    },
+  ];
+  return lines;
+}
+
 export function createNavigationTask(route, options = {}) {
   if (route?.status !== 'ok') throw new Error('Only a successful route can be sent to a robot');
   if (route.request?.mode !== 'robot') throw new Error('Robot tasks require a robot-mode route');
   const createdAt = options.createdAt ?? new Date().toISOString();
   const taskId = options.taskId ?? createTaskId();
-  // Prefer the dense 2–3 m waypoint list; fall back to the sparse graph path
-  // for older route payloads.
-  const waypoints = route.navigationWaypoints ?? route.path ?? [];
+  const waypoints = routeWaypoints(route);
   return {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
@@ -121,23 +206,8 @@ export function createNavigationTask(route, options = {}) {
     createdAt,
     dataset: route.dataset,
     route: {
-      from: route.request.from,
-      to: route.request.to,
-      mode: route.request.mode,
-      coordinateSystem: 'WGS84 longitude/latitude',
-      distanceMeters: route.summary.distanceMeters,
-      durationSeconds: route.summary.durationSeconds,
-      waypointSpacingMeters: route.summary.maxNavigationSpacingMeters ?? null,
-      waypoints: waypoints.map((point, sequence) => ({
-        sequence,
-        nodeId: point.id ?? point.nodeId ?? null,
-        longitude: roundedCoordinate(point.longitude),
-        latitude: roundedCoordinate(point.latitude),
-        kind: point.kind,
-        indoor: point.indoor === true,
-        level: point.level ?? null,
-        interpolated: point.interpolated === true,
-      })),
+      ...routeHeaderFields(route, waypoints),
+      waypoints: waypoints.map((point, sequence) => waypointObject(point, sequence)),
     },
   };
 }
@@ -290,6 +360,13 @@ export function getRobotProtocolDescriptor() {
         required: ['protocol', 'protocolVersion', 'type', 'taskId', 'route'],
         waypointOrder:
           'route.waypoints is ordered, WGS84 longitude/latitude, and dense: consecutive waypoints are at most 2.5 m apart (route.waypointSpacingMeters). interpolated=true marks points inserted by linear interpolation between graph nodes; nodeId is null for them.',
+      },
+      navigationStream: {
+        types: [NAVIGATION_START_TYPE, WAYPOINT_TYPE, NAVIGATION_END_TYPE],
+        lineOrder:
+          'One JSON object per line. navigation_start (task header with route.waypointCount) → N waypoint lines (one per dense waypoint, ordered by sequence) → navigation_end (validates waypointCount). The robot should acknowledge navigation_start immediately and parse each waypoint line as it arrives, without waiting for the whole document; emergency_stop may interleave at any line boundary.',
+        waypoints:
+          'Each waypoint line is WGS84 longitude/latitude with sequence, nodeId (null when interpolated=true), kind, indoor, level.',
       },
       emergencyStop: {
         type: 'emergency_stop',

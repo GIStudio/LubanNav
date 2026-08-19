@@ -85,11 +85,28 @@ describe('WebBluetoothRobotClient', () => {
       offset += chunk.byteLength;
       expect(chunk.byteLength).toBeLessThanOrEqual(20);
     }
-    const decoded = JSON.parse(new TextDecoder().decode(bytes).trim());
-    expect(decoded.taskId).toBe(sent.taskId);
-    // The dispatched task carries the dense ≤ 2.5 m waypoint list.
-    expect(decoded.route.waypoints).toHaveLength(route.navigationWaypoints.length);
-    expect(decoded.route.waypoints.length).toBeGreaterThan(route.path.length);
+    // The dispatch is a JSONL stream: one command per line.
+    const lines = new TextDecoder()
+      .decode(bytes)
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    expect(lines[0]).toMatchObject({
+      type: 'navigation_start',
+      taskId: sent.taskId,
+    });
+    expect(lines[0].route.waypointCount).toBe(route.navigationWaypoints.length);
+    const waypointLines = lines.filter((line) => line.type === 'waypoint');
+    // The dispatched task carries the dense ≤ 2.5 m waypoint list, one per line.
+    expect(waypointLines).toHaveLength(route.navigationWaypoints.length);
+    expect(waypointLines.length).toBeGreaterThan(route.path.length);
+    expect(lines.at(-1)).toEqual({
+      protocol: 'luban-nav-ble',
+      protocolVersion: 1,
+      type: 'navigation_end',
+      taskId: sent.taskId,
+      waypointCount: route.navigationWaypoints.length,
+    });
 
     fake.telemetry.notify(
       encodeRobotMessage({

@@ -3,7 +3,7 @@ import {
   bluetoothRequestOptions,
   createDirectionCommand,
   createEmergencyStop,
-  createNavigationTask,
+  createNavigationTaskStream,
   encodeRobotMessage,
   normalizeBleConfig,
   splitBleChunks,
@@ -205,9 +205,12 @@ export class WebBluetoothRobotClient {
     ) {
       return Promise.reject(new Error('A navigation task transfer is already in progress'));
     }
-    const task = createNavigationTask(route);
-    this.lastTaskId = task.taskId;
-    return this.enqueueMessage(task, { priority: false });
+    // Streaming JSONL: navigation_start → N waypoint lines → navigation_end.
+    // The robot acknowledges the header and parses waypoints as they arrive,
+    // so it never waits for the whole (dense) document before acting.
+    const lines = createNavigationTaskStream(route);
+    this.lastTaskId = lines[0].taskId;
+    return this.enqueueStream(lines, { priority: false });
   }
 
   sendEmergencyStop() {
@@ -262,6 +265,38 @@ export class WebBluetoothRobotClient {
       ? new Uint8Array([0x0a, ...encoded])
       : encoded;
     const chunks = splitBleChunks(bytes, this.config.chunkBytes);
+    return new Promise((resolve, reject) => {
+      const operation = { message, chunks, resolve, reject, cancelled: false };
+      if (priority) this.operationQueue.unshift(operation);
+      else this.operationQueue.push(operation);
+      void this.drainQueue();
+    });
+  }
+
+  /**
+   * Send a navigation route as a JSONL stream (one JSON object per line).
+   * All lines share one taskId and are written sequentially as a single
+   * operation, so an interleaved emergency_stop cancels the whole stream and
+   * the LF-prefix resync still drops only the partial line in flight.
+   */
+  enqueueStream(lines, { priority = false } = {}) {
+    if (this.state !== 'connected' || !this.commandCharacteristic) {
+      return Promise.reject(new Error('Robot is not connected'));
+    }
+    if (!Array.isArray(lines) || lines.length === 0) {
+      return Promise.reject(new Error('Navigation stream is empty'));
+    }
+    const taskId = lines[0].taskId ?? null;
+    const chunks = [];
+    for (const line of lines) {
+      chunks.push(...splitBleChunks(encodeRobotMessage(line), this.config.chunkBytes));
+    }
+    const message = {
+      type: 'navigation_task',
+      taskId,
+      streaming: true,
+      lineCount: lines.length,
+    };
     return new Promise((resolve, reject) => {
       const operation = { message, chunks, resolve, reject, cancelled: false };
       if (priority) this.operationQueue.unshift(operation);
