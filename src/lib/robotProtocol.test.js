@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { findRoute } from './pathfinding.js';
 import {
   DEFAULT_BLE_CONFIG,
+  NAVIGATION_END_TYPE,
+  NAVIGATION_START_TYPE,
   RobotMessageDecoder,
+  WAYPOINT_TYPE,
   bluetoothRequestOptions,
   createDirectionCommand,
   createNavigationTask,
+  createNavigationTaskStream,
   encodeRobotMessage,
   getRobotProtocolDescriptor,
   splitBleChunks,
@@ -43,6 +47,64 @@ describe('robot BLE protocol', () => {
     expect(task.route.waypoints.at(-1).nodeId).toBe('library');
     expect(task.route.waypoints.some((waypoint) => waypoint.interpolated === true)).toBe(true);
     expect(() => createNavigationTask(findRoute('dorm-5', 'library', 'pedestrian'))).toThrow(
+      'robot-mode',
+    );
+  });
+
+  it('builds a streaming JSONL route: navigation_start → waypoint lines → navigation_end', () => {
+    const route = findRoute('dorm-5', 'library', 'robot');
+    const lines = createNavigationTaskStream(route, {
+      taskId: 'task-stream',
+      createdAt: '2026-08-13T08:00:00.000Z',
+    });
+
+    expect(lines[0]).toMatchObject({
+      protocol: 'luban-nav-ble',
+      protocolVersion: 1,
+      type: NAVIGATION_START_TYPE,
+      taskId: 'task-stream',
+      createdAt: '2026-08-13T08:00:00.000Z',
+      route: {
+        from: 'dorm-5',
+        to: 'library',
+        mode: 'robot',
+        coordinateSystem: 'WGS84 longitude/latitude',
+        waypointCount: route.navigationWaypoints.length,
+        waypointSpacingMeters: route.summary.maxNavigationSpacingMeters,
+      },
+    });
+
+    const waypointLines = lines.filter((line) => line.type === WAYPOINT_TYPE);
+    expect(waypointLines).toHaveLength(route.navigationWaypoints.length);
+    expect(waypointLines[0]).toMatchObject({
+      type: WAYPOINT_TYPE,
+      taskId: 'task-stream',
+      sequence: 0,
+      nodeId: route.path[0].id,
+      longitude: route.path[0].longitude,
+      latitude: route.path[0].latitude,
+      interpolated: false,
+    });
+    expect(waypointLines.some((line) => line.interpolated === true)).toBe(true);
+    for (const line of waypointLines) {
+      expect(line.longitude).toBeGreaterThanOrEqual(-180);
+      expect(line.longitude).toBeLessThanOrEqual(180);
+      expect(line.latitude).toBeGreaterThanOrEqual(-90);
+      expect(line.latitude).toBeLessThanOrEqual(90);
+      // Every line is a small, independently parseable command (one line =
+      // one command), so the robot never buffers the whole document.
+      expect(new TextEncoder().encode(JSON.stringify(line)).byteLength).toBeLessThan(300);
+    }
+
+    expect(lines.at(-1)).toEqual({
+      protocol: 'luban-nav-ble',
+      protocolVersion: 1,
+      type: NAVIGATION_END_TYPE,
+      taskId: 'task-stream',
+      waypointCount: route.navigationWaypoints.length,
+    });
+    expect(lines.every((line) => line.taskId === 'task-stream')).toBe(true);
+    expect(() => createNavigationTaskStream(findRoute('dorm-5', 'library', 'pedestrian'))).toThrow(
       'robot-mode',
     );
   });
@@ -112,6 +174,11 @@ describe('robot BLE protocol', () => {
     expect(descriptor.transport.defaultGatt.deviceNamePrefix).toBe('car7');
     expect(descriptor.diagnostics.stages).toContain('primary-service');
     expect(descriptor.browserToRobot.navigationTask.type).toBe('navigation_task');
+    expect(descriptor.browserToRobot.navigationStream.types).toEqual([
+      NAVIGATION_START_TYPE,
+      WAYPOINT_TYPE,
+      NAVIGATION_END_TYPE,
+    ]);
     expect(descriptor.robotToBrowser.position.example.type).toBe('position');
   });
 

@@ -11,11 +11,17 @@ public enum Car7ProtocolConstants {
 public enum Car7Command: Equatable {
     case navigationTask(NavigationTask)
     case emergencyStop(EmergencyStop)
+    case navigationStart(NavigationStart)
+    case streamWaypoint(StreamWaypoint)
+    case navigationEnd(NavigationEnd)
 
     public var taskId: String? {
         switch self {
         case .navigationTask(let task): task.taskId
         case .emergencyStop(let command): command.taskId
+        case .navigationStart(let start): start.taskId
+        case .streamWaypoint(let line): line.taskId
+        case .navigationEnd(let end): end.taskId
         }
     }
 }
@@ -28,6 +34,24 @@ public struct NavigationTask: Decodable, Equatable {
     public let createdAt: String?
     public let dataset: String?
     public let route: NavigationRoute
+
+    public init(
+        protocolName: String,
+        protocolVersion: Int,
+        type: String,
+        taskId: String,
+        createdAt: String?,
+        dataset: String?,
+        route: NavigationRoute
+    ) {
+        self.protocolName = protocolName
+        self.protocolVersion = protocolVersion
+        self.type = type
+        self.taskId = taskId
+        self.createdAt = createdAt
+        self.dataset = dataset
+        self.route = route
+    }
 
     enum CodingKeys: String, CodingKey {
         case protocolName = "protocol"
@@ -43,6 +67,24 @@ public struct NavigationRoute: Decodable, Equatable {
     public let distanceMeters: Double?
     public let durationSeconds: Double?
     public let waypoints: [NavigationWaypoint]
+
+    public init(
+        from: String,
+        to: String,
+        mode: String,
+        coordinateSystem: String?,
+        distanceMeters: Double?,
+        durationSeconds: Double?,
+        waypoints: [NavigationWaypoint]
+    ) {
+        self.from = from
+        self.to = to
+        self.mode = mode
+        self.coordinateSystem = coordinateSystem
+        self.distanceMeters = distanceMeters
+        self.durationSeconds = durationSeconds
+        self.waypoints = waypoints
+    }
 }
 
 public struct NavigationWaypoint: Decodable, Equatable {
@@ -50,6 +92,97 @@ public struct NavigationWaypoint: Decodable, Equatable {
     public let nodeId: String?
     public let longitude: Double
     public let latitude: Double
+    public let kind: String?
+    public let indoor: Bool?
+    public let level: String?
+    public let interpolated: Bool?
+    public let distanceMeters: Double?
+
+    public init(
+        sequence: Int,
+        nodeId: String?,
+        longitude: Double,
+        latitude: Double,
+        kind: String? = nil,
+        indoor: Bool? = nil,
+        level: String? = nil,
+        interpolated: Bool? = nil,
+        distanceMeters: Double? = nil
+    ) {
+        self.sequence = sequence
+        self.nodeId = nodeId
+        self.longitude = longitude
+        self.latitude = latitude
+        self.kind = kind
+        self.indoor = indoor
+        self.level = level
+        self.interpolated = interpolated
+        self.distanceMeters = distanceMeters
+    }
+}
+
+/// `navigation_start` — header line of the streaming JSONL route delivery.
+public struct NavigationStart: Decodable, Equatable {
+    public let protocolName: String
+    public let protocolVersion: Int
+    public let type: String
+    public let taskId: String
+    public let createdAt: String?
+    public let dataset: String?
+    public let route: NavigationStartRoute
+
+    enum CodingKeys: String, CodingKey {
+        case protocolName = "protocol"
+        case protocolVersion, type, taskId, createdAt, dataset, route
+    }
+}
+
+public struct NavigationStartRoute: Decodable, Equatable {
+    public let from: String
+    public let to: String
+    public let mode: String
+    public let coordinateSystem: String?
+    public let distanceMeters: Double?
+    public let durationSeconds: Double?
+    public let waypointSpacingMeters: Double?
+    public let waypointCount: Int
+}
+
+/// `waypoint` — one dense route waypoint, delivered as its own JSON line.
+public struct StreamWaypoint: Decodable, Equatable {
+    public let protocolName: String
+    public let protocolVersion: Int
+    public let type: String
+    public let taskId: String
+    public let waypoint: NavigationWaypoint
+
+    enum CodingKeys: String, CodingKey {
+        case protocolName = "protocol"
+        case protocolVersion, type, taskId
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        protocolName = try container.decode(String.self, forKey: .protocolName)
+        protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
+        type = try container.decode(String.self, forKey: .type)
+        taskId = try container.decode(String.self, forKey: .taskId)
+        waypoint = try NavigationWaypoint(from: decoder)
+    }
+}
+
+/// `navigation_end` — closes a streaming route; validates waypointCount.
+public struct NavigationEnd: Decodable, Equatable {
+    public let protocolName: String
+    public let protocolVersion: Int
+    public let type: String
+    public let taskId: String
+    public let waypointCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case protocolName = "protocol"
+        case protocolVersion, type, taskId, waypointCount
+    }
 }
 
 public struct EmergencyStop: Decodable, Equatable {
@@ -85,6 +218,7 @@ public enum Car7CommandError: Error, LocalizedError, Equatable {
     case emptyRoute
     case invalidMode(String)
     case invalidWaypoint(sequence: Int)
+    case invalidWaypointCount(Int)
 
     public var errorDescription: String? {
         switch self {
@@ -100,11 +234,24 @@ public enum Car7CommandError: Error, LocalizedError, Equatable {
             "navigation route mode must be robot, got \(mode)"
         case .invalidWaypoint(let sequence):
             "waypoint \(sequence) is outside WGS84 bounds or is not finite"
+        case .invalidWaypointCount(let count):
+            "navigation waypoint count must be a positive integer, got \(count)"
         }
     }
 }
 
 public enum Car7CommandParser {
+    private static func validate(_ waypoints: [NavigationWaypoint]) throws {
+        for waypoint in waypoints {
+            guard waypoint.longitude.isFinite,
+                  waypoint.latitude.isFinite,
+                  (-180.0 ... 180.0).contains(waypoint.longitude),
+                  (-90.0 ... 90.0).contains(waypoint.latitude) else {
+                throw Car7CommandError.invalidWaypoint(sequence: waypoint.sequence)
+            }
+        }
+    }
+
     public static func parse(_ data: Data) throws -> Car7Command {
         let decoder = JSONDecoder()
         let envelope = try decoder.decode(CommandEnvelope.self, from: data)
@@ -124,15 +271,27 @@ public enum Car7CommandParser {
             guard !task.route.waypoints.isEmpty else {
                 throw Car7CommandError.emptyRoute
             }
-            for waypoint in task.route.waypoints {
-                guard waypoint.longitude.isFinite,
-                      waypoint.latitude.isFinite,
-                      (-180.0 ... 180.0).contains(waypoint.longitude),
-                      (-90.0 ... 90.0).contains(waypoint.latitude) else {
-                    throw Car7CommandError.invalidWaypoint(sequence: waypoint.sequence)
-                }
-            }
+            try validate(task.route.waypoints)
             return .navigationTask(task)
+        case "navigation_start":
+            let start = try decoder.decode(NavigationStart.self, from: data)
+            guard start.route.mode == "robot" else {
+                throw Car7CommandError.invalidMode(start.route.mode)
+            }
+            guard start.route.waypointCount > 0 else {
+                throw Car7CommandError.invalidWaypointCount(start.route.waypointCount)
+            }
+            return .navigationStart(start)
+        case "waypoint":
+            let line = try decoder.decode(StreamWaypoint.self, from: data)
+            try validate([line.waypoint])
+            return .streamWaypoint(line)
+        case "navigation_end":
+            let end = try decoder.decode(NavigationEnd.self, from: data)
+            guard end.waypointCount > 0 else {
+                throw Car7CommandError.invalidWaypointCount(end.waypointCount)
+            }
+            return .navigationEnd(end)
         case "emergency_stop":
             return .emergencyStop(try decoder.decode(EmergencyStop.self, from: data))
         default:

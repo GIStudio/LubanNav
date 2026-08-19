@@ -79,6 +79,27 @@
 
 小车收到完整消息并验证字段后，应返回 `ack`。网页传输完成只代表字节已写入 GATT，并不代表小车接受或执行了任务。
 
+### 流式路线下发（JSONL 一行一条命令，默认方式）
+
+加密后的路线有数百个航点，整份 `navigation_task` 文档可能要几十 KB，小车必须等整份文件收完才能解析。因此网页**默认改用流式下发**：每一行都是一个完整的独立命令，接收端逐行解析、收到第一个航点即可开始导航，无需缓冲整份文档：
+
+```text
+{"protocol":"luban-nav-ble","protocolVersion":1,"type":"navigation_start","taskId":"task-stream","createdAt":"2026-08-13T08:00:00.000Z","dataset":"hkustgz-layered-routing-v3","route":{"from":"main-entrance","to":"library","mode":"robot","coordinateSystem":"WGS84 longitude/latitude","distanceMeters":942,"durationSeconds":1178,"waypointSpacingMeters":2.5,"waypointCount":415}}
+{"protocol":"luban-nav-ble","protocolVersion":1,"type":"waypoint","taskId":"task-stream","sequence":0,"nodeId":"main-entrance","longitude":113.4776815,"latitude":22.8883663,"kind":"entrance","indoor":false,"level":null,"interpolated":false}
+{"protocol":"luban-nav-ble","protocolVersion":1,"type":"waypoint","taskId":"task-stream","sequence":1,"nodeId":null,"longitude":113.4777049,"latitude":22.8884435,"kind":"interpolated","indoor":false,"level":null,"interpolated":true}
+...（每条 waypoint 一行，与加密点列顺序一致）...
+{"protocol":"luban-nav-ble","protocolVersion":1,"type":"navigation_end","taskId":"task-stream","waypointCount":415}
+```
+
+行为契约：
+
+1. `navigation_start` 只带任务头与 `waypointCount`。接收端应**立即回 `ack/accepted`**（可在 message 注明期望航点数）。
+2. 每条 `waypoint` 独立校验：`taskId` 匹配、`sequence` 从 0 严格递增、WGS84 边界。坏行只丢弃该行，不影响后续行；`interpolated=true` 的插值点 `nodeId` 为 `null`。
+3. 收到第一个航点即可回 `status/navigating` 并开始跟踪；后续航点到达后补充进缓冲。回放速度超过到达速度时原地等待下一个航点。
+4. `navigation_end` 校验 `waypointCount` 与已收航点数一致；不一致回 `status/fault`（message 说明 received/expected）。campusCar 航点导出与实车移动序列只在路线完整后触发。
+5. `emergency_stop` / `direction` 是独立行，可随时穿插在任意两行之间；网页在急停前先写一个 LF 丢弃传输中的半行。
+6. 旧式单文档 `navigation_task` 仍受支持（等价于立即收到完整路线），旧脚本与固件可平滑升级。
+
 ### 紧急停止
 
 ```json

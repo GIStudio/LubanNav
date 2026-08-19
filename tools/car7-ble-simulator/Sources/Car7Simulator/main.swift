@@ -86,6 +86,11 @@ private func printUsage() {
 }
 
 private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelegate {
+    private struct StreamingState {
+        let expectedCount: Int
+        var completed: Bool
+    }
+
     private let options: SimulatorOptions
     private var manager: CBPeripheralManager!
     private var commandCharacteristic: CBMutableCharacteristic?
@@ -96,6 +101,8 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
     private var subscriberMTUs: [UUID: Int] = [:]
     private var pendingNotifications: [Data] = []
     private var activeTask: NavigationTask?
+    private var streamedWaypoints: [NavigationWaypoint] = []
+    private var streaming: StreamingState?
     private var nextWaypointIndex = 0
     private var playbackTimer: Timer?
     private let timestampFormatter = ISO8601DateFormatter()
@@ -257,6 +264,12 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
         switch command {
         case .navigationTask(let task):
             startPlayback(task)
+        case .navigationStart(let start):
+            beginStreaming(start)
+        case .streamWaypoint(let line):
+            appendWaypoint(line)
+        case .navigationEnd(let end):
+            finishStreaming(end)
         case .emergencyStop(let stop):
             let stoppedTaskId = stop.taskId ?? activeTask?.taskId
             stopPlayback(reason: "emergency_stop \(stop.commandId)")
@@ -268,6 +281,8 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
     private func startPlayback(_ task: NavigationTask) {
         stopPlayback(reason: nil)
         activeTask = task
+        streamedWaypoints = task.route.waypoints
+        streaming = StreamingState(expectedCount: task.route.waypoints.count, completed: true)
         nextWaypointIndex = 0
         log(
             "TASK",
@@ -287,10 +302,116 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
         }
     }
 
+    // Streaming JSONL delivery: navigation_start → waypoint* → navigation_end.
+    // Each line is parsed as it arrives; playback starts at the first waypoint
+    // and waits for the buffer to catch up, so the whole document is never
+    // buffered before acting.
+
+    private func beginStreaming(_ start: NavigationStart) {
+        stopPlayback(reason: nil)
+        let route = NavigationRoute(
+            from: start.route.from,
+            to: start.route.to,
+            mode: start.route.mode,
+            coordinateSystem: start.route.coordinateSystem,
+            distanceMeters: start.route.distanceMeters,
+            durationSeconds: start.route.durationSeconds,
+            waypoints: []
+        )
+        activeTask = NavigationTask(
+            protocolName: Car7ProtocolConstants.protocolName,
+            protocolVersion: Car7ProtocolConstants.protocolVersion,
+            type: "navigation_task",
+            taskId: start.taskId,
+            createdAt: start.createdAt,
+            dataset: start.dataset,
+            route: route
+        )
+        streaming = StreamingState(expectedCount: start.route.waypointCount, completed: false)
+        streamedWaypoints = []
+        nextWaypointIndex = 0
+        log(
+            "TASK",
+            "streaming \(start.taskId): \(start.route.from) -> \(start.route.to), expecting \(start.route.waypointCount) waypoints"
+        )
+        send(Acknowledgement(
+            taskId: start.taskId,
+            status: "accepted",
+            message: "streaming \(start.route.waypointCount) waypoints"
+        ))
+    }
+
+    private func appendWaypoint(_ line: StreamWaypoint) {
+        guard let task = activeTask, let streaming else {
+            log("DROP", "waypoint without navigation_start")
+            return
+        }
+        guard line.taskId == task.taskId else {
+            log("DROP", "waypoint taskId mismatch: got \(line.taskId) expected \(task.taskId)")
+            return
+        }
+        guard !streaming.completed else {
+            log("DROP", "waypoint after navigation_end: sequence \(line.waypoint.sequence)")
+            return
+        }
+        guard line.waypoint.sequence == streamedWaypoints.count else {
+            log("DROP", "waypoint sequence gap: expected \(streamedWaypoints.count) got \(line.waypoint.sequence)")
+            return
+        }
+        streamedWaypoints.append(line.waypoint)
+        if streamedWaypoints.count == 1 {
+            send(StatusMessage(taskId: task.taskId, status: "navigating"))
+            sendNextWaypoint()
+            if activeTask != nil {
+                playbackTimer = Timer.scheduledTimer(
+                    withTimeInterval: Double(options.stepMilliseconds) / 1_000,
+                    repeats: true
+                ) { [weak self] _ in
+                    self?.sendNextWaypoint()
+                }
+            }
+        }
+        if streamedWaypoints.count >= streaming.expectedCount {
+            completeStreaming()
+        }
+    }
+
+    private func finishStreaming(_ end: NavigationEnd) {
+        guard let task = activeTask, let streaming else {
+            log("DROP", "navigation_end without navigation_start")
+            return
+        }
+        guard end.taskId == task.taskId else {
+            log("DROP", "navigation_end taskId mismatch: got \(end.taskId) expected \(task.taskId)")
+            return
+        }
+        guard streamedWaypoints.count == streaming.expectedCount else {
+            log("ERROR", "route incomplete \(task.taskId): received \(streamedWaypoints.count) / expected \(streaming.expectedCount) waypoints")
+            send(StatusMessage(taskId: task.taskId, status: "fault", message: "incomplete route"))
+            stopPlayback(reason: "incomplete route")
+            return
+        }
+        completeStreaming()
+    }
+
+    private func completeStreaming() {
+        guard let task = activeTask, var streaming else { return }
+        guard !streaming.completed else { return }
+        guard streamedWaypoints.count >= streaming.expectedCount else { return }
+        streaming.completed = true
+        self.streaming = streaming
+        log("TASK", "route complete \(task.taskId): \(streamedWaypoints.count) waypoints")
+        exportCampusCarRoute(task)
+    }
+
     private func sendNextWaypoint() {
         guard let task = activeTask else { return }
-        let waypoints = task.route.waypoints
+        let waypoints = streamedWaypoints
+        let completed = streaming?.completed ?? false
         if nextWaypointIndex >= waypoints.count {
+            if !completed {
+                return // streaming: buffer still growing; wait for the next line
+            }
             if options.loopRoute {
                 nextWaypointIndex = 0
             } else {
@@ -322,7 +443,7 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
         log("POS", "\(index + 1)/\(waypoints.count) lat=\(waypoint.latitude) lon=\(waypoint.longitude)")
         nextWaypointIndex += 1
 
-        if nextWaypointIndex >= waypoints.count, !options.loopRoute {
+        if nextWaypointIndex >= waypoints.count, completed, !options.loopRoute {
             send(StatusMessage(taskId: task.taskId, status: "arrived"))
             log("TASK", "arrived \(task.taskId)")
             stopPlayback(reason: nil)
@@ -336,6 +457,8 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
             log("TASK", "stopped: \(reason)")
         }
         activeTask = nil
+        streamedWaypoints = []
+        streaming = nil
         nextWaypointIndex = 0
     }
 
@@ -347,7 +470,24 @@ private final class Car7PeripheralSimulator: NSObject, CBPeripheralManagerDelega
                 at: url.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            try Car7JSONEncoder.pretty(CampusCarWaypointFile(task: task))
+            let completeTask = NavigationTask(
+                protocolName: task.protocolName,
+                protocolVersion: task.protocolVersion,
+                type: task.type,
+                taskId: task.taskId,
+                createdAt: task.createdAt,
+                dataset: task.dataset,
+                route: NavigationRoute(
+                    from: task.route.from,
+                    to: task.route.to,
+                    mode: task.route.mode,
+                    coordinateSystem: task.route.coordinateSystem,
+                    distanceMeters: task.route.distanceMeters,
+                    durationSeconds: task.route.durationSeconds,
+                    waypoints: streamedWaypoints
+                )
+            )
+            try Car7JSONEncoder.pretty(CampusCarWaypointFile(task: completeTask))
                 .write(to: url, options: .atomic)
             log("EXPORT", "campusCar waypoint file: \(url.path)")
         } catch {
