@@ -344,12 +344,16 @@ export class WebBluetoothRobotClient {
   async writeChunk(chunk) {
     const characteristic = this.commandCharacteristic;
     if (!characteristic) throw new Error('Command characteristic is unavailable');
-    if (characteristic.properties?.write && characteristic.writeValueWithResponse) {
-      await characteristic.writeValueWithResponse(chunk);
-      return;
-    }
+    // Prefer Write Without Response: no per-packet ACK round trip, so a dense
+    // route transfers several times faster. The LF-framed JSONL protocol plus
+    // the emergency-stop LF resync tolerates a lost tail chunk; BLE link-layer
+    // retransmission still covers RF noise.
     if (characteristic.properties?.writeWithoutResponse && characteristic.writeValueWithoutResponse) {
       await characteristic.writeValueWithoutResponse(chunk);
+      return;
+    }
+    if (characteristic.properties?.write && characteristic.writeValueWithResponse) {
+      await characteristic.writeValueWithResponse(chunk);
       return;
     }
     if (characteristic.writeValue) {

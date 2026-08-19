@@ -135,7 +135,7 @@
 
 | 导出 | 说明 |
 | --- | --- |
-| `DEFAULT_BLE_CONFIG` | 设备名前缀 `car7`、NUS 三 UUID、`chunkBytes:20`、`interChunkDelayMs:12` |
+| `DEFAULT_BLE_CONFIG` | 设备名前缀 `car7`、NUS 三 UUID、`chunkBytes:185`、`interChunkDelayMs:5`、`directionSpeedMetersPerSecond:2.0`（= ROS 上限 4.0 m/s 的一半） |
 | `normalizeBleConfig(input)` | 合并默认值并校验：UUID 必须为完整格式，`chunkBytes ∈ [1,512]`，`interChunkDelayMs ∈ [0,1000]` |
 | `bluetoothRequestOptions(config)` | `requestDevice` 参数：有前缀时用 `filters:[{namePrefix}]`，空前缀 `acceptAllDevices`；`optionalServices=[serviceUuid]` |
 | `encodeRobotMessage(message)` | JSON + `\n` → UTF-8 字节 |
@@ -161,7 +161,7 @@
 - `disconnect()`：取消传输、断开 GATT、状态 `disconnected`。
 - `sendNavigationTask(route)`：同一时刻只允许一个路线传输（重复调用 reject）；记录 `lastTaskId`。
 - `sendEmergencyStop()`：标记进行中和排队中的路线传输为已取消，队首插入 `emergency_stop`，并在字节流前补一个 LF（`prefixDelimiter`）让固件丢弃半行。
-- 传输队列：顺序写入，优先 `writeValueWithResponse`，其次 `writeWithoutResponse`，最后 `writeValue`；每包间隔 `interChunkDelayMs`；断连时队列整体 reject（`AbortError`）。
+- 传输队列：顺序写入，优先 `writeValueWithoutResponse`（无逐包 ACK，速度快），其次 `writeValueWithResponse`，最后 `writeValue`；每包间隔 `interChunkDelayMs`；断连时队列整体 reject（`AbortError`）。
 - 事件（`subscribe(listener)`）：`{type:'state'|'message'|'position'|'transfer-progress'|'sent'|'transfer-error'|'telemetry-error', ...}`；`transfer-progress` 含 `sentChunks/totalChunks`。
 - `setConfig(config)`：连接中禁止修改。
 

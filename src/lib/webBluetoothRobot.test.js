@@ -55,7 +55,7 @@ function fakeBluetoothStack() {
       return device;
     },
   };
-  return { bluetooth, command, telemetry, device };
+  return { bluetooth, command, telemetry, device, service };
 }
 
 describe('WebBluetoothRobotClient', () => {
@@ -208,6 +208,41 @@ describe('WebBluetoothRobotClient', () => {
     const stopStart = text.indexOf('{"protocol"', 1);
     expect(stopStart).toBeGreaterThan(0);
     expect(JSON.parse(text.slice(stopStart).trim()).direction).toBe('stop');
+  });
+
+  it('prefers Write Without Response when the firmware advertises it', async () => {
+    const fake = fakeBluetoothStack();
+    // Override the command characteristic to advertise both write flavours.
+    const dual = new FakeCharacteristic({ write: true, writeWithoutResponse: true });
+    const withResponse = [];
+    const withoutResponse = [];
+    dual.writeValueWithResponse = async (value) => {
+      withResponse.push(new Uint8Array(value));
+    };
+    dual.writeValueWithoutResponse = async (value) => {
+      withoutResponse.push(new Uint8Array(value));
+    };
+    fake.service.getCharacteristic = async (uuid) =>
+      uuid === DEFAULT_BLE_CONFIG.commandCharacteristicUuid ? dual : fake.telemetry;
+    const client = new WebBluetoothRobotClient({
+      bluetooth: fake.bluetooth,
+      config: { chunkBytes: 185, interChunkDelayMs: 0 },
+      sleep: async () => {},
+    });
+    await client.connect();
+
+    await client.sendDirection('forward', { amountMeters: 0.1 });
+    expect(withoutResponse.length).toBeGreaterThan(0);
+    expect(withResponse.length).toBe(0);
+    const decoded = JSON.parse(
+      new TextDecoder().decode(
+        withoutResponse.reduce(
+          (total, chunk) => new Uint8Array([...total, ...chunk]),
+          new Uint8Array(),
+        ),
+      ),
+    );
+    expect(decoded).toMatchObject({ type: 'direction', direction: 'forward' });
   });
 
   it('reports secure-context and API support separately', () => {
