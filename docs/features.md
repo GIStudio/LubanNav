@@ -144,7 +144,7 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 详细协议见 [robot-ble-protocol.md](robot-ble-protocol.md)，模拟器见 [ble-simulator.md](ble-simulator.md)。
 
 - **入口**：右上角菜单「机器人联络」页。需要 HTTPS 安全上下文与支持 Web Bluetooth 的 Chromium 浏览器；设备选择必须由按钮点击触发。
-- **GATT 与分包设置**：设备名前缀（默认 `car7`，可空）、Service / Command(RX) / Telemetry(TX) 三个 UUID（默认 Nordic UART Service）、每包字节（默认 20，1–512）、包间隔（默认 12 ms，0–1000）。设置持久化在 `localStorage`。
+- **GATT 与分包设置**：设备名前缀（默认 `car7`，可空）、Service / Command(RX) / Telemetry(TX) 三个 UUID（默认 Nordic UART Service）、每包字节（默认 185，1–512）、包间隔（默认 5 ms，0–1000）。设置持久化在 `localStorage`。默认按现代 BLE MTU（Android+BlueZ ≥185B）调优：89 KB 加密路线从约 53 s 降到约 4 s；旧 20B MTU 固件请手动调回。
 - **连接诊断**：按 `device-selection → gatt-connect → primary-service → command-characteristic → telemetry-characteristic → notifications` 六阶段报错，每阶段给出针对性中文建议（例如 `primary-service` 失败说明固件不是 NUS，需要用 nRF Connect 读真实 GATT 表）。
 - **下发路线**：仅 `robot` 模式路线可发送；必须人工点击「下发当前路线」，路线变化不会自动推送。消息为 UTF-8 JSON Lines，按字节分包顺序写入；传输进度条实时显示分片进度。
 - **STOP**：中止未完成的路线传输（先写一个 LF 让固件丢弃半行），优先发送 `emergency_stop`。它只是辅助入口，不能替代物理急停。

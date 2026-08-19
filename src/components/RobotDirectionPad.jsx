@@ -1,5 +1,10 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { useI18n } from '../lib/i18n.js';
+import {
+  DEFAULT_BLE_CONFIG,
+  MIN_DIRECTION_SPEED_MPS,
+  ROS_MAX_LINEAR_SPEED_MPS,
+} from '../lib/robotProtocol.js';
 
 /**
  * Manual direction pad (forward / left / stop / right / back) with
@@ -33,7 +38,8 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
       padActiveRef.current = true;
       const command = {
         ...options,
-        speedMetersPerSecond: config.directionSpeedMetersPerSecond ?? 0.06,
+        speedMetersPerSecond:
+          config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond,
       };
       const send = () => client.sendDirection(direction, command).catch(() => {});
       send();
@@ -63,15 +69,15 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
         <span>{t('robot.pad.speed')}</span>
         <input
           type="range"
-          min="0.02"
-          max="0.30"
-          step="0.01"
-          value={config.directionSpeedMetersPerSecond ?? 0.06}
+          min={MIN_DIRECTION_SPEED_MPS}
+          max={ROS_MAX_LINEAR_SPEED_MPS}
+          step="0.05"
+          value={config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond}
           onInput={(event) => onUpdateConfig('directionSpeedMetersPerSecond', event.currentTarget.value)}
           disabled={configLocked}
           aria-label={t('robot.pad.speedAria')}
         />
-        <strong>{(config.directionSpeedMetersPerSecond ?? 0.06).toFixed(2)} m/s</strong>
+        <strong>{(config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond).toFixed(2)} m/s</strong>
       </label>
       <div class="robot-pad-grid">
         <button

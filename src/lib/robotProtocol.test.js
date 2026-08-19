@@ -4,6 +4,7 @@ import {
   DEFAULT_BLE_CONFIG,
   NAVIGATION_END_TYPE,
   NAVIGATION_START_TYPE,
+  ROS_MAX_LINEAR_SPEED_MPS,
   RobotMessageDecoder,
   WAYPOINT_TYPE,
   bluetoothRequestOptions,
@@ -170,7 +171,8 @@ describe('robot BLE protocol', () => {
     const filtered = bluetoothRequestOptions({ deviceNamePrefix: 'LubanBot' });
     expect(filtered.filters).toEqual([{ namePrefix: 'LubanBot' }]);
     const descriptor = getRobotProtocolDescriptor();
-    expect(descriptor.transport.defaultGatt.chunkBytes).toBe(20);
+    expect(descriptor.transport.defaultGatt.chunkBytes).toBe(185);
+    expect(descriptor.transport.defaultGatt.interChunkDelayMs).toBe(5);
     expect(descriptor.transport.defaultGatt.deviceNamePrefix).toBe('car7');
     expect(descriptor.diagnostics.stages).toContain('primary-service');
     expect(descriptor.browserToRobot.navigationTask.type).toBe('navigation_task');
@@ -191,10 +193,15 @@ describe('robot BLE protocol', () => {
       amountDegrees: null,
       speedMetersPerSecond: null,
     });
+    // Default speed is half of the ROS max (2.0 m/s out of 4.0).
+    expect(DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond).toBe(2.0);
+    expect(ROS_MAX_LINEAR_SPEED_MPS).toBe(4.0);
+    const defaultSpeed = createDirectionCommand('forward', { speedMetersPerSecond: DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond });
+    expect(defaultSpeed.speedMetersPerSecond).toBe(2.0);
     const fast = createDirectionCommand('forward', { speedMetersPerSecond: 0.2 });
     expect(fast.speedMetersPerSecond).toBe(0.2);
     const clamped = createDirectionCommand('backward', { speedMetersPerSecond: 9 });
-    expect(clamped.speedMetersPerSecond).toBe(0.3);
+    expect(clamped.speedMetersPerSecond).toBe(4.0);
     const turn = createDirectionCommand('right', { amountDegrees: 20 });
     expect(turn).toMatchObject({ direction: 'right', amountDegrees: 20, amountMeters: null });
     const stop = createDirectionCommand('stop');
