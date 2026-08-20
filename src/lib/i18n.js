@@ -58,6 +58,7 @@ const zh = {
     alongRouteItem: '{name}（距路线约 {distance} 米，{desc}）',
     defaultPlaceDesc: '校内地点',
     noHighlights: '当前路线较短（约 {distance} 米），没有明显的途经点介绍。',
+    originLocated: '已根据当前位置将出发点设为{name}。',
   },
   event: {
     eyebrow: 'EVENT MODE / MANIFEST',
@@ -419,6 +420,7 @@ const en = {
     alongRouteItem: '{name} (about {distance} m from the route, {desc})',
     defaultPlaceDesc: 'campus place',
     noHighlights: 'The current route is short (about {distance} m) with no notable places along the way.',
+    originLocated: 'Using your current location, the starting point is set to {name}.',
   },
   event: {
     eyebrow: 'EVENT MODE / MANIFEST',

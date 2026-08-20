@@ -14,6 +14,7 @@ import { resolveEventNavigationQuery } from './lib/eventMode.js';
 import { useI18n, localizedName } from './lib/i18n.js';
 import { useTheme } from './lib/theme.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
+import { locateCurrentPlace } from './lib/locate.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
 import { useEventProfiles } from './lib/useEventProfiles.js';
@@ -93,6 +94,34 @@ export function App() {
       url.searchParams.delete('accessCode');
       window.history.replaceState({}, '', url);
     }
+  }, []);
+
+  // Default the origin to the user's current position when possible: an
+  // explicitly shared ?from= link wins, an explicit user choice (manual
+  // select, typed/voice query) wins, and the main gate remains the final
+  // fallback when there is no fix and no user input.
+  useEffect(() => {
+    if (params.get('from')) return undefined;
+    let cancelled = false;
+    locateCurrentPlace().then((place) => {
+      if (cancelled || !place) return;
+      setFrom((current) => {
+        if (current !== 'main-entrance') return current; // user already chose
+        return place.id;
+      });
+      setMessages((items) => [
+        ...items,
+        {
+          role: 'assistant',
+          text: t('app.originLocated', {
+            name: localizedName(NODE_BY_ID[place.id], lang),
+          }),
+        },
+      ]);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function parseQueryWithEvent(query) {
