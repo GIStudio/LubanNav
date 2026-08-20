@@ -12,9 +12,30 @@ import {
 
 const sourcePath = resolve('public/data/campus-osm.geojson');
 const indoorSourcePath = resolve('public/data/campus-indoor.geojson');
+const localNavSourcePath = resolve('public/data/campus-local-nav.geojson');
 const outputPath = resolve('src/data/osm-routing.json');
 const geojson = JSON.parse(await readFile(sourcePath, 'utf8'));
 const indoorGeojson = JSON.parse(await readFile(indoorSourcePath, 'utf8'));
+// 本地导航图（GCJ-02 -> WGS84 转换后的步行路网）作为道路补充并入 OSM 快照；
+// 由 `npm run import:global-nav` 生成，文件缺失时跳过（仅 OSM 路网）。
+try {
+  const localNav = JSON.parse(await readFile(localNavSourcePath, 'utf8'));
+  geojson.features.push(...localNav.features);
+  geojson.localNav = { source: localNav.source, stats: localNav.stats };
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+  console.warn('未找到 campus-local-nav.geojson，跳过本地导航图（运行 npm run import:global-nav 生成）');
+}
+// 室内楼层补丁（global-nav core F2/F3），由 import:global-nav-indoor 生成
+const localNavIndoorSourcePath = resolve('public/data/campus-local-nav-indoor.geojson');
+try {
+  const localNavIndoor = JSON.parse(await readFile(localNavIndoorSourcePath, 'utf8'));
+  indoorGeojson.features.push(...localNavIndoor.features);
+  indoorGeojson.localNavIndoor = { source: localNavIndoor.source };
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+  console.warn('未找到 campus-local-nav-indoor.geojson，跳过室内补丁（运行 npm run import:global-nav-indoor 生成）');
+}
 const graph = buildRoadGraph(geojson);
 const locations = bindLocationsToRoadGraph(
   geojson,
@@ -35,6 +56,7 @@ const routing = {
     source: indoorGeojson.source,
     disclaimer: indoorGeojson.disclaimer,
   },
+  localNavSource: geojson.localNav,
   allowedHighways: [...ROUTABLE_HIGHWAYS].sort(),
   indoorHighways: ['corridor', 'elevator'],
   graph: {

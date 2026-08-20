@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "name": "esri-world-imagery",
+    "attribution": "© Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    "urlTemplate": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    "zoom": 18,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36"
+  },
+  "bbox": {
+    "west": 113.4624,
+    "south": 22.8788,
+    "east": 113.4866,
+    "north": 22.8996
+  },
+  "thresholds": {
+    "maxSaturation": 0.22,
+    "maxChroma": 0.2,
+    "minLuminance": 0.16,
+    "maxLuminance": 0.85
+  },
+  "morphology": {
+    "closeSize": 5,
+    "openSize": 3
+  },
+  "excludeBuildings": true,
+  "buildingDilationPx": 2,
+  "excludeRegions": [],
+  "vectorStep": 2,
+  "minAreaPixels": 150,
+  "reviewState": {
+    "groundRoofClassification": "osm-building-masked-unverified",
+    "pavedMaterialSplit": "pending",
+    "fieldVerification": "pending"
+  }
+}

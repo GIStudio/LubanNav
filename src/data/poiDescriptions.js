@@ -92,4 +92,28 @@ export const POI_DESCRIPTIONS = {
   stadium: {
     description: '体育场（田径场），户外运动场地。',
   },
+  'lecture-hall-a': {
+    description: '演讲厅 A，位于演讲厅建筑 2 层中部。',
+  },
+  'lecture-hall-b': {
+    description: '演讲厅 B，位于演讲厅建筑 2 层东侧。',
+  },
+  'lecture-hall-c': {
+    description: '演讲厅 C，位于演讲厅建筑 2 层西侧。',
+  },
+  'central-garden': {
+    description: '中央花园，位于演讲厅建筑 3 层屋顶平台（与三楼中央平台相连）。',
+  },
+  'light-tower-restaurant': {
+    description: '光塔亚洲餐厅，位于 W 楼 2 层。',
+  },
+  'senlv-cafe': {
+    description: '森绿餐吧，位于 E 楼 2 层。',
+  },
+  'cma-creative-area': {
+    description: 'CMA 创意区，位于 E 楼 3 层。',
+  },
+  'academic-research-area': {
+    description: '学术科研区，位于 W 楼 2 层。',
+  },
 };

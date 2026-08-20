@@ -225,8 +225,8 @@ describe('findRoute', () => {
       indoor: false,
       outdoor: true,
       level: '3',
-      longitude: 113.47755,
-      latitude: 22.89147,
+      longitude: 113.4773529,
+      latitude: 22.8913503,
     });
     expect(platform.segments.some((segment) => segment.highway === 'elevator')).toBe(true);
     expect(platform.segments.some((segment) => segment.segmentType === 'outdoor-platform')).toBe(true);

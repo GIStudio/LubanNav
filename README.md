@@ -209,7 +209,7 @@ LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabiliti
 4. 模型提取地点 ID 和模式后，页面会自动更新起终点控件、地图路线、距离、耗时和地址栏查询参数。
 5. 用户没有说明起点时沿用页面当前起点；地点不明确或不在白名单中时，助手应追问而不是猜测。
 
-语音模板内置两条主动提醒与自动刷新的实时上下文：**会话开场**先按实时天气提醒一句“出门带伞”（降雨/高降水概率时明确提醒带伞防滑，晴热提醒防晒补水）；**接近或到达目的地**时（如用户说“快到了”“还有多远”“到了”）像公交到站提示一样提醒“请带好随身物品”（背包、手机、校园卡等）。会话期间网页每 30 秒自动刷新注入模型上下文：当前日期时间（`Asia/Shanghai`）与导航进度——机器人模式用 BLE 遥测位置沿路线算真实进度，步行模式按“路线开始时间 + 全程耗时”做匀速估算（明确标注估算）；进度显示接近目的地时模型可主动提醒带好随身物品。
+语音模板内置三条主动提醒与自动刷新的实时上下文：**会话开场**先询问“您想去哪里？”，待用户给出目的地、路线确定后再按实时天气提醒一句“出门带伞”（降雨/高降水概率时明确提醒带伞防滑，晴热提醒防晒补水）；**出发前**（机器人模式）若用户携带背包等随身物品，提醒可先将包放到随行小车自带的载物平台上，由小车携带出发（不编造平台容量、承重等未确认信息）；**接近或到达目的地**时（如用户说“快到了”“还有多远”“到了”）像公交到站提示一样提醒“请带好随身物品”（背包、手机、校园卡等）。会话期间网页每 30 秒自动刷新注入模型上下文：当前日期时间（`Asia/Shanghai`）与导航进度——机器人模式用 BLE 遥测位置沿路线算真实进度，步行模式按“路线开始时间 + 全程耗时”做匀速估算（明确标注估算）；进度显示接近目的地时模型可主动提醒带好随身物品。
 
 模型可调用的参数保持很小：
 
@@ -284,6 +284,50 @@ npm run register:walkable -- \
 ```
 
 配准报告记录每栋楼的拟合残差、反投影像素残差和留一验证残差。数值通过只表示八栋楼控制点足以支持初始几何配准，不表示候选面已经具备通行资格。
+
+### 从 Esri 瓦片提取铺装面（二值化）
+
+```bash
+npm run extract:paved
+```
+
+按 `config/paved-esri-tiles.json` 的范围下载 Esri World Imagery 瓦片（默认 z18 ≈ 0.6 m/px，缓存于 `artifacts/paved-esri/tiles/`），拼接后对低饱和度/低色度灰做二值化识别沥青与混凝土铺装，并用 OSM 建筑轮廓自动排除屋顶。瓦片自带地理配准，因此输出直接是 WGS84（不像渲染图需要控制点注册）。产物：
+
+- `artifacts/paved-esri/paved-mask.png` + `.pgw`：EPSG:3857 配准的栅格掩膜，拖入 QGIS 时选择该 CRS 即可与影像对齐；
+- `artifacts/paved-esri/paved-overlay.png`：绿=铺装候选、品红=排除建筑，目视检查；
+- `artifacts/paved-esri/paved-surfaces.wgs84.geojson`：铺装面候选多边形（`routingEnabled=false`、`verificationStatus=image-derived-unverified`）；
+- `artifacts/paved-esri/paved-summary.json`：面积、像素占比与多边形统计。
+
+与 OSM 可通行道路中心线对照，约 82% 的已知道路像素被识别为铺装；阴影下的深色路面和彩色运动场地（跑道/球场）不在灰度二值化范围内，需现场或语义复核。
+
+### 本地导航图补充（GCJ-02 转 WGS84）
+
+`GISprojects/global_nav_0408.geojson` 是一份预构建的细粒度步行导航图（525 节点 / 906 边，含天桥、台阶、闸口与室内楼层），但其坐标为 GCJ-02（高德系火星坐标）。运行：
+
+```bash
+npm run import:global-nav   # 转换并导入室外步行路网
+npm run generate:routing    # 重建寻路图（含 local-nav 补充）
+```
+
+导入规则：标准 GCJ-02→WGS84 逆变换；只导入 `campus_outdoor` 步行边（walk/gate/stairs）；剔除穿楼边；端点距 OSM 路顶点 ≤3 m 时复用 OSM 节点使两网合并。产物 `public/data/campus-local-nav.geojson` 带来源与坐标变换声明，全部要素待现场核验。地点入口推断仍只使用 OSM 路节点，避免未核验坐标改变地点锚点。
+
+### 室内楼层接入（核心/W/E 楼与图书馆）
+
+```bash
+npm run import:global-nav-indoor   # 转换并生成室内补丁
+npm run generate:routing           # 重建寻路图
+```
+
+从 `global_nav_0408.geojson` 的室内楼层图（GCJ-02 → WGS84）接入全部楼层网络：
+
+- **演讲厅核心**：F2 演讲厅层（演讲厅 A/B/C、逸林茶餐厅）与 F3 中央花园层（屋顶，并入 3F 平台网络）
+- **W 楼 F2/F3**（光塔亚洲餐厅、学术科研区）与 **E 楼 F2/F3**（森绿餐吧、CMA创意区）
+- **图书馆 F2** 走廊网络
+- 楼内电梯（`indoorVerticalConnector`）、楼梯（步行专用）、闸口与室外桥接（自动锚定最近地点）
+
+**机器人策略**：按学校政策室内走廊对机器人开放（`modes: [pedestrian, robot]` + `robotValidated: true`）；楼梯保持步行专用。新增公共地点 8 个（演讲厅 A/B/C、中央花园、光塔亚洲餐厅、森绿餐吧、CMA创意区、学术科研区）。
+
+产物 `public/data/campus-local-nav-indoor.geojson`（带来源与坐标变换声明），全部要素 `verificationStatus=from-navigation-graph-unverified`，正式运行前仍需现场复核。
 
 ## OSM 数据层
 

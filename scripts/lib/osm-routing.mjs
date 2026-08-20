@@ -194,9 +194,20 @@ function distanceToFeatureBoundary(point, feature) {
   return best;
 }
 
+// 本地导航图（GCJ-02 转换）节点坐标未经现场核验，绑定建筑入口时只允许其在
+// 明显更近（超过该余量）的情况下胜过已验证的 OSM 路节点。
+const LOCAL_NAV_PREFERENCE_MARGIN_METERS = 3.0;
+
+function isLocalNavNode(node) {
+  return typeof node.id === 'string' && node.id.startsWith('osm-node/local-nav/');
+}
+
 function bestBuildingBoundarySnap(buildings, roadNodes) {
+  // 建筑入口推断是地点合约数据（室内路线锚点依赖它），只允许使用已验证的
+  // OSM 路节点；local-nav（GCJ 转换）节点不参与入口推断。
   let best = null;
   for (const roadNode of roadNodes) {
+    if (isLocalNavNode(roadNode)) continue;
     const roadCoordinate = [roadNode.longitude, roadNode.latitude];
     for (const building of buildings) {
       const boundary = distanceToFeatureBoundary(roadCoordinate, building);
@@ -248,10 +259,21 @@ function matchingBuildingEntrance(buildings, entrances) {
 }
 
 function nearestRoadNode(coordinate, roadNodes) {
-  return roadNodes.reduce((best, node) => {
+  let best = null;
+  let bestOsm = null;
+  for (const node of roadNodes) {
     const distance = distanceMeters(coordinate, [node.longitude, node.latitude]);
-    return !best || distance < best.distance ? { node, distance } : best;
-  }, null);
+    const candidate = { node, distance };
+    if (isLocalNavNode(node)) {
+      if (!best || distance < best.distance) best = candidate;
+    } else if (!bestOsm || distance < bestOsm.distance) {
+      bestOsm = candidate;
+    }
+  }
+  if (bestOsm && best) {
+    return best.distance < bestOsm.distance - LOCAL_NAV_PREFERENCE_MARGIN_METERS ? best : bestOsm;
+  }
+  return best ?? bestOsm;
 }
 
 export function bindLocationsToRoadGraph(geojson, roadGraph, locations, featureIdsByLocation) {

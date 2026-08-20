@@ -38,6 +38,7 @@ npm scripts 与脚本对应关系：
 | `generate:api` | `generate-static-api.mjs` | 重建 `public/api/v1/` |
 | `extract:walkable` | `extract-walkable-surfaces.py`（uv） | 渲染图水泥色平面提取 |
 | `register:walkable` | `register-walkable-surfaces.py`（uv） | 八栋楼控制点 WGS84 配准 |
+| `extract:paved` | `extract-paved-from-tiles.py`（uv） | Esri 瓦片铺装面二值化提取 |
 | `export:gis` | `export-gis-layers.py`（uv） | GIS 图层导出 |
 | `build` | routing + api + `vite build` | 完整构建 |
 
@@ -184,7 +185,82 @@ npm run register:walkable -- \
 
 **配准数值通过 ≠ 通行资格**：仅表示八栋楼控制点足以支持初始几何配准。
 
-## 7. scripts/export-gis-layers.py — GIS 图层导出
+## 7. scripts/extract-paved-from-tiles.py — Esri 瓦片铺装面提取
+
+```bash
+npm run extract:paved   # 等价 uv run --script scripts/extract-paved-from-tiles.py --config config/paved-esri-tiles.json
+```
+
+与渲染图管线不同，瓦片本身已地理配准（EPSG:3857），无需控制点注册即可直接输出 WGS84 多边形。流程：
+
+1. 按 `config/paved-esri-tiles.json` 的 `bbox`/`zoom` 下载 XYZ 瓦片（默认 Esri World Imagery z18 ≈ 0.6 m/px，323 张，缓存于 `artifacts/paved-esri/tiles/`），拼接为单幅 mosaic。
+2. 二值化：低饱和度（≤0.22）+ 低色度（≤0.20）+ 亮度区间（0.16–0.85）识别沥青/混凝土灰，形态学闭/开运算去噪。
+3. 排除屋顶：把 `campus-osm.geojson` 建筑轮廓栅格化并膨胀 `buildingDilationPx`（默认 2 px）后抠除；`config.excludeRegions` 可追加 WGS84 排除多边形。
+4. 连通域矢量化（复用 `extract-walkable-surfaces.py` 的边界环/简化算法），直接转 WGS84。
+
+产物（`artifacts/paved-esri/`）：
+
+- `paved-mask.png` + `paved-mask.pgw`：EPSG:3857 配准栅格掩膜，拖入 QGIS 时选择该 CRS 即可对齐影像。
+- `paved-overlay.png`：绿=铺装候选、品红=被排除建筑，目视检查用。
+- `paved-surfaces.wgs84.geojson`：铺装面候选多边形（`surfaceClass=paved-ground`，`routingEnabled=false`，`verificationStatus=image-derived-unverified`）。
+- `paved-summary.json`：铺装像素占比、面积估算、多边形数、阈值。
+
+校验参考：与 OSM 可通行道路中心线像素对照，约 82% 的已知道路像素被识别为铺装；缺失主要来自阴影下的深色路面。彩色运动场地（跑道/球场）、蓝/绿色球场不在灰度二值化范围内，需后续语义复核。
+
+## 8. scripts/import-global-nav.mjs — 本地导航图导入（GCJ-02 转 WGS84）
+
+```bash
+npm run import:global-nav   # node scripts/import-global-nav.mjs
+```
+
+把 `GISprojects/global_nav_0408.geojson`（预构建导航图，**GCJ-02 火星坐标**）转换为 WGS84 道路补充：
+
+1. 标准 GCJ-02 → WGS84 逆变换校正全部坐标（用 Esri 铺装掩膜验证：节点铺装命中率从 14.8% 提升到 38.1%）。
+2. 只导入 `campus_outdoor` 步行边（walk/gate → footway，pedestrian+robot；stairs 仅 pedestrian）；室内楼层边（`building_*`/`library_*`）与电梯边跳过，留待室内层任务。
+3. 剔除穿楼的边（两端或中点落入 OSM 建筑轮廓）。
+4. 端点距 OSM 路顶点 ≤3 m 的节点复用 OSM 节点 id（两个网络合并为同一连通分量；其余用 `local-nav/{id}` 命名空间）。
+5. 输出 `public/data/campus-local-nav.geojson`，`generate-osm-routing.mjs` 在构建路网前并入（文件缺失时跳过并提示）。
+
+入口推断保持只使用 OSM 路节点（`osm-routing.mjs` 的 `bestBuildingBoundarySnap`/`nearestRoadNode` 对 `osm-node/local-nav/` 节点加偏置或排除），避免未核验的 GCJ 坐标改变地点锚点。合并后路网约 634 节点 / 695 边（原 341/358），主分量 575 节点。
+
+## 9. scripts/import-global-nav-indoor.mjs — 室内楼层接入（核心/W/E/图书馆）
+
+```bash
+npm run import:global-nav-indoor   # node scripts/import-global-nav-indoor.mjs
+```
+
+把 `global_nav_0408.geojson` 的室内楼层图转换为 `campus-indoor.geojson` 的室内网络补丁（GCJ-02→WGS84）：
+
+- 全部楼层走廊网络（core F2/F3、W F2/F3、E F2/F3、图书馆 F2）→ `indoorNetworkNode/Link`。
+- POI 锚点 → 带 `locationId` 的节点（演讲厅 A/B/C、中央花园、光塔亚洲餐厅、森绿餐吧、CMA创意区、学术科研区），自动连接到最近走廊节点。
+- 楼内电梯（F2↔F3）→ `indoorVerticalConnector`（含井道到各层走廊的连接边）；楼梯 → 垂直 link（步行专用）；闸口 → 水平 link；室外↔楼内连接 → 桥接节点（`outdoorLocationId` 自动锚定最近地点）。
+- F3 走廊经三条短连接边并入现有 3F 平台网络。
+
+机器人策略：按学校政策，走廊对机器人开放（`robotValidated: true`）；楼梯保持步行专用。所有要素 `verificationStatus=from-navigation-graph-unverified`，正式运行前需现场复核。
+
+## 10. scripts/platform-safe-surface.py — 平台安全走行面（1m 边缘内收）
+
+```bash
+npm run platform:safe   # 等价 uv run --script scripts/platform-safe-surface.py --config config/platform-safe-surface.json
+```
+
+对演讲厅 ABC 三楼平台与五条天桥计算机器人安全走行面：
+
+1. 分类（复用二值化）：浅灰/米色砖石（hue 0.10–0.19、s≤0.22、v≥0.52）为可行走；绿色铺装/草坪（hue 0.19–0.47、s≥0.08、v≤0.85）为不可行走；阴影下中性色（s≤0.10、v 0.15–0.50）恢复为可行走。
+2. 天桥：读取 QGIS 绘制的中心线 GeoPackage（`lines.gpkg`，含 GP 扩展 WKB 解析），按 `bridges.widthMeters`（默认 4 m）展开为走廊并入可行走面。
+3. 边缘内收 `edgeBufferMeters`（默认 1.0 m = 0.5 m 绿化带 + 0.5 m RTK 偏差）：圆形核腐蚀后输出安全走行面；被腐蚀掉的环为缓冲带（不可行走）。
+
+产物（`artifacts/roof-platforms/lecture-hall-abc/`，另复制到 `GISprojects/`）：
+
+- `safe-walkable.wgs84.geojson`：机器人安全走行多边形（`robotWalkable=true`，`edgeBufferMeters=1.0`，仍 `routingEnabled=false` 待现场复核）。
+- `edge-buffer-zone.wgs84.geojson`：1 m 缓冲带多边形（不可行走）。
+- `mask-walkable/safe/buffer-zone.png` + `.pgw`：EPSG:3857 栅格掩膜。
+- `platform-safe-overlay.png`：绿=安全区、红=缓冲带、白=区域轮廓、黄=天桥中心线。
+- `platform-safe-summary.json`：面积统计。
+
+注意：三个平台路由节点（西/中央/东）的坐标来自截图近似定位，实测落在草坪/阴影上而非砖石步道，现场需重新标定。
+
+## 11. scripts/export-gis-layers.py — GIS 图层导出
 
 ```bash
 npm run export:gis    # 等价 uv run --script scripts/export-gis-layers.py
@@ -206,11 +282,11 @@ npm run export:gis    # 等价 uv run --script scripts/export-gis-layers.py
 - `lubannav-campus.gpkg`：多图层 GeoPackage（经 `ogr2ogr`，EPSG:4326 + 空间索引；未安装 GDAL 时跳过并提示）。
 - `lubannav-campus.qgs`：最小 QGIS 工程，含图层样式配色、捕捉设置（12 px 顶点捕捉）与校园范围画布。
 
-## 8. scripts/render-osm-reference.mjs — OSM 参考图
+## 12. scripts/render-osm-reference.mjs — OSM 参考图
 
 把 `campus-osm.geojson` 渲染成简单 SVG（水面/道路/建筑 + 名称标注），默认写 `/tmp/lubannav-osm-reference.svg`，用于人工核对建筑与道路关系。用法：`node scripts/render-osm-reference.mjs [input] [output.svg]`。
 
-## 9. 配置文件
+## 13. 配置文件
 
 ### config/walkable-surfaces-render.json
 
@@ -231,7 +307,19 @@ npm run export:gis    # 等价 uv run --script scripts/export-gis-layers.py
 | `acceptance` | `maxFitResidualMeters`、`maxLeaveOneOutResidualMeters` |
 | `reviewState` | 控制点复核状态 |
 
-## 10. 数据集文件说明
+### config/paved-esri-tiles.json
+
+| 字段 | 说明 |
+| --- | --- |
+| `source` | 瓦片服务 URL 模板、`zoom`、署名、UA |
+| `bbox` | 提取范围（WGS84） |
+| `thresholds` | `maxSaturation`/`maxChroma`/`minLuminance`/`maxLuminance` 二值化阈值 |
+| `morphology` | 闭/开运算窗口（像素） |
+| `excludeBuildings` / `buildingDilationPx` | 是否用 OSM 建筑轮廓排除屋顶及膨胀量 |
+| `excludeRegions` | WGS84 排除多边形 |
+| `vectorStep` / `minAreaPixels` | 矢量化网格步长与最小面积 |
+
+## 14. 数据集文件说明
 
 ### public/data/campus-osm.geojson
 

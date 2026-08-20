@@ -154,7 +154,10 @@
         "name": "W2-大堂",
         "kind": "lobby",
         "level": "1",
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-supplied-annotated-screenshot",
@@ -162,7 +165,10 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47693, 22.89156]
+        "coordinates": [
+          113.47693,
+          22.89156
+        ]
       }
     },
     {
@@ -176,10 +182,19 @@
         "entryLocationId": "w2",
         "entryNodeId": "w2-lobby-1f",
         "name": "W2-电梯",
-        "levels": ["1", "2", "3", "4", "5"],
+        "levels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
         "defaultLevel": "1",
         "levelHeightMeters": 4.2,
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-supplied-annotated-screenshot-and-floor-description",
@@ -187,7 +202,10 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47682, 22.89154]
+        "coordinates": [
+          113.47682,
+          22.89154
+        ]
       }
     },
     {
@@ -204,7 +222,10 @@
         "name": "E2-大堂",
         "kind": "lobby",
         "level": "1",
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-supplied-annotated-screenshot",
@@ -212,7 +233,10 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47796, 22.8909]
+        "coordinates": [
+          113.47796,
+          22.8909
+        ]
       }
     },
     {
@@ -226,10 +250,19 @@
         "entryLocationId": "e2",
         "entryNodeId": "e2-lobby-1f",
         "name": "E2-电梯",
-        "levels": ["1", "2", "3", "4", "5"],
+        "levels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
         "defaultLevel": "1",
         "levelHeightMeters": 4.2,
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-supplied-annotated-screenshot-and-floor-description",
@@ -237,29 +270,10 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47808, 22.89079]
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "local/central-academic/platform-west-3f",
-      "properties": {
-        "featureClass": "indoorNetworkNode",
-        "networkId": "central-academic-indoor-network",
-        "nodeId": "platform-west-3f",
-        "name": "3楼平台西侧",
-        "kind": "platform-waypoint",
-        "level": "3",
-        "outdoor": true,
-        "modes": ["pedestrian", "robot"],
-        "robotValidated": true,
-        "source": "local-routing-overlay",
-        "evidence": "user-described-floor-connectivity",
-        "verificationStatus": "approximate-user-supplied"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [113.47718, 22.8915]
+        "coordinates": [
+          113.47808,
+          22.89079
+        ]
       }
     },
     {
@@ -272,19 +286,53 @@
         "locationId": "third-floor-platform",
         "entryLocationId": "w2",
         "entryNodeId": "w2-lobby-1f",
-        "name": "三楼中央",
+        "name": "3楼平台中央(演讲厅 A 楼上)",
         "kind": "platform",
         "level": "3",
         "outdoor": true,
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
-        "evidence": "user-described-platform-above-lecture-halls-and-food-court",
-        "verificationStatus": "approximate-user-supplied"
+        "evidence": "user-adjusted-on-esri-imagery",
+        "verificationStatus": "user-adjusted-2026-08-20"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47755, 22.89147]
+        "coordinates": [
+          113.4773529,
+          22.8913503
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "local/central-academic/platform-west-3f",
+      "properties": {
+        "featureClass": "indoorNetworkNode",
+        "networkId": "central-academic-indoor-network",
+        "nodeId": "platform-west-3f",
+        "name": "3楼平台西侧(演讲厅 C 楼上)",
+        "kind": "platform-waypoint",
+        "level": "3",
+        "outdoor": true,
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
+        "robotValidated": true,
+        "source": "local-routing-overlay",
+        "evidence": "user-adjusted-on-esri-imagery",
+        "verificationStatus": "user-adjusted-2026-08-20"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.4771103,
+          22.8912444
+        ]
       }
     },
     {
@@ -294,19 +342,25 @@
         "featureClass": "indoorNetworkNode",
         "networkId": "central-academic-indoor-network",
         "nodeId": "platform-east-3f",
-        "name": "3楼平台东侧",
+        "name": "3楼平台东侧(演讲厅 B 楼上)",
         "kind": "platform-waypoint",
         "level": "3",
         "outdoor": true,
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
-        "evidence": "user-described-floor-connectivity",
-        "verificationStatus": "approximate-user-supplied"
+        "evidence": "user-adjusted-on-esri-imagery",
+        "verificationStatus": "user-adjusted-2026-08-20"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47783, 22.8912]
+        "coordinates": [
+          113.4776821,
+          22.8913329
+        ]
       }
     },
     {
@@ -322,14 +376,19 @@
         "name": "3楼平台餐厅",
         "kind": "restaurant",
         "level": "3",
-        "modes": ["pedestrian"],
+        "modes": [
+          "pedestrian"
+        ],
         "source": "local-routing-overlay",
         "evidence": "user-described-guest-dinner-restaurant-near-food-court",
         "verificationStatus": "approximate-user-supplied"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47793, 22.89166]
+        "coordinates": [
+          113.47793,
+          22.89166
+        ]
       }
     },
     {
@@ -343,14 +402,19 @@
         "name": "中部二楼入口通道",
         "kind": "indoor-waypoint",
         "level": "2",
-        "modes": ["pedestrian"],
+        "modes": [
+          "pedestrian"
+        ],
         "source": "local-routing-overlay",
         "evidence": "user-described-central-second-floor-elevator-access",
         "verificationStatus": "approximate-user-supplied"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.47735, 22.89122]
+        "coordinates": [
+          113.47735,
+          22.89122
+        ]
       }
     },
     {
@@ -361,17 +425,25 @@
         "networkId": "central-academic-indoor-network",
         "nodeId": "central-elevator",
         "name": "中部电梯",
-        "levels": ["2", "3"],
+        "levels": [
+          "2",
+          "3"
+        ],
         "defaultLevel": "2",
         "levelHeightMeters": 4.2,
-        "modes": ["pedestrian"],
+        "modes": [
+          "pedestrian"
+        ],
         "source": "local-routing-overlay",
         "evidence": "user-described-central-second-floor-elevator-access",
         "verificationStatus": "approximate-user-supplied"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [113.4777, 22.8915]
+        "coordinates": [
+          113.4777,
+          22.8915
+        ]
       }
     },
     {
@@ -385,7 +457,10 @@
         "name": "W2 1F 大堂至电梯",
         "highway": "corridor",
         "level": "1",
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-supplied-annotated-screenshot",
@@ -393,7 +468,16 @@
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47693, 22.89156], [113.47682, 22.89154]]
+        "coordinates": [
+          [
+            113.47693,
+            22.89156
+          ],
+          [
+            113.47682,
+            22.89154
+          ]
+        ]
       }
     },
     {
@@ -407,7 +491,10 @@
         "name": "W2 电梯至 3楼平台",
         "highway": "corridor",
         "level": "3",
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-described-floor-connectivity",
@@ -415,7 +502,16 @@
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47682, 22.89154], [113.47718, 22.8915]]
+        "coordinates": [
+          [
+            113.47682,
+            22.89154
+          ],
+          [
+            113.4771103,
+            22.8912444
+          ]
+        ]
       }
     },
     {
@@ -430,7 +526,10 @@
         "highway": "corridor",
         "level": "3",
         "outdoor": true,
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-described-platform-connectivity",
@@ -438,7 +537,16 @@
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47718, 22.8915], [113.47755, 22.89147]]
+        "coordinates": [
+          [
+            113.4771103,
+            22.8912444
+          ],
+          [
+            113.4773529,
+            22.8913503
+          ]
+        ]
       }
     },
     {
@@ -452,7 +560,10 @@
         "name": "E2 1F 大堂至电梯",
         "highway": "corridor",
         "level": "1",
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-supplied-annotated-screenshot",
@@ -460,7 +571,16 @@
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47796, 22.8909], [113.47808, 22.89079]]
+        "coordinates": [
+          [
+            113.47796,
+            22.8909
+          ],
+          [
+            113.47808,
+            22.89079
+          ]
+        ]
       }
     },
     {
@@ -474,7 +594,10 @@
         "name": "E2 电梯至 3楼平台",
         "highway": "corridor",
         "level": "3",
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-described-floor-connectivity",
@@ -482,7 +605,16 @@
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47808, 22.89079], [113.47783, 22.8912]]
+        "coordinates": [
+          [
+            113.47808,
+            22.89079
+          ],
+          [
+            113.4776821,
+            22.8913329
+          ]
+        ]
       }
     },
     {
@@ -497,7 +629,10 @@
         "highway": "corridor",
         "level": "3",
         "outdoor": true,
-        "modes": ["pedestrian", "robot"],
+        "modes": [
+          "pedestrian",
+          "robot"
+        ],
         "robotValidated": true,
         "source": "local-routing-overlay",
         "evidence": "user-described-platform-connectivity",
@@ -505,7 +640,16 @@
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47783, 22.8912], [113.47755, 22.89147]]
+        "coordinates": [
+          [
+            113.4776821,
+            22.8913329
+          ],
+          [
+            113.4773529,
+            22.8913503
+          ]
+        ]
       }
     },
     {
@@ -519,14 +663,25 @@
         "name": "3楼平台至平台餐厅",
         "highway": "corridor",
         "level": "3",
-        "modes": ["pedestrian"],
+        "modes": [
+          "pedestrian"
+        ],
         "source": "local-routing-overlay",
         "evidence": "user-described-guest-dinner-restaurant-near-food-court",
         "verificationStatus": "approximate-user-supplied"
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47755, 22.89147], [113.47793, 22.89166]]
+        "coordinates": [
+          [
+            113.4773529,
+            22.8913503
+          ],
+          [
+            113.47793,
+            22.89166
+          ]
+        ]
       }
     },
     {
@@ -540,14 +695,25 @@
         "name": "中部 2F 通道至电梯",
         "highway": "corridor",
         "level": "2",
-        "modes": ["pedestrian"],
+        "modes": [
+          "pedestrian"
+        ],
         "source": "local-routing-overlay",
         "evidence": "user-described-central-second-floor-elevator-access",
         "verificationStatus": "approximate-user-supplied"
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.47735, 22.89122], [113.4777, 22.8915]]
+        "coordinates": [
+          [
+            113.47735,
+            22.89122
+          ],
+          [
+            113.4777,
+            22.8915
+          ]
+        ]
       }
     },
     {
@@ -561,14 +727,25 @@
         "name": "中部电梯至 3楼平台餐厅",
         "highway": "corridor",
         "level": "3",
-        "modes": ["pedestrian"],
+        "modes": [
+          "pedestrian"
+        ],
         "source": "local-routing-overlay",
         "evidence": "user-described-central-second-floor-elevator-access",
         "verificationStatus": "approximate-user-supplied"
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [[113.4777, 22.8915], [113.47793, 22.89166]]
+        "coordinates": [
+          [
+            113.4777,
+            22.8915
+          ],
+          [
+            113.47793,
+            22.89166
+          ]
+        ]
       }
     }
   ]

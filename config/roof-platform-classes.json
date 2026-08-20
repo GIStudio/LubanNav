@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "mosaic": "artifacts/paved-esri/esri-z18-mosaic.png",
+  "zoom": 18,
+  "tileOrigin": [
+    213692,
+    113934
+  ],
+  "erodeRegionPx": 2,
+  "regionFeature": {
+    "file": "public/data/campus-osm.geojson",
+    "id": "relation/14632285"
+  },
+  "classes": {
+    "green-nonwalkable": {
+      "label": "绿色铺装（不可行走）",
+      "hueMin": 0.19,
+      "hueMax": 0.47,
+      "minSaturation": 0.08,
+      "minValue": 0.1,
+      "priority": 1,
+      "robotWalkable": false,
+      "maxValue": 0.55
+    },
+    "walkable-tile": {
+      "label": "浅灰/米色砖石铺装（可行走）",
+      "maxSaturation": 0.24,
+      "maxValue": 1.0,
+      "priority": 2,
+      "robotWalkable": true,
+      "minValue": 0.5
+    }
+  },
+  "morphology": {
+    "closeSize": 3,
+    "openSize": 3
+  },
+  "vectorStep": 2,
+  "minAreaPixels": 80,
+  "reviewState": {
+    "fieldVerification": "pending",
+    "thresholdsTuned": "2026-08-20"
+  }
+}
