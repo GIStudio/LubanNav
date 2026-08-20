@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { CampusInsights } from './components/CampusInsights.jsx';
 import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
 import { EventPanel } from './components/EventPanel.jsx';
+import { LandingPage } from './components/LandingPage.jsx';
 import { SystemMenu } from './components/SystemMenu.jsx';
 import { VoiceQuickControl } from './components/VoiceQuickControl.jsx';
 import { DATASET, MODES, NODE_BY_ID, PUBLIC_LOCATIONS } from './data/campus.js';
+import { DEFAULT_EVENT_ID } from './data/events.js';
 import { getCachedAssistantReply } from './lib/assistantKnowledge.js';
 import { parseNavigationQuery } from './lib/destinationParser.js';
 import { resolveEventNavigationQuery } from './lib/eventMode.js';
@@ -39,6 +42,21 @@ export function App() {
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
   const systemMenuButtonRef = useRef(null);
+
+  // Two-phase UI: a voice-first welcome screen until a route exists, then the
+  // full navigation workspace. Only *non-default* route params (real share
+  // links) or an explicit ?q= deep link skip the welcome; the URL is
+  // otherwise rewritten with default from/to/mode on load, which must not
+  // force the navigation view on refresh.
+  const [phase, setPhase] = useState(() => {
+    const query = params.get('q');
+    const nonDefaultRoute =
+      (params.get('from') && params.get('from') !== 'main-entrance')
+      || (params.get('to') && params.get('to') !== 'library')
+      || (MODES[params.get('mode')] && params.get('mode') !== 'pedestrian')
+      || (params.get('event') && params.get('event') !== DEFAULT_EVENT_ID);
+    return query || nonDefaultRoute ? 'nav' : 'landing';
+  });
 
   const openSystemMenu = useCallback((panel = systemMenuPanel) => {
     setSystemMenuPanel(panel);
@@ -88,6 +106,7 @@ export function App() {
 
     if (parsed.understood) {
       const nextRoute = applyNavigation(parsed);
+      setPhase('nav');
       const highlightsTeaser =
         nextRoute.highlights.length > 0
           ? t('app.viaHighlights', {
@@ -181,6 +200,7 @@ export function App() {
     const parsed = parseQueryWithEvent(query);
     if (!parsed.understood) return;
     applyNavigation(parsed);
+    setPhase('nav');
   }
 
   function handleEventNavigate(place) {
@@ -210,6 +230,7 @@ export function App() {
         message: '本地寻路图暂时找不到这两个地点之间的可用路线。',
       };
     }
+    setPhase('nav');
 
     return {
       ok: true,
@@ -229,9 +250,30 @@ export function App() {
     };
   }
 
+  // Keep the shared voice session wired to the latest handlers even while the
+  // in-menu VoiceAssistant panel is not mounted (e.g. on the landing screen);
+  // re-registering when the menu closes prevents stale closures.
+  const voiceHandlersRef = useRef({
+    onUserTranscript: () => {},
+    onAssistantTranscript: () => {},
+    onNavigationCommand: () => {},
+  });
+  voiceHandlersRef.current = {
+    onUserTranscript: handleVoiceUserTranscript,
+    onAssistantTranscript: handleVoiceAssistantTranscript,
+    onNavigationCommand: handleVoiceNavigationCommand,
+  };
+  useEffect(() => {
+    voiceSession.setHandlers({
+      onUserTranscript: (text) => voiceHandlersRef.current.onUserTranscript?.(text),
+      onAssistantTranscript: (text) => voiceHandlersRef.current.onAssistantTranscript?.(text),
+      onNavigationCommand: (...argumentsList) =>
+        voiceHandlersRef.current.onNavigationCommand?.(...argumentsList),
+    });
+  }, [systemMenuOpen]);
+
   function selectDestination(id) {
-    setTo(id);
-    const nextRoute = findRoute(from, id, mode);
+    setTo(id);    const nextRoute = findRoute(from, id, mode);
     setMessages((items) => [
       ...items,
       {
@@ -255,7 +297,14 @@ export function App() {
   }
 
   return (
-    <main class="app-shell">
+    <>
+      {phase === 'landing' ? (
+        <LandingPage
+          onEnter={() => setPhase('nav')}
+          onConfigureVoice={() => openSystemMenu('voice')}
+        />
+      ) : (
+        <main class="app-shell">
       <header class="topbar">
         <a class="brand" href="./" aria-label={t('topbar.homeAria')}>
           <span class="brand-mark">LN</span>
@@ -376,6 +425,12 @@ export function App() {
             )}
 
             <ChatAssistant messages={messages} onSend={handleQuery} />
+
+            <CampusInsights
+              route={route}
+              activeEvent={activeEvent}
+              onSelectDestination={selectDestination}
+            />
           </section>
 
           <EventPanel
@@ -399,6 +454,17 @@ export function App() {
         </section>
       </div>
 
+        <footer class="footer">
+          <p><strong>{t('footer.demo')}</strong>{t('footer.disclaimer')}</p>
+          <div>
+            <a href={DATASET.sourceUrl} target="_blank" rel="noreferrer">{t('footer.mapSource')}</a>
+            <a href="./api/">{t('footer.apiDocs')}</a>
+            <a href={staticApiUrl} target="_blank" rel="noreferrer">{t('footer.routeJson')}</a>
+          </div>
+        </footer>
+        </main>
+      )}
+
       <SystemMenu
         open={systemMenuOpen}
         onClose={closeSystemMenu}
@@ -413,15 +479,6 @@ export function App() {
         robotPosition={robotPosition}
         routeStartedAt={routeStartedAt}
       />
-
-      <footer class="footer">
-        <p><strong>{t('footer.demo')}</strong>{t('footer.disclaimer')}</p>
-        <div>
-          <a href={DATASET.sourceUrl} target="_blank" rel="noreferrer">{t('footer.mapSource')}</a>
-          <a href="./api/">{t('footer.apiDocs')}</a>
-          <a href={staticApiUrl} target="_blank" rel="noreferrer">{t('footer.routeJson')}</a>
-        </div>
-      </footer>
-    </main>
+    </>
   );
 }
