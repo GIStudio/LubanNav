@@ -3087,16 +3087,15 @@ h2 {
   overflow: hidden;
 }
 
-.landing-map-bg {
+.landing-photo-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
-  filter: blur(16px) saturate(0.5) brightness(0.7);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: brightness(0.88) saturate(1.05);
   pointer-events: none;
-}
-
-.landing-map-bg .leaflet-container {
-  background: transparent;
 }
 
 .landing-veil {
@@ -3104,8 +3103,8 @@ h2 {
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(ellipse at 50% 38%, rgba(7, 28, 44, 0.3), transparent 55%),
-    linear-gradient(180deg, rgba(4, 19, 31, 0.78) 0%, rgba(7, 28, 44, 0.52) 45%, rgba(4, 19, 31, 0.86) 100%);
+    radial-gradient(ellipse at 50% 40%, rgba(4, 19, 31, 0.34), transparent 58%),
+    linear-gradient(180deg, rgba(4, 19, 31, 0.74) 0%, rgba(7, 28, 44, 0.46) 45%, rgba(4, 19, 31, 0.82) 100%);
 }
 
 .landing-topbar {
@@ -3310,14 +3309,14 @@ h2 {
   }
 }
 
-[data-theme='light'] .landing-map-bg {
-  filter: blur(16px) saturate(0.6) brightness(0.55) contrast(1.1);
+[data-theme='light'] .landing-photo-bg {
+  filter: brightness(0.96) saturate(1.05);
 }
 
 [data-theme='light'] .landing-veil {
   background:
-    radial-gradient(ellipse at 50% 38%, rgba(255, 255, 255, 0.35), transparent 55%),
-    linear-gradient(180deg, rgba(238, 242, 246, 0.82) 0%, rgba(228, 234, 240, 0.55) 45%, rgba(238, 242, 246, 0.88) 100%);
+    radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.52), transparent 60%),
+    linear-gradient(180deg, rgba(244, 246, 248, 0.74) 0%, rgba(244, 246, 248, 0.42) 45%, rgba(244, 246, 248, 0.82) 100%);
 }
 
 [data-theme='light'] .landing-card {
@@ -3519,4 +3518,179 @@ h2 {
 [data-theme='light'] .system-menu-fullscreen.active {
   border-color: var(--acid);
   background: rgba(95, 158, 0, 0.1);
+}
+
+/* Photo backdrop: keep faint text legible over the campus photo. */
+.landing-mic-status,
+.landing-mic-detail,
+.landing-hero p,
+.landing-footer {
+  text-shadow: 0 1px 10px rgba(0, 7, 12, 0.35);
+}
+
+[data-theme='light'] .landing-mic-status,
+[data-theme='light'] .landing-mic-detail,
+[data-theme='light'] .landing-hero p,
+[data-theme='light'] .landing-footer {
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.75);
+}
+
+/* ── mid-size viewports (tablet landscape at ~80% zoom, small desktops) ──
+   Redmi Pad SE at 80% browser zoom renders a ~1500px-wide viewport that
+   looks like a desktop, but the 9–16px type gets too small. Scale key text
+   up ~2px here without changing the two-column layout. */
+
+@media (min-width: 1281px) and (max-width: 1720px) {
+  /* topbar */
+  .pref-toggle,
+  .system-menu-trigger {
+    font-size: 11px;
+  }
+
+  /* left rail: route control */
+  .mode-switch button {
+    font-size: 15px;
+  }
+
+  .field-label {
+    font-size: 11px;
+  }
+
+  .route-fields select {
+    font-size: 17px;
+  }
+
+  .route-summary span {
+    font-size: 11px;
+  }
+
+  .route-summary strong {
+    font-size: 18px;
+  }
+
+  .route-summary small {
+    font-size: 12px;
+  }
+
+  .details-toggle {
+    font-size: 13px;
+  }
+
+  .route-steps li {
+    font-size: 14px;
+  }
+
+  .conversation .message p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .suggestions button {
+    font-size: 11px;
+  }
+
+  .chat-form input {
+    font-size: 14px;
+  }
+
+  /* campus snapshot strip */
+  .insights-event-copy strong {
+    font-size: 16px;
+  }
+
+  .insights-event-copy small {
+    font-size: 13px;
+  }
+
+  .insights-chip {
+    font-size: 14.5px;
+  }
+
+  .insights-chip small {
+    font-size: 12px;
+  }
+
+  .insights-hint {
+    font-size: 13px;
+  }
+
+  /* event panel */
+  .event-role-list > p,
+  .event-place,
+  .event-manifest header p {
+    font-size: 13px;
+  }
+
+  .event-selector-row select {
+    font-size: 13.5px;
+  }
+
+  /* map stage */
+  .map-toolbar h2 {
+    font-size: 24px;
+  }
+
+  .category-filter button {
+    font-size: 13px;
+  }
+
+  .map-note {
+    font-size: 12px;
+  }
+
+  /* voice dock */
+  .voice-quick-copy strong {
+    font-size: 16px;
+  }
+
+  .voice-quick-copy small {
+    font-size: 11px;
+  }
+
+  /* system menu */
+  .system-menu-tabs button {
+    font-size: 13px;
+  }
+
+  .voice-form input {
+    font-size: 14px;
+  }
+
+  .voice-form button {
+    font-size: 13px;
+  }
+
+  .system-menu-fullscreen-copy strong {
+    font-size: 16px;
+  }
+
+  .system-menu-fullscreen-copy small {
+    font-size: 13px;
+  }
+
+  .system-pane-intro p {
+    font-size: 13.5px;
+  }
+
+  /* landing cards */
+  .landing-card-main {
+    font-size: 15.5px;
+  }
+
+  .landing-card-tip {
+    font-size: 13.5px;
+  }
+
+  .landing-mic-detail {
+    font-size: 14.5px;
+  }
+
+  .landing-mic-status {
+    font-size: 17px;
+  }
+
+  .footer p,
+  .footer a {
+    font-size: 12px;
+  }
 }
