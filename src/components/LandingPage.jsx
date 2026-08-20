@@ -1,16 +1,10 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { CAMPUS_BOUNDS } from '../data/campus.js';
-import { addIndoorLayers, addOsmLayers } from '../lib/mapLayers.js';
+import { useEffect, useState } from 'preact/hooks';
 import { useI18n } from '../lib/i18n.js';
 import { useTheme } from '../lib/theme.js';
 import { useVoiceSession } from '../lib/voiceSession.js';
 import { fetchWeather } from '../lib/weather.js';
 
-const OSM_DATA_URL = `${import.meta.env.BASE_URL}data/campus-osm.geojson`;
-const INDOOR_DATA_URL = `${import.meta.env.BASE_URL}data/campus-indoor.geojson`;
-const CAMPUS_CENTER = [22.8902, 113.4791];
+const WELCOME_PHOTO_URL = `${import.meta.env.BASE_URL}welcome-gate2.webp`;
 
 /** Weather-code → emoji for the landing card. */
 function weatherEmoji(code, isDay) {
@@ -50,57 +44,6 @@ export function LandingPage({ onEnter, onConfigureVoice }) {
     stop,
   } = useVoiceSession();
   const [weather, setWeather] = useState(null);
-  const bgRef = useRef(null);
-  const mapRef = useRef(null);
-
-  // Blurred background campus map (read-only, no interactions).
-  useEffect(() => {
-    if (!bgRef.current || mapRef.current) return undefined;
-
-    const map = L.map(bgRef.current, {
-      attributionControl: false,
-      center: CAMPUS_CENTER,
-      zoom: 16.5,
-      minZoom: 15,
-      maxZoom: 18,
-      zoomControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      touchZoom: false,
-      doubleClickZoom: false,
-      boxZoom: false,
-      keyboard: false,
-      preferCanvas: true,
-    });
-    map.createPane('waterPane').style.zIndex = 220;
-    map.createPane('roadPane').style.zIndex = 260;
-    map.createPane('roadDetailPane').style.zIndex = 270;
-    map.createPane('buildingPane').style.zIndex = 320;
-    map.createPane('indoorPane').style.zIndex = 380;
-    map.fitBounds(CAMPUS_BOUNDS, { padding: [24, 24] });
-    mapRef.current = map;
-
-    Promise.all(
-      [OSM_DATA_URL, INDOOR_DATA_URL].map((url) =>
-        fetch(url).then((response) => {
-          if (!response.ok) throw new Error(`${url} ${response.status}`);
-          return response.json();
-        }),
-      ),
-    )
-      .then(([osmData, indoorData]) => {
-        addOsmLayers(map, osmData);
-        addIndoorLayers(map, indoorData);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,7 +89,11 @@ export function LandingPage({ onEnter, onConfigureVoice }) {
 
   return (
     <div class="landing-page">
-      <div class="landing-map-bg" aria-hidden="true" ref={bgRef} />
+      <div
+        class="landing-photo-bg"
+        aria-hidden="true"
+        style={{ backgroundImage: `url(${WELCOME_PHOTO_URL})` }}
+      />
       <div class="landing-veil" aria-hidden="true" />
 
       <header class="landing-topbar">
