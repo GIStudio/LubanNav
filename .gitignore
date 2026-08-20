@@ -18,3 +18,4 @@ tools/car7-ble-simulator/.build/
 .pyenv/
 .pyenv-py313/
 .ssh_run.py
+GISprojects/
