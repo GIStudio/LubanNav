@@ -10,6 +10,20 @@ export const NAVIGATION_START_TYPE = 'navigation_start';
 export const WAYPOINT_TYPE = 'waypoint';
 export const NAVIGATION_END_TYPE = 'navigation_end';
 
+/**
+ * 指令优先级（三级模型，固件按此仲裁）：
+ *   rc（遥控器，物理通道，最高）> ble（BLE 手动指令）> nav（自主导航任务）
+ * 跨层：safety（急停/停止）在任何时刻优先于一切。
+ * 所有 BLE 下行指令携带 `priority` 字段；遥控器不在 BLE 通道内，
+ * 固件应通过硬件信号检测遥控器接管并忽略 BLE 运动指令与导航。
+ */
+export const COMMAND_PRIORITY = Object.freeze({
+  remoteControl: 'rc',
+  manual: 'ble',
+  navigation: 'nav',
+  safety: 'safety',
+});
+
 // Nordic UART Service-compatible defaults. They are editable in the UI because
 // the robot firmware remains the source of truth for its GATT UUIDs.
 //
@@ -183,6 +197,7 @@ export function createNavigationTaskStream(route, options = {}) {
       protocol: ROBOT_PROTOCOL_NAME,
       protocolVersion: ROBOT_PROTOCOL_VERSION,
       type: NAVIGATION_START_TYPE,
+      priority: COMMAND_PRIORITY.navigation,
       taskId,
       createdAt,
       dataset: route.dataset,
@@ -195,6 +210,7 @@ export function createNavigationTaskStream(route, options = {}) {
       protocol: ROBOT_PROTOCOL_NAME,
       protocolVersion: ROBOT_PROTOCOL_VERSION,
       type: WAYPOINT_TYPE,
+      priority: COMMAND_PRIORITY.navigation,
       taskId,
       ...waypointObject(point, sequence),
     })),
@@ -202,6 +218,7 @@ export function createNavigationTaskStream(route, options = {}) {
       protocol: ROBOT_PROTOCOL_NAME,
       protocolVersion: ROBOT_PROTOCOL_VERSION,
       type: NAVIGATION_END_TYPE,
+      priority: COMMAND_PRIORITY.navigation,
       taskId,
       waypointCount: waypoints.length,
     },
@@ -219,6 +236,7 @@ export function createNavigationTask(route, options = {}) {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
     type: 'navigation_task',
+    priority: COMMAND_PRIORITY.navigation,
     taskId,
     createdAt,
     dataset: route.dataset,
@@ -234,6 +252,7 @@ export function createEmergencyStop(options = {}) {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
     type: 'emergency_stop',
+    priority: COMMAND_PRIORITY.safety,
     commandId: options.commandId ?? `stop-${Date.now().toString(36)}`,
     taskId: options.taskId ?? null,
     createdAt: options.createdAt ?? new Date().toISOString(),
@@ -267,6 +286,7 @@ export function createDirectionCommand(direction, options = {}) {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
     type: 'direction',
+    priority: COMMAND_PRIORITY.manual,
     commandId: options.commandId ?? `dir-${Date.now().toString(36)}`,
     direction,
     amountMeters:
@@ -364,6 +384,36 @@ export function getRobotProtocolDescriptor() {
       encoding: 'UTF-8 JSON Lines. Concatenate characteristic writes and split on LF (0x0A).',
       defaultGatt: DEFAULT_BLE_CONFIG,
       writeOrdering: 'Sequential; never process GATT writes in parallel.',
+    },
+    priority: {
+      model: 'rc > ble > nav；safety（急停）任何时候跨层优先',
+      levels: [
+        {
+          priority: COMMAND_PRIORITY.remoteControl,
+          source: '物理遥控器（不在 BLE 通道内）',
+          rule:
+            '固件通过硬件信号检测遥控器接管后，忽略所有 BLE 运动指令并暂停导航任务，直到遥控器释放接管。',
+        },
+        {
+          priority: COMMAND_PRIORITY.manual,
+          source: 'BLE direction 手动指令',
+          rule:
+            '收到 direction（含 stop）即抢占：固件暂停/取消当前导航任务并切换手动步进模式；恢复自主导航只能靠新的 navigation_task。',
+        },
+        {
+          priority: COMMAND_PRIORITY.navigation,
+          source: 'BLE navigation_task / navigation_start..end 流',
+          rule:
+            '最低优先级：新任务取消旧任务；任何时刻可被 direction、emergency_stop 或遥控器打断。',
+        },
+        {
+          priority: COMMAND_PRIORITY.safety,
+          source: 'BLE emergency_stop（跨层）',
+          rule: '任何时刻优先于一切指令：立即停止运动、清除任务，直到显式恢复。',
+        },
+      ],
+      note:
+        '所有下行指令携带 priority 字段，固件可按字段仲裁；遥控器接管不在 BLE 通道内表达，由固件硬件层处理。',
     },
     diagnostics: {
       stages: [

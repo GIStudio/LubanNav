@@ -116,6 +116,34 @@
 
 固件收到后应立即停止运动、清除当前任务，并返回确认。浏览器按钮只能作为辅助入口，不能替代小车上的物理急停、制动和失联看门狗。
 
+## 指令优先级（rc > ble > nav，safety 跨层）
+
+所有下行指令携带 `priority` 字段；固件按下表仲裁：
+
+| 优先级 | 值 | 来源 | 固件行为 |
+| --- | --- | --- | --- |
+| 最高 | `rc` | 物理遥控器（不在 BLE 通道内） | 硬件信号检测到遥控器接管后，忽略所有 BLE 运动指令并暂停导航，直到释放接管 |
+| 中 | `ble` | `direction` 手动指令 | 收到即抢占：暂停/取消当前导航任务并切换手动步进模式；恢复自主导航只能靠新的 `navigation_task` |
+| 低 | `nav` | `navigation_task` / 流式路线 | 新任务取消旧任务；可被 `direction`、`emergency_stop` 或遥控器随时打断 |
+| 跨层 | `safety` | `emergency_stop` | 任何时刻优先于一切：立即停止、清除任务，直到显式恢复 |
+
+实现约定：
+
+- 手动指令抢占导航时，网页只**中断剩余路线包的传输**（不发送 `emergency_stop`）；固件看到 `priority: ble` 的 `direction` 时应自行放弃不完整的流（缺少 `navigation_end` 即视为任务中止）。
+- 网页下发新导航任务前会清空排队的手动方向指令。
+- 遥控器接管由固件硬件层处理（如遥控器信号直接切断驱动、或 GPIO 中断标记），BLE 通道不表达也不参与该仲裁。
+
+## 故障排查：已连接但指令不执行
+
+连接成功 ≠ 能写指令。浏览器控制台会输出 `[ble]` 前缀的诊断日志，按顺序检查：
+
+1. **命令特征可写性**：连接后控制台输出 `command characteristic` 的 `properties`。若 `write`/`writeWithoutResponse` 均为 false，说明填写的 Command UUID 是只读特征（或写错了 UUID），固件无法接收指令。
+2. **写入方法**：`write -> writeValueWithoutResponse / writeValueWithResponse / legacy writeValue` 标明实际使用的写入路径；老固件若只支持带响应写入，会退回 `writeValueWithResponse`。
+3. **MTU 与分包**：`enqueue` 会打印每块大小（默认 185 字节）。若写入报 `Value too long` 类错误，说明连接协商的 MTU 不足，把面板里的"分包字节"调到 ≤20 并降低 `interChunkDelayMs`。
+4. **操作队列**：`drain start / sent / operation failed` 显示每条指令的传输过程；`enqueue rejected` 说明发送时未处于 connected 状态。
+
+面板日志也会显示"命令特征：可写/不可写"一行，以及每条指令的发送/失败结果。
+
 ## 小车到网页
 
 Telemetry / TX Characteristic 启用 Notify，以同样的 JSON Lines 格式发送。

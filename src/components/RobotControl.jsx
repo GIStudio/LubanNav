@@ -117,8 +117,22 @@ export function RobotControl({ route, onRobotPosition }) {
         setProgress(null);
         addLog(friendlyError(event.error), event.error?.name === 'AbortError' ? 'warning' : 'error');
       }
+      if (event.type === 'nav-preempted') {
+        addLog(t('robot.logs.navPreempted'), 'warning');
+      }
       if (event.type === 'message') addLog(logLabel(event));
       if (event.type === 'telemetry-error') addLog(t('robot.logs.telemetryError', { error: friendlyError(event.error) }), 'error');
+      if (event.type === 'diagnostics' && event.command) {
+        const command = event.command;
+        const writable = command.properties?.writeWithoutResponse || command.properties?.write || command.legacyWriteSupported;
+        addLog(
+          t('robot.logs.commandCharacteristic', {
+            writable: writable ? '可写' : '不可写',
+            detail: JSON.stringify(command.properties ?? {}),
+          }),
+          writable ? 'success' : 'error',
+        );
+      }
       if (event.type === 'position') {
         setPosition(event.position);
         onRobotPosition?.(event.position);

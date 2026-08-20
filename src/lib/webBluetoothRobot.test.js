@@ -103,6 +103,7 @@ describe('WebBluetoothRobotClient', () => {
     expect(lines.at(-1)).toEqual({
       protocol: 'luban-nav-ble',
       protocolVersion: 1,
+      priority: 'nav',
       type: 'navigation_end',
       taskId: sent.taskId,
       waypointCount: route.navigationWaypoints.length,
@@ -349,5 +350,62 @@ describe('WebBluetoothRobotClient', () => {
       offset += chunk.byteLength;
     }
     expect(JSON.parse(new TextDecoder().decode(stopBytes).trim()).type).toBe('emergency_stop');
+  });
+
+  it('preempts an in-flight navigation task with a manual direction command (ble > nav)', async () => {
+    const fake = fakeBluetoothStack();
+    let releaseFirstWrite;
+    let markFirstWriteStarted;
+    const firstWriteStarted = new Promise((resolve) => {
+      markFirstWriteStarted = resolve;
+    });
+    const firstWriteBlocked = new Promise((resolve) => {
+      releaseFirstWrite = resolve;
+    });
+    fake.command.writeValueWithResponse = async (value) => {
+      fake.command.writes.push(new Uint8Array(value));
+      if (fake.command.writes.length === 1) {
+        markFirstWriteStarted();
+        await firstWriteBlocked;
+      }
+    };
+    const client = new WebBluetoothRobotClient({
+      bluetooth: fake.bluetooth,
+      config: { chunkBytes: 20, interChunkDelayMs: 0 },
+      sleep: async () => {},
+    });
+    await client.connect();
+
+    const preemptedEvents = [];
+    client.subscribe((event) => {
+      if (event.type === 'nav-preempted') preemptedEvents.push(event);
+    });
+
+    const taskPromise = client.sendNavigationTask(findRoute('dorm-5', 'library', 'robot'));
+    const taskRejected = expect(taskPromise).rejects.toMatchObject({ name: 'AbortError' });
+    await firstWriteStarted;
+    const directionPromise = client.sendDirection('forward', { amountMeters: 0.1 });
+    releaseFirstWrite();
+    await taskRejected;
+    await directionPromise;
+
+    // 方向指令不发送 emergency_stop，只中断剩余导航包；固件按 priority 字段仲裁
+    expect(preemptedEvents).toHaveLength(1);
+    const directionBytes = new Uint8Array(
+      fake.command.writes
+        .slice(1)
+        .reduce((total, chunk) => total + chunk.byteLength, 0),
+    );
+    let offset = 0;
+    for (const chunk of fake.command.writes.slice(1)) {
+      directionBytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    const lastMessage = JSON.parse(new TextDecoder().decode(directionBytes).trim());
+    expect(lastMessage).toMatchObject({ type: 'direction', priority: 'ble', direction: 'forward' });
+    expect(fake.command.writes.some((chunk) => {
+      const text = new TextDecoder().decode(chunk);
+      return text.includes('emergency_stop');
+    })).toBe(false);
   });
 });

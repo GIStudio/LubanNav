@@ -100,6 +100,7 @@ describe('robot BLE protocol', () => {
     expect(lines.at(-1)).toEqual({
       protocol: 'luban-nav-ble',
       protocolVersion: 1,
+      priority: 'nav',
       type: NAVIGATION_END_TYPE,
       taskId: 'task-stream',
       waypointCount: route.navigationWaypoints.length,
