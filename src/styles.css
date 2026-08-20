@@ -3123,11 +3123,22 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 30px;
   padding: 26px 20px 18px;
   text-align: center;
   overflow-y: auto;
+}
+
+/* Center the hero via auto margins instead of justify-content: center:
+   when the content is taller than the viewport, the margins collapse to 0
+   and the hero stays reachable instead of being clipped under the topbar. */
+.landing-hero {
+  margin-top: auto;
+}
+
+.landing-enter {
+  margin-bottom: auto;
 }
 
 .landing-hero .eyebrow {
