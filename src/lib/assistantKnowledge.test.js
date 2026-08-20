@@ -28,6 +28,23 @@ describe('assistant knowledge cache', () => {
     expect(getCachedAssistantReply('四大枢纽').text).toContain('功能、信息、系统和社会');
   });
 
+  it('offers the robot carrier platform when asked to carry the bag', () => {
+    const reply = getCachedAssistantReply('你可以帮我背包吗？');
+    expect(reply.key).toBe('bagCarry');
+    expect(reply.text).toContain('放在小车的平台上');
+    expect(reply.text).toContain('我们将会一起移动');
+    expect(reply.text).toContain('您可以直接放在我身上');
+    expect(getCachedAssistantReply('帮我拿包')).toMatchObject({ key: 'bagCarry' });
+    expect(getCachedAssistantReply('包可以放你身上吗')).toMatchObject({ key: 'bagCarry' });
+    expect(getCachedAssistantReply('包可以放在哪？')).toMatchObject({ key: 'bagCarry' });
+    expect(getCachedAssistantReply('包放哪')).toMatchObject({ key: 'bagCarry' });
+  });
+
+  it('keeps the general carry checklist for packing questions', () => {
+    expect(getCachedAssistantReply('出门带什么')).toMatchObject({ key: 'carry' });
+    expect(getCachedAssistantReply('背包')).toMatchObject({ key: 'carry' });
+  });
+
   it('does not overmatch arbitrary navigation text', () => {
     expect(getCachedAssistantReply('带我去图书馆')).toBeNull();
   });
@@ -90,9 +107,10 @@ describe('campus assistant instructions', () => {
     expect(instructions).toContain('3 楼露天平台');
   });
 
-  it('directs an umbrella departure reminder at session start', () => {
+  it('opens the session by asking where the user wants to go, then reminds about the weather', () => {
     const instructions = buildCampusAssistantInstructions({}, null, null);
-    expect(instructions).toContain('会话开场提醒');
+    expect(instructions).toContain('会话开场');
+    expect(instructions).toContain('先询问用户想去哪里');
     expect(instructions).toContain('出门带伞');
     expect(instructions).toContain('出门记得带伞');
   });
@@ -102,6 +120,26 @@ describe('campus assistant instructions', () => {
     expect(instructions).toContain('到达提醒');
     expect(instructions).toContain('带好随身物品');
     expect(instructions).toContain('背包、手机、校园卡、钥匙');
+  });
+
+  it('directs a bag-on-robot reminder before departure in robot mode only', () => {
+    const instructions = buildCampusAssistantInstructions({ mode: 'robot' }, null, null);
+    expect(instructions).toContain('出发放包提醒');
+    expect(instructions).toContain('随行小车的载物平台');
+    expect(instructions).toContain('不要编造载物平台未确认的信息');
+  });
+
+  it('omits the bag reminder for pedestrian routes', () => {
+    const instructions = buildCampusAssistantInstructions({ mode: 'pedestrian' }, null, null);
+    expect(instructions).not.toContain('出发放包提醒');
+  });
+
+  it('answers "can you carry my bag" by offering the robot platform in every mode', () => {
+    const instructions = buildCampusAssistantInstructions({ mode: 'pedestrian' }, null, null);
+    expect(instructions).toContain('背包代带');
+    expect(instructions).toContain('放在小车的平台上');
+    expect(instructions).toContain('您可以直接放在我身上');
+    expect(instructions).toContain('不要编造载物平台的容量、承重');
   });
 
   it('introduces route highlights in arrival order for the voice agent', () => {

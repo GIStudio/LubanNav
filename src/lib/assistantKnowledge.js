@@ -19,6 +19,7 @@ const CACHED_REPLIES = {
   location: '香港科技大学（广州）位于广州市南沙区庆盛枢纽区块。需要校内导航时，可以继续告诉我具体建筑或地点。',
   weather: '正在获取实时天气，稍等片刻；如果获取失败，请以可靠的天气应用为准。3 楼平台为露天场地：降雨时带伞防滑，晴热时防晒补水。',
   carry: '出发前建议检查手机、校园卡、钥匙和必要的充电设备；是否带伞以实时天气为准，步行较远时也可以带水。',
+  bagCarry: '如果你有包，可以尝试放在小车的平台上，我们将会一起移动。您可以直接放在我身上。',
 };
 
 function normalizeQuery(value) {
@@ -72,6 +73,17 @@ export function getCachedAssistantReply(query) {
 
   if (/天气|下雨|雨伞|带伞|防晒|温度|热不热|晒不晒/.test(normalized)) {
     return { key: 'weather', text: CACHED_REPLIES.weather, source: 'local-cache' };
+  }
+
+  // "Can you carry my bag?" — more specific than the general carry checklist,
+  // so it must be matched first. The tablet runs the assistant on the robot,
+  // so offering the robot's carrier platform is the honest, useful answer.
+  if (
+    /帮我.{0,3}(背包|拿包|带包|拎包|提包|背东西|拿东西)|帮我背|帮我把包|帮我带一下|包.{0,4}(放|搁|装).{0,6}(车|平台|你|身上|哪|哪里)|放你身上|放我身上|放车上|放平台|包放哪|包放哪里/.test(
+      normalized,
+    )
+  ) {
+    return { key: 'bagCarry', text: CACHED_REPLIES.bagCarry, source: 'local-cache' };
   }
 
   if (/背包|书包|随身物品|出门带什么|要带什么/.test(normalized)) {
@@ -197,6 +209,7 @@ export function buildCampusAssistantInstructions(routeContext = {}, event = null
   const fromId = routeContext.fromId || 'main-entrance';
   const toId = routeContext.toId || 'library';
   const mode = routeContext.modeLabel || '步行';
+  const isRobotMode = routeContext.mode === 'robot';
   const distance = Number.isFinite(routeContext.distanceMeters)
     ? `，地图计算距离约 ${routeContext.distanceMeters} 米`
     : '';
@@ -207,7 +220,13 @@ export function buildCampusAssistantInstructions(routeContext = {}, event = null
     '稳定事实：学校于2022年6月正式设立，位于广州市南沙区，由香港科技大学与广州大学合作举办；学校采用融合学科架构，设功能、信息、系统、社会四大枢纽。',
     '能力边界：不知道的校规、开放时间、活动安排或个人信息不得猜测，应提示用户查询学校官方渠道。不要编造路线距离、建筑入口或室内通行状态，精确路线以 LubanNav 地图计算为准。',
     weatherInstructionLine(weather),
-    '会话开场提醒：每次会话开始时，先向用户说一句出发提醒并放在第一句。依据上面的实时天气：正在降雨或今日降水概率较高时，明确提醒“出门带伞、注意湿滑”；晴热或紫外线强时提醒防晒补水；天气平稳时也自然带一句“出门记得带伞”，不要列冗长清单。',
+    '会话开场：每次会话开始时，第一句先询问用户想去哪里（例如“您好，请问您想去哪里？”），不要一上来就长篇介绍或提醒。用户给出目的地后再调用 set_navigation_route 规划路线；若页面当前已有路线，可先一句确认现有路线，再询问是否需要改道。路线确定后，若本会话尚未提醒过，再依据上面的实时天气自然带一句出门提醒：正在降雨或今日降水概率较高时明确提醒“出门带伞、注意湿滑”；晴热或紫外线强时提醒防晒补水；天气平稳时也自然带一句“出门记得带伞”，不要列冗长清单。',
+    ...(isRobotMode
+      ? [
+          '出发放包提醒：出发前，若用户携带背包等随身物品，提醒可先将包放到随行小车的载物平台上，由小车携带出发；不要编造载物平台未确认的信息（如容量、承重、固定方式）。',
+        ]
+      : []),
+    '背包代带：用户问“你能不能帮我背包/拿包/带包”“包可以放在哪”“能放你身上吗”等时，直接回答：“如果你有包，可以尝试放在小车的平台上，我们将会一起移动”；因为本设备（平板电脑）直接安装在小车上，也可以自然地说“您可以直接放在我身上”。不要编造载物平台的容量、承重、固定方式等未确认信息。',
     '到达提醒：当用户表示接近或已到达目的地（例如说“快到了”“还有多远”“到门口了”“到了”），像公交到站提示一样简短提醒“请带好随身物品”（背包、手机、校园卡、钥匙等）。没有到达迹象时不要反复提醒。',
     ...(openAirDestination
       ? [`平台提醒：当前目的地${to}是 3 楼露天平台，天气影响直接：降雨或降水概率较高时主动提醒用户带伞、注意湿滑；晴热或紫外线强时提醒防晒补水；雷雨时提醒推迟前往或避免在空旷平台停留，并遵循校园通知。`]

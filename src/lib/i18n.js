@@ -158,6 +158,10 @@ const zh = {
     subtitle: '按需启用，不占用地图主视区',
     close: '关闭语音与设备面板',
     tabsAria: '设置类型',
+    fullscreen: '进入全屏',
+    exitFullscreen: '退出全屏',
+    fullscreenHint: '演示时推荐全屏，隐藏浏览器界面',
+    fullscreenUnsupported: '当前浏览器不支持全屏',
     panels: {
       voice: '实时语音',
       robot: '机器人联络',
@@ -513,6 +517,10 @@ const en = {
     subtitle: 'On demand, keeps the map view clear',
     close: 'Close voice and device panel',
     tabsAria: 'Settings type',
+    fullscreen: 'Enter fullscreen',
+    exitFullscreen: 'Exit fullscreen',
+    fullscreenHint: 'Recommended for demos — hides the browser UI',
+    fullscreenUnsupported: 'Fullscreen is not supported in this browser',
     panels: {
       voice: 'Live Voice',
       robot: 'Robot Link',

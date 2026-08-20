@@ -79,7 +79,7 @@
 | `getCachedAssistantReply(query)` | 归一化后按精确组匹配，再用正则兜底天气 / 随身物品类问题；命中返回 `{key, text, source:'local-cache'}`，否则 `null` |
 | `formatCampusDateTime(now)` / `formatCampusTime(now)` | `Asia/Shanghai`（固定 UTC+8）的日期时间格式化：`2026年8月18日 星期二 16:50` / `16:50` |
 | `buildLiveContext({now, startedAt, routeContext, robotPosition})` | 自动刷新的实时语音上下文：当前时间 + 导航进度。有 `robotPosition` 时用 BLE 遥测沿路线算真实进度（`routeContext.path`）；否则按 `startedAt`（路线开始时间）与 `durationSeconds` 做匀速估算；接近目的地时附加"可主动提醒带好随身物品" |
-| `buildCampusAssistantInstructions(routeContext, event, weather, liveContext)` | 拼装实时语音会话的 system instructions：身份与语气、稳定事实、能力与天气边界（Open-Meteo 开源数据，广州南沙区·校园中心）、**会话开场带伞提醒**、**到达目的地随身物品提醒**、`liveContext` 实时导航上下文（网页自动刷新，估算/遥测进度）、3 楼露天平台提醒（按目的地）、导航工具强制调用规则、当前路线上下文、地点清单、活动上下文 |
+| `buildCampusAssistantInstructions(routeContext, event, weather, liveContext)` | 拼装实时语音会话的 system instructions：身份与语气、稳定事实、能力与天气边界（Open-Meteo 开源数据，广州南沙区·校园中心）、**会话开场先问去向、路线确定后带伞提醒**、**机器人模式出发放包提醒**、**到达目的地随身物品提醒**、`liveContext` 实时导航上下文（网页自动刷新，估算/遥测进度）、3 楼露天平台提醒（按目的地）、导航工具强制调用规则、当前路线上下文、地点清单、活动上下文 |
 
 几何辅助（供 `buildLiveContext` 计算沿路线进度）：`src/lib/geo.js` 新增 `polylineLengthMeters(polyline)` 与 `distanceAlongPolylineMeters(point, polyline)`（投影点到折线起点的累计距离）。
 

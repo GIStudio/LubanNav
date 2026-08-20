@@ -61,6 +61,7 @@ export function VoiceAssistant({
       fromName: NODE_BY_ID[route?.request?.from]?.name,
       toId: route?.request?.to,
       toName: NODE_BY_ID[route?.request?.to]?.name,
+      mode: route?.request?.mode,
       modeLabel: mode?.label ?? '步行',
       distanceMeters: route?.summary?.distanceMeters,
       durationSeconds: route?.summary?.durationSeconds,

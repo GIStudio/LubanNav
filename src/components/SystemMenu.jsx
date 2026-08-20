@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { useI18n } from '../lib/i18n.js';
 import { RobotControl } from './RobotControl.jsx';
 import { VoiceAssistant } from './VoiceAssistant.jsx';
@@ -7,6 +7,48 @@ const PANELS = [
   { id: 'voice', code: 'VOICE' },
   { id: 'robot', code: 'BLE' },
 ];
+
+/**
+ * Best-effort fullscreen support across browsers (standard + webkit prefix).
+ * Returns { supported, isFullscreen, toggle } where toggle flips the state.
+ */
+function useFullscreen() {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const supported = typeof document !== 'undefined'
+    && Boolean(
+      document.documentElement.requestFullscreen
+      || document.documentElement.webkitRequestFullscreen,
+    );
+
+  useEffect(() => {
+    if (!supported) return undefined;
+    const sync = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    return () => {
+      document.removeEventListener('fullscreenchange', sync);
+      document.removeEventListener('webkitfullscreenchange', sync);
+    };
+  }, [supported]);
+
+  function toggle() {
+    const doc = document;
+    const root = doc.documentElement;
+    const active = doc.fullscreenElement || doc.webkitFullscreenElement;
+    if (active) {
+      if (doc.exitFullscreen) doc.exitFullscreen();
+      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+      return false;
+    }
+    if (root.requestFullscreen) root.requestFullscreen().catch(() => {});
+    else if (root.webkitRequestFullscreen) root.webkitRequestFullscreen();
+    return true;
+  }
+
+  return { supported, isFullscreen, toggle };
+}
 
 export function SystemMenu({
   open,
@@ -24,6 +66,7 @@ export function SystemMenu({
 }) {
   const { t } = useI18n();
   const closeButtonRef = useRef(null);
+  const fullscreen = useFullscreen();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -34,6 +77,13 @@ export function SystemMenu({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, open]);
+
+  function handleFullscreen() {
+    const entering = fullscreen.toggle();
+    // Entering fullscreen hides the browser UI — close the menu so the demo
+    // view is unobstructed; exiting keeps the menu open.
+    if (entering) onClose();
+  }
 
   return (
     <div
@@ -59,6 +109,28 @@ export function SystemMenu({
             aria-label={t('system.close')}
           >×</button>
         </header>
+
+        <button
+          type="button"
+          class={`system-menu-fullscreen ${fullscreen.isFullscreen ? 'active' : ''}`}
+          onClick={handleFullscreen}
+          disabled={!fullscreen.supported}
+          aria-pressed={fullscreen.isFullscreen}
+          title={fullscreen.supported ? t('system.fullscreenHint') : t('system.fullscreenUnsupported')}
+        >
+          <span class="system-menu-fullscreen-icon" aria-hidden="true">
+            {fullscreen.isFullscreen ? '⤢' : '⛶'}
+          </span>
+          <span class="system-menu-fullscreen-copy">
+            <strong>
+              {fullscreen.isFullscreen ? t('system.exitFullscreen') : t('system.fullscreen')}
+            </strong>
+            <small>
+              {fullscreen.supported ? t('system.fullscreenHint') : t('system.fullscreenUnsupported')}
+            </small>
+          </span>
+          <span class="system-menu-fullscreen-state" aria-hidden="true" />
+        </button>
 
         <nav class="system-menu-tabs" role="tablist" aria-label={t('system.tabsAria')}>
           {PANELS.map((panel) => (

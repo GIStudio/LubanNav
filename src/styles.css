@@ -1920,7 +1920,7 @@ h2 {
   height: 100dvh;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   border-left: 1px solid rgba(121, 222, 213, 0.42);
   background:
     linear-gradient(145deg, rgba(16, 49, 69, 0.985), rgba(4, 19, 31, 0.995)),
@@ -3340,4 +3340,183 @@ h2 {
 [data-theme='light'] .landing-mic.active {
   background: rgba(95, 158, 0, 0.16);
   box-shadow: 0 0 0 12px rgba(95, 158, 0, 0.08), 0 0 44px rgba(95, 158, 0, 0.28);
+}
+
+/* ── portrait tablets (e.g. Redmi Pad SE 1200×1920): stack map above controls ── */
+
+@media (max-width: 1280px) and (orientation: portrait) {
+  .app-shell {
+    padding: 0 14px 10px;
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-areas: 'map' 'rail';
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .control-rail {
+    grid-area: rail;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, auto);
+    padding-right: 0;
+    align-items: start;
+  }
+
+  .map-stage {
+    grid-area: map;
+  }
+
+  .map-panel {
+    height: 100%;
+  }
+}
+
+
+
+@media (max-width: 1280px) and (orientation: portrait) {
+  .landing-main {
+    gap: 40px;
+  }
+
+  .landing-hero h1 {
+    font-size: clamp(52px, 8.5vw, 116px);
+  }
+
+  .landing-mic {
+    width: 150px;
+    height: 150px;
+  }
+
+  .landing-mic svg {
+    width: 58px;
+    height: 58px;
+  }
+
+  .landing-cards {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 640px;
+    gap: 18px;
+  }
+
+  .landing-card {
+    padding: 22px 24px;
+  }
+
+  .landing-card-icon {
+    font-size: 40px;
+  }
+
+  .landing-mic-status {
+    font-size: 18px;
+  }
+
+  .landing-mic-detail {
+    font-size: 14.5px;
+  }
+}
+
+/* Narrow phones: collapse the control rail back to a single scrolling column. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .control-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .landing-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── system menu: prominent fullscreen toggle ─────────────────────────── */
+
+.system-menu-fullscreen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: calc(100% - 52px);
+  margin: 16px 26px 12px;
+  padding: 13px 16px;
+  border: 1px solid var(--cyan);
+  border-radius: 14px;
+  color: var(--text);
+  background: rgba(121, 222, 213, 0.08);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.system-menu-fullscreen:hover:not(:disabled) {
+  border-color: var(--acid);
+  background: rgba(185, 242, 39, 0.1);
+  transform: translateY(-1px);
+}
+
+.system-menu-fullscreen.active {
+  border-color: var(--acid);
+  background: rgba(185, 242, 39, 0.12);
+}
+
+.system-menu-fullscreen:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.system-menu-fullscreen-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font: 700 19px/1 var(--display);
+}
+
+.system-menu-fullscreen-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.system-menu-fullscreen-copy strong {
+  font: 800 14px/1.2 var(--display);
+  letter-spacing: 0.05em;
+}
+
+.system-menu-fullscreen-copy small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.system-menu-fullscreen-state {
+  margin-left: auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(121, 222, 213, 0.12), 0 0 14px var(--cyan);
+}
+
+.system-menu-fullscreen.active .system-menu-fullscreen-state {
+  background: var(--acid);
+  box-shadow: 0 0 0 4px rgba(185, 242, 39, 0.12), 0 0 14px var(--acid);
+}
+
+[data-theme='light'] .system-menu-fullscreen {
+  background: var(--panel-raised);
+  border-color: var(--cyan);
+}
+
+[data-theme='light'] .system-menu-fullscreen:hover:not(:disabled) {
+  border-color: var(--acid);
+  background: rgba(95, 158, 0, 0.08);
+}
+
+[data-theme='light'] .system-menu-fullscreen.active {
+  border-color: var(--acid);
+  background: rgba(95, 158, 0, 0.1);
 }
