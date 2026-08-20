@@ -106,8 +106,39 @@ export function addOsmLayers(map, data) {
   }).addTo(map);
 }
 
-export function addIndoorLayers(map, data, t = translate) {
-  const canvas = L.canvas({ padding: 0.5, tolerance: 7 });
+/**
+ * The imported global-nav outdoor walking network (campus-local-nav.geojson):
+ * footway edges rendered as a bright teal overlay so the updated walking
+ * paths are visible on top of the OSM base map.
+ */
+export function addLocalNavLayers(map, data) {
+  const canvas = L.canvas({ padding: 0.5, tolerance: 5 });
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'roadPane',
+    style: {
+      color: '#061722',
+      opacity: 0.82,
+      weight: 6,
+      lineCap: 'round',
+      lineJoin: 'round',
+    },
+  }).addTo(map);
+
+  L.geoJSON(data, {
+    renderer: canvas,
+    pane: 'roadDetailPane',
+    style: {
+      color: '#2fb3a8',
+      opacity: 0.9,
+      weight: 2.6,
+      lineCap: 'round',
+      lineJoin: 'round',
+    },
+  }).addTo(map);
+}
+
+export function addIndoorLayers(map, data, t = translate) {  const canvas = L.canvas({ padding: 0.5, tolerance: 7 });
   L.geoJSON(data, {
     renderer: canvas,
     pane: 'indoorPane',

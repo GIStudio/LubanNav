@@ -2,7 +2,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { CAMPUS_BOUNDS, PUBLIC_LOCATIONS } from '../data/campus.js';
-import { addIndoorLayers, addOsmLayers } from '../lib/mapLayers.js';
+import { addIndoorLayers, addLocalNavLayers, addOsmLayers } from '../lib/mapLayers.js';
 import { getLocationBinding } from '../lib/pathfinding.js';
 import { useI18n, localizedName } from '../lib/i18n.js';
 
@@ -10,6 +10,7 @@ const CATEGORY_IDS = ['entrance', 'academic', 'indoor', 'service', 'residence', 
 
 const OSM_DATA_URL = `${import.meta.env.BASE_URL}data/campus-osm.geojson`;
 const INDOOR_DATA_URL = `${import.meta.env.BASE_URL}data/campus-indoor.geojson`;
+const LOCAL_NAV_DATA_URL = `${import.meta.env.BASE_URL}data/campus-local-nav.geojson`;
 const CAMPUS_CENTER = [22.8902, 113.4791];
 
 function locationLatLng(location, modeId) {
@@ -71,16 +72,17 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
     routeLayerRef.current = L.layerGroup().addTo(map);
 
     Promise.all(
-      [OSM_DATA_URL, INDOOR_DATA_URL].map((url) =>
+      [OSM_DATA_URL, INDOOR_DATA_URL, LOCAL_NAV_DATA_URL].map((url) =>
         fetch(url).then((response) => {
           if (!response.ok) throw new Error(`${url} ${response.status}`);
           return response.json();
         }),
       ),
     )
-      .then(([osmData, indoorData]) => {
+      .then(([osmData, indoorData, localNavData]) => {
         addOsmLayers(map, osmData);
         addIndoorLayers(map, indoorData);
+        addLocalNavLayers(map, localNavData);
         setMapStatus('ready');
       })
       .catch((error) => {
