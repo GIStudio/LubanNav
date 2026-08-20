@@ -107,12 +107,63 @@ describe('campus assistant instructions', () => {
     expect(instructions).toContain('3 楼露天平台');
   });
 
-  it('opens the session by asking where the user wants to go, then reminds about the weather', () => {
+  it('opens the session by asking where the user wants to go and follows the user language', () => {
     const instructions = buildCampusAssistantInstructions({}, null, null);
     expect(instructions).toContain('会话开场');
     expect(instructions).toContain('先询问用户想去哪里');
-    expect(instructions).toContain('出门带伞');
-    expect(instructions).toContain('出门记得带伞');
+    expect(instructions).toContain('语言规则');
+    expect(instructions).toContain('说英文就用英文');
+    expect(instructions).toContain('绝不混用或来回切换');
+  });
+
+  it('does not push umbrella advice when the weather is calm', () => {
+    const calmWeather = {
+      available: true,
+      temperatureC: 24,
+      conditionLabel: '多云',
+      precipitationMm: 0,
+      precipitationProbabilityMax: 20,
+      rainExpected: false,
+      rainingNow: false,
+      sunny: false,
+      uvIndexMax: 3,
+      umbrella: false,
+      sunscreen: false,
+      cold: false,
+      thunderstorm: false,
+    };
+    const instructions = buildCampusAssistantInstructions(
+      { fromId: 'main-entrance', toId: 'library', modeLabel: '步行' },
+      null,
+      calmWeather,
+    );
+    expect(instructions).toContain('天气平稳时不要主动提起伞具或防晒');
+    expect(instructions).toContain('天气平稳时不要提伞具或防晒');
+    expect(instructions).not.toContain('出门记得带伞');
+  });
+
+  it('keeps umbrella advice for rainy weather only', () => {
+    const rainyWeather = {
+      available: true,
+      temperatureC: 26,
+      conditionLabel: '中雨',
+      precipitationMm: 2,
+      precipitationProbabilityMax: 80,
+      rainExpected: true,
+      rainingNow: true,
+      sunny: false,
+      uvIndexMax: 2,
+      umbrella: true,
+      sunscreen: false,
+      cold: false,
+      thunderstorm: false,
+    };
+    const instructions = buildCampusAssistantInstructions(
+      { fromId: 'main-entrance', toId: 'library', modeLabel: '步行' },
+      null,
+      rainyWeather,
+    );
+    expect(instructions).toContain('出门带伞、注意湿滑');
   });
 
   it('directs a take-your-belongings reminder when the user nears the destination', () => {

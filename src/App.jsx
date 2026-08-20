@@ -195,7 +195,12 @@ export function App() {
     }
   }
 
+  // Language of the most recent voice utterance, so navigation receipts can
+  // instruct the model in the same language the user speaks.
+  const lastVoiceLangRef = useRef('zh');
+
   function handleVoiceUserTranscript(query) {
+    lastVoiceLangRef.current = /[\u4e00-\u9fff]/.test(query) ? 'zh' : 'en';
     setMessages((items) => [...items, { role: 'user', text: query, source: 'voice' }]);
     const parsed = parseQueryWithEvent(query);
     if (!parsed.understood) return;
@@ -214,11 +219,14 @@ export function App() {
 
   function handleVoiceNavigationCommand(argumentsValue) {
     const parsed = resolveNavigationCommand(argumentsValue, from, mode);
+    const en = lastVoiceLangRef.current !== 'zh';
     if (!parsed.understood) {
       return {
         ok: false,
         error: parsed.error,
-        message: '没有识别出有效的校内目的地，请向用户追问具体建筑或地点。',
+        message: en
+          ? 'No valid campus destination was recognised. Ask the user which building or place they mean.'
+          : '没有识别出有效的校内目的地，请向用户追问具体建筑或地点。',
       };
     }
 
@@ -227,7 +235,9 @@ export function App() {
       return {
         ok: false,
         error: 'no_route',
-        message: '本地寻路图暂时找不到这两个地点之间的可用路线。',
+        message: en
+          ? 'The local routing graph has no usable route between these two places right now.'
+          : '本地寻路图暂时找不到这两个地点之间的可用路线。',
       };
     }
     setPhase('nav');
@@ -246,7 +256,9 @@ export function App() {
         distanceMeters: item.distanceMeters,
         description: item.description,
       })),
-      message: 'LubanNav 页面已使用本地寻路图更新路线，请简短告知用户；若目的地是 3 楼露天平台或天气需要，可顺带提醒带伞或防晒。',
+      message: en
+        ? 'LubanNav has updated the route from the local routing graph. Tell the user briefly; if the destination is the 3F open-air deck or the weather calls for it, you may add a brief umbrella or sunscreen note.'
+        : 'LubanNav 页面已使用本地寻路图更新路线，请简短告知用户；若目的地是 3 楼露天平台或天气需要，可顺带提醒带伞或防晒。',
     };
   }
 
