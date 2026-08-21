@@ -18,6 +18,8 @@ import { QwenRealtimeSession } from './qwenRealtime.js';
 const INACTIVE_STATUSES = ['idle', 'ended', 'error'];
 
 const ACCESS_CODE_STORAGE_KEY = 'luban-nav:voice-access-code';
+const INTERACTION_MODE_STORAGE_KEY = 'luban-nav:interaction-mode';
+export const INTERACTION_MODES = ['duplex', 'tap2talk'];
 
 function loadStoredAccessCode() {
   try {
@@ -26,6 +28,16 @@ function loadStoredAccessCode() {
   } catch {
     // localStorage may be unavailable (private mode, disabled storage)
     return '';
+  }
+}
+
+function loadStoredInteractionMode() {
+  try {
+    if (typeof window === 'undefined') return 'duplex';
+    const stored = window.localStorage.getItem(INTERACTION_MODE_STORAGE_KEY);
+    return INTERACTION_MODES.includes(stored) ? stored : 'duplex';
+  } catch {
+    return 'duplex';
   }
 }
 
@@ -39,6 +51,7 @@ const initialState = {
   statusMessage: '',
   liveTranscript: '',
   accessCode: loadStoredAccessCode(),
+  interactionMode: loadStoredInteractionMode(),
   supported: Boolean(
     typeof window !== 'undefined'
       && window.isSecureContext
@@ -81,6 +94,19 @@ function setAccessCode(accessCode) {
   patch({ accessCode: next });
 }
 
+function setInteractionMode(mode) {
+  if (!INTERACTION_MODES.includes(mode)) return;
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(INTERACTION_MODE_STORAGE_KEY, mode);
+    }
+  } catch {
+    // ignore persistence failures
+  }
+  patch({ interactionMode: mode });
+  session?.updateInteractionMode(mode);
+}
+
 function attachAudio(element) {
   audioElement = element;
 }
@@ -106,6 +132,7 @@ async function start() {
     accessCode: state.accessCode,
     instructions,
     audioElement,
+    interactionMode: state.interactionMode,
     functionHandlers: {
       set_navigation_route: (...argumentsList) =>
         handlers.onNavigationCommand?.(...argumentsList),
@@ -152,13 +179,24 @@ function stop() {
   patch({ liveTranscript: '' });
 }
 
+function pressTalkStart() {
+  session?.pressTalkStart();
+}
+
+function pressTalkEnd() {
+  session?.pressTalkEnd();
+}
+
 export const voiceSession = {
   subscribe,
   snapshot,
   setAccessCode,
+  setInteractionMode,
   attachAudio,
   setHandlers,
   updateInstructions,
+  pressTalkStart,
+  pressTalkEnd,
   start,
   stop,
 };
@@ -172,5 +210,8 @@ export function useVoiceSession() {
     start,
     stop,
     setAccessCode,
+    setInteractionMode,
+    pressTalkStart,
+    pressTalkEnd,
   };
 }

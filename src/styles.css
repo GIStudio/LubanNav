@@ -3705,3 +3705,102 @@ h2 {
     font-size: 12px;
   }
 }
+
+/* ── voice talk-mode switch (duplex / hold-to-talk) ───────────────────── */
+
+.voice-mode-switch {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.voice-mode-switch > span {
+  color: var(--muted);
+  font: 700 8px/1 var(--mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.voice-mode-switch > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.voice-mode-switch button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: rgba(2, 16, 26, 0.28);
+  font-size: 12px;
+  font-weight: 700;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.voice-mode-switch button:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.voice-mode-switch button.active {
+  border-color: var(--acid);
+  color: var(--ink-deep);
+  background: var(--acid);
+}
+
+.voice-mode-switch small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.voice-quick-actions {
+  display: grid;
+  gap: 6px;
+  justify-items: stretch;
+}
+
+.voice-quick-mode {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: rgba(2, 16, 26, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.voice-quick-mode:hover,
+.voice-quick-mode[aria-pressed='true'] {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.voice-quick-dock.tap2talk .voice-mic-button {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 157, 99, 0.12);
+}
+
+.voice-quick-dock.tap2talk .voice-mic-button:active {
+  background: rgba(255, 157, 99, 0.28);
+  transform: scale(0.97);
+}
+
+[data-theme='light'] .voice-quick-mode {
+  background: var(--panel);
+}
+
+[data-theme='light'] .voice-mode-switch button {
+  background: var(--panel-raised);
+}
+
+[data-theme='light'] .voice-mode-switch button.active {
+  color: #ffffff;
+}

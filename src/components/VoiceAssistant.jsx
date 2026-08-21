@@ -39,6 +39,8 @@ export function VoiceAssistant({
     accessCode,
     supported,
     active,
+    interactionMode,
+    setInteractionMode,
     start,
     stop,
     setAccessCode,
@@ -140,7 +142,31 @@ export function VoiceAssistant({
       {!supported ? (
         <p class="voice-notice warning">{t('voice.unsupported')}</p>
       ) : (
-        <form class="voice-form" onSubmit={startSession}>
+        <>
+          <div class="voice-mode-switch" aria-label={t('voice.interactionMode')}>
+            <span>{t('voice.interactionMode')}</span>
+            <div>
+              <button
+                type="button"
+                class={interactionMode === 'duplex' ? 'active' : ''}
+                onClick={() => setInteractionMode('duplex')}
+                aria-pressed={interactionMode === 'duplex'}
+              >
+                {t('voice.modeDuplex')}
+              </button>
+              <button
+                type="button"
+                class={interactionMode === 'tap2talk' ? 'active' : ''}
+                onClick={() => setInteractionMode('tap2talk')}
+                aria-pressed={interactionMode === 'tap2talk'}
+              >
+                {t('voice.modeTapToTalk')}
+              </button>
+            </div>
+            <small>{t('voice.modeHint')}</small>
+          </div>
+
+          <form class="voice-form" onSubmit={startSession}>
           <label>
             <span>{t('voice.accessCode')}</span>
             <input
@@ -161,7 +187,8 @@ export function VoiceAssistant({
             <span aria-hidden="true">{active ? '■' : '●'}</span>
             {active ? t('voice.stop') : t('voice.start')}
           </button>
-        </form>
+          </form>
+        </>
       )}
 
       <p class="voice-notice" aria-live="polite">{liveTranscript || statusMessage || t('voice.hintStart')}</p>

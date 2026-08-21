@@ -10,7 +10,9 @@ export const DEFAULT_VOICE_CONFIG = Object.freeze({
     || DEFAULT_GATEWAY_ENDPOINT,
   model: 'qwen3.5-omni-flash-realtime',
   voice: 'Tina',
-  maxSessionMs: 3 * 60 * 1000,
+  // A walking navigation session can run for minutes, so the session cap is
+  // generous; when it is reached the session renews itself automatically.
+  maxSessionMs: 10 * 60 * 1000,
 });
 
 export class VoiceSessionError extends Error {
@@ -55,17 +57,24 @@ export async function requestWebRtcAnswer({
   }
 
   if (!response.ok) {
-    const knownMessages = {
-      401: '访问码无效，请重新输入。',
-      403: '当前网页来源未被允许。',
-      429: '请求过于频繁，请稍后再试。',
-      502: '百炼语音服务暂时拒绝连接，请稍后重试。',
-    };
-    throw new VoiceSessionError(
-      'gateway-rejected',
-      knownMessages[response.status] || body.error || '语音网关建立会话失败。',
-      response.status,
-    );
+    const upstreamStatus = body?.upstreamStatus;
+    let message;
+    if (body?.error === 'invalid_access_code') {
+      message = '访问码无效，请重新输入。';
+    } else if (body?.error === 'origin_not_allowed') {
+      message = '当前网页来源未被允许。';
+    } else if (body?.error === 'rate_limited') {
+      message = '请求过于频繁，请稍后再试。';
+    } else if (response.status === 429 || upstreamStatus === 429) {
+      message = '百炼并发或限流，正在等待后自动重试。';
+    } else if (upstreamStatus === 401 || upstreamStatus === 403) {
+      message = '百炼授权失败，请检查语音网关的 API Key 与 Workspace 配置。';
+    } else if (response.status === 502 || response.status >= 500) {
+      message = '百炼语音服务暂时拒绝连接，正在自动重试。';
+    } else {
+      message = body?.error || '语音网关建立会话失败。';
+    }
+    throw new VoiceSessionError('gateway-rejected', message, response.status);
   }
 
   if (!body.answerSdp || typeof body.answerSdp !== 'string' || !body.answerSdp.startsWith('v=0')) {
@@ -75,7 +84,11 @@ export async function requestWebRtcAnswer({
   return body.answerSdp;
 }
 
-export function buildSessionUpdate({ instructions, voice = DEFAULT_VOICE_CONFIG.voice }) {
+export function buildSessionUpdate({ instructions, voice = DEFAULT_VOICE_CONFIG.voice, interactionMode = 'duplex' }) {
+  // "Hold to talk" keeps server VAD (no protocol risk) but makes it far less
+  // trigger-happy and relies on the client muting the mic while not held:
+  // noisy demos (robot riding) no longer cut the user off mid-sentence.
+  const tapToTalk = interactionMode === 'tap2talk';
   return {
     event_id: `lubannav-${crypto.randomUUID()}`,
     type: 'session.update',
@@ -88,11 +101,9 @@ export function buildSessionUpdate({ instructions, voice = DEFAULT_VOICE_CONFIG.
       },
       input_audio_transcription: { model: 'qwen3-asr-flash-realtime' },
       instructions,
-      turn_detection: {
-        type: 'semantic_vad',
-        threshold: 0.5,
-        silence_duration_ms: 800,
-      },
+      turn_detection: tapToTalk
+        ? { type: 'semantic_vad', threshold: 0.7, silence_duration_ms: 2500 }
+        : { type: 'semantic_vad', threshold: 0.5, silence_duration_ms: 800 },
       max_tokens: 512,
       temperature: 0.6,
       enable_search: false,
@@ -154,6 +165,9 @@ export class QwenRealtimeSession extends EventTarget {
     PeerConnection = RTCPeerConnection,
     maxSessionMs = DEFAULT_VOICE_CONFIG.maxSessionMs,
     functionHandlers = {},
+    autoReconnect = true,
+    disconnectGraceMs = 4000,
+    interactionMode = 'duplex',
   }) {
     super();
     this.accessCode = accessCode;
@@ -165,13 +179,105 @@ export class QwenRealtimeSession extends EventTarget {
     this.PeerConnection = PeerConnection;
     this.maxSessionMs = maxSessionMs;
     this.functionHandlers = functionHandlers;
+    this.autoReconnect = autoReconnect;
+    this.disconnectGraceMs = disconnectGraceMs;
+    this.interactionMode = interactionMode;
+    this.tapToTalk = interactionMode === 'tap2talk';
     this.seenEventIds = new Set();
     this.completedFunctionCalls = new Set();
     this.started = false;
+    this.reconnecting = false;
+    this.reconnectAttempts = 0;
+    this.disconnectGraceTimer = null;
+    this.slowMode = false;
+    // Aggressive backoff: chattier sessions must resume quickly after a
+    // hiccup. 1s→2s→3s→5s→8s→12s, then a 15s ceiling (the gateway rate
+    // limit is 30 requests / 5 min, so 15s spacing stays well below it).
+    this.reconnectDelayMs = [1000, 2000, 3000, 5000, 8000, 12000];
+    // Auth failures and upstream quota/concurrency pressure (401/403/429)
+    // recover on a slower clock; hammering the gateway would only make the
+    // outage worse.
+    this.slowReconnectDelayMs = 60_000;
   }
 
   emitStatus(status, message = '') {
     this.dispatchEvent(eventDetail('status', { status, message }));
+  }
+
+  /** Delay before the next reconnect attempt. */
+  nextReconnectDelay() {
+    if (this.slowMode) return this.slowReconnectDelayMs;
+    if (this.reconnectAttempts < this.reconnectDelayMs.length) {
+      return this.reconnectDelayMs[this.reconnectAttempts];
+    }
+    return 15_000;
+  }
+
+  handleConnectionStateChange() {
+    const state = this.peerConnection?.connectionState;
+    if (state === 'connected') {
+      clearTimeout(this.disconnectGraceTimer);
+      this.disconnectGraceTimer = null;
+      this.reconnectAttempts = 0;
+      return;
+    }
+    if (state === 'disconnected') {
+      // ICE may recover on its own; only reconnect after a grace period.
+      if (!this.disconnectGraceTimer) {
+        this.disconnectGraceTimer = setTimeout(() => {
+          this.disconnectGraceTimer = null;
+          if (this.peerConnection?.connectionState !== 'connected') {
+            void this.reconnect('network');
+          }
+        }, this.disconnectGraceMs);
+      }
+      return;
+    }
+    if (state === 'failed') {
+      void this.reconnect('network');
+    }
+  }
+
+  /** Create the peer connection, media channel, offer and gateway exchange. */
+  async connectPeerConnection() {
+    this.peerConnection = new this.PeerConnection({ iceServers: [] });
+    const [track] = this.stream.getAudioTracks();
+    if (!track) throw new VoiceSessionError('microphone', '没有找到可用的麦克风。');
+
+    this.peerConnection.addTrack(track, this.stream);
+    this.peerConnection.addEventListener('track', (event) => {
+      if (!this.audioElement) return;
+      this.audioElement.srcObject = event.streams[0];
+      this.audioElement.play().catch(() => {
+        this.emitStatus('audio-blocked', '请点击页面后允许播放语音');
+      });
+    });
+    this.peerConnection.addEventListener('connectionstatechange', () => {
+      this.handleConnectionStateChange();
+    });
+    this.peerConnection.addEventListener('datachannel', (event) => this.attachChannel(event.channel));
+
+    this.dataChannel = this.peerConnection.createDataChannel('oai-events');
+    this.attachChannel(this.dataChannel);
+
+    this.emitStatus('connecting', '正在连接语音模型');
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
+    await waitForIceGatheringComplete(this.peerConnection);
+
+    this.emitStatus('authorizing', '正在通过语音网关建立会话');
+    const answerSdp = await requestWebRtcAnswer({
+      endpoint: this.gatewayEndpoint,
+      accessCode: this.accessCode,
+      offerSdp: this.peerConnection.localDescription.sdp,
+      fetchImpl: this.fetchImpl,
+    });
+    await this.peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+    // Renew the session clock on every (re)connection, so a walking session
+    // is not cut short by an old connection attempt.
+    clearTimeout(this.stopTimer);
+    this.stopTimer = setTimeout(() => this.handleSessionLimit(), this.maxSessionMs);
   }
 
   async start() {
@@ -199,47 +305,61 @@ export class QwenRealtimeSession extends EventTarget {
       if (!track) throw new VoiceSessionError('microphone', '没有找到可用的麦克风。');
       track.enabled = false;
 
-      this.peerConnection = new this.PeerConnection({ iceServers: [] });
-      this.peerConnection.addTrack(track, this.stream);
-      this.peerConnection.addEventListener('track', (event) => {
-        if (!this.audioElement) return;
-        this.audioElement.srcObject = event.streams[0];
-        this.audioElement.play().catch(() => {
-          this.emitStatus('audio-blocked', '请点击页面后允许播放语音');
-        });
-      });
-      this.peerConnection.addEventListener('connectionstatechange', () => {
-        const state = this.peerConnection?.connectionState;
-        if (state === 'failed' || state === 'disconnected') {
-          this.fail(new VoiceSessionError('webrtc-disconnected', '语音连接已断开，请重新连接。'));
-        }
-      });
-      this.peerConnection.addEventListener('datachannel', (event) => this.attachChannel(event.channel));
-
-      this.dataChannel = this.peerConnection.createDataChannel('oai-events');
-      this.attachChannel(this.dataChannel);
-
-      this.emitStatus('connecting', '正在连接语音模型');
-      const offer = await this.peerConnection.createOffer();
-      await this.peerConnection.setLocalDescription(offer);
-      await waitForIceGatheringComplete(this.peerConnection);
-
-      this.emitStatus('authorizing', '正在通过语音网关建立会话');
-      const answerSdp = await requestWebRtcAnswer({
-        endpoint: this.gatewayEndpoint,
-        accessCode: this.accessCode,
-        offerSdp: this.peerConnection.localDescription.sdp,
-        fetchImpl: this.fetchImpl,
-      });
-      await this.peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
-      this.stopTimer = setTimeout(() => {
-        this.emitStatus('time-limit', '单次语音会话已达到 3 分钟上限');
-        this.stop('time-limit');
-      }, this.maxSessionMs);
+      await this.connectPeerConnection();
     } catch (error) {
       this.fail(this.normalizeError(error));
       throw error;
     }
+  }
+
+  /**
+   * Reconnect after a network hiccup or when the session cap is reached.
+   * Backs off 1→2→3→5→8→12 s, then stays at 15 s and keeps retrying until
+   * the link is back or the user stops the session — walking demos must not
+   * die silently on a weak campus network, and chatty sessions need fast
+   * recovery.
+   */
+  async reconnect(reason) {
+    if (!this.autoReconnect || this.reconnecting || !this.started) return;
+    this.reconnecting = true;
+    clearTimeout(this.disconnectGraceTimer);
+    this.disconnectGraceTimer = null;
+    this.dataChannel?.close();
+    this.peerConnection?.close();
+    this.emitStatus(
+      'reconnecting',
+      reason === 'time-limit'
+        ? '会话已到时限，正在自动续接…'
+        : '网络波动，正在自动重连…',
+    );
+
+    while (this.started) {
+      const delay = this.nextReconnectDelay();
+      this.reconnectAttempts += 1;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (!this.started) break;
+      try {
+        await this.connectPeerConnection();
+        this.reconnectAttempts = 0;
+        this.slowMode = false;
+        this.reconnecting = false;
+        this.emitStatus('listening', '正在聆听');
+        return;
+      } catch (error) {
+        // Auth / quota errors recover slowly; switch to the slow clock and
+        // surface the specific reason instead of hammering the gateway.
+        if ([401, 403, 429].includes(error?.status)) {
+          this.slowMode = true;
+          this.emitStatus('reconnecting', error?.message || '授权或限流问题，等待后自动重试…');
+        }
+      }
+    }
+    this.reconnecting = false;
+  }
+
+  handleSessionLimit() {
+    if (!this.started || this.reconnecting) return;
+    void this.reconnect('time-limit');
   }
 
   attachChannel(channel) {
@@ -260,10 +380,15 @@ export class QwenRealtimeSession extends EventTarget {
 
     switch (serverEvent.type) {
       case 'session.created':
-        this.send(buildSessionUpdate({ instructions: this.instructions }), channel);
+        this.send(buildSessionUpdate({
+          instructions: this.instructions,
+          interactionMode: this.interactionMode,
+        }), channel);
         break;
       case 'session.updated':
-        this.setMicrophoneEnabled(true);
+        // In hold-to-talk mode the mic stays muted until the user holds the
+        // button; VAD would otherwise re-enable it right after start.
+        this.setMicrophoneEnabled(!this.tapToTalk);
         this.emitStatus('listening', '正在聆听');
         break;
       case 'input_audio_buffer.speech_started':
@@ -343,7 +468,35 @@ export class QwenRealtimeSession extends EventTarget {
 
   updateInstructions(instructions) {
     this.instructions = instructions;
-    this.send(buildSessionUpdate({ instructions }));
+    this.send(buildSessionUpdate({
+      instructions,
+      interactionMode: this.interactionMode,
+    }));
+  }
+
+  /** Switch talk mode mid-session (duplex ↔ hold-to-talk) and re-push it. */
+  updateInteractionMode(mode) {
+    this.interactionMode = mode;
+    this.tapToTalk = mode === 'tap2talk';
+    if (!this.started) return;
+    this.send(buildSessionUpdate({
+      instructions: this.instructions,
+      interactionMode: mode,
+    }));
+    if (this.tapToTalk) this.setMicrophoneEnabled(false);
+  }
+
+  /** Hold-to-talk: open the mic while the user holds the button. */
+  pressTalkStart() {
+    if (!this.tapToTalk || !this.started) return;
+    this.setMicrophoneEnabled(true);
+    this.emitStatus('user-speaking', '正在聆听');
+  }
+
+  /** Hold-to-talk: mute the mic on release; VAD commits the turn. */
+  pressTalkEnd() {
+    if (!this.tapToTalk || !this.started) return;
+    this.setMicrophoneEnabled(false);
   }
 
   setMicrophoneEnabled(enabled) {
@@ -371,6 +524,10 @@ export class QwenRealtimeSession extends EventTarget {
 
   stop(reason = 'user', emitEnded = true) {
     clearTimeout(this.stopTimer);
+    clearTimeout(this.disconnectGraceTimer);
+    this.disconnectGraceTimer = null;
+    this.reconnecting = false;
+    this.slowMode = false;
     this.stream?.getTracks().forEach((track) => track.stop());
     this.dataChannel?.close();
     this.peerConnection?.close();

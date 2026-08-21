@@ -91,6 +91,25 @@ describe('voiceSession access-code persistence', () => {
     expect(storage.getItem('luban-nav:voice-access-code')).toBeNull();
   });
 
+  it('defaults to duplex talk mode and persists a switch to hold-to-talk', async () => {
+    const storage = fakeStorage();
+    const store = await freshStore({ localStorage: storage });
+    expect(store.snapshot().interactionMode).toBe('duplex');
+
+    store.setInteractionMode('tap2talk');
+    expect(store.snapshot().interactionMode).toBe('tap2talk');
+    expect(storage.getItem('luban-nav:interaction-mode')).toBe('tap2talk');
+
+    store.setInteractionMode('bogus');
+    expect(store.snapshot().interactionMode).toBe('tap2talk');
+  });
+
+  it('initializes the talk mode from localStorage when present', async () => {
+    const storage = fakeStorage({ 'luban-nav:interaction-mode': 'tap2talk' });
+    const store = await freshStore({ localStorage: storage });
+    expect(store.snapshot().interactionMode).toBe('tap2talk');
+  });
+
   it('degrades gracefully when localStorage is unavailable', async () => {
     const storage = fakeStorage();
     Object.defineProperty(storage, 'setItem', { value: () => { throw new Error('blocked'); } });
