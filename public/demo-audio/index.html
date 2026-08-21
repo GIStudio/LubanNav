@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LubanNav 演示音频</title>
+    <style>
+      :root {
+        --ink: #071c2c;
+        --panel: #ffffff;
+        --line: rgba(22, 48, 62, 0.14);
+        --text: #17293a;
+        --muted: #5f7683;
+        --acid: #5f9e00;
+        --cyan: #0d8f84;
+        --orange: #d9672a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 78% 10%, rgba(13, 143, 132, 0.08), transparent 34rem),
+          linear-gradient(135deg, #eef2f6 0%, #e4eaf0 50%, #edf1f5 100%);
+        font-family: "Avenir Next", "Noto Sans SC", "PingFang SC", sans-serif;
+      }
+      .wrap { max-width: 860px; margin: 0 auto; padding: 34px 20px 60px; }
+      header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+      h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+      .sub { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+      .download {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 11px 18px; border: 0; border-radius: 12px;
+        color: #fff; background: var(--acid); font-size: 14px; font-weight: 700;
+        text-decoration: none; cursor: pointer;
+      }
+      .download:hover { filter: brightness(1.08); }
+      .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+      .tabs button {
+        padding: 8px 18px; border: 1px solid var(--line); border-radius: 999px;
+        color: var(--muted); background: var(--panel); font-size: 13px; font-weight: 700; cursor: pointer;
+      }
+      .tabs button.active { border-color: var(--acid); color: #fff; background: var(--acid); }
+      .scene {
+        background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+        padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 12px 30px rgba(23, 45, 61, 0.08);
+      }
+      .scene h2 { margin: 0 0 4px; font-size: 17px; }
+      .line { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 2px 0; }
+      .line b { color: var(--cyan); font-weight: 700; }
+      .line.ai b { color: var(--orange); }
+      .track { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+      .track-label { font-size: 12px; font-weight: 700; min-width: 62px; color: var(--muted); }
+      .track-label.user::before { content: "🎙 "; }
+      .track-label.ai::before { content: "🤖 "; }
+      audio { height: 34px; flex: 1 1 220px; min-width: 200px; }
+      .track a {
+        font-size: 12px; color: var(--cyan); text-decoration: none; white-space: nowrap;
+      }
+      .track a:hover { text-decoration: underline; }
+      footer { margin-top: 26px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <div>
+          <h1>🎧 LubanNav 演示音频</h1>
+          <p class="sub">Qwen-TTS（qwen3-tts-flash）预生成的交互对话 · 用户（Ethan）与 AI 助手（Cherry）双轨 · 中文 / English</p>
+        </div>
+        <a class="download" href="demo-audio.zip" download>⬇ 打包下载全部（.zip）</a>
+      </header>
+
+      <nav class="tabs" aria-label="语言">
+        <button type="button" data-lang="zh" class="active">中文</button>
+        <button type="button" data-lang="en">English</button>
+      </nav>
+
+      <div id="scenes"></div>
+
+      <footer>
+        音频由百炼 <code>qwen3-tts-flash</code> 非流式接口生成（<code>output.audio.url</code>），
+        生成脚本：<code>scripts/generate-demo-audio.mjs</code>（幂等，可重复运行）。
+      </footer>
+    </main>
+
+    <script type="module">
+      const SCENE_NAMES = {
+        'ask-library': { zh: '问路带路 · 图书馆', en: 'Ask the way · Library' },
+        'along-the-way': { zh: '沿途介绍', en: 'Along the way' },
+        weather: { zh: '天气提醒 · 带伞', en: 'Weather · Umbrella' },
+        bag: { zh: '背包 · 放在小车上', en: 'Bag on the robot' },
+        arrival: { zh: '到达提醒 · 随身物品', en: 'Arrival · Belongings' },
+      };
+
+      const langButtons = [...document.querySelectorAll('.tabs button')];
+      const scenesEl = document.getElementById('scenes');
+      let manifest = null;
+      let lang = 'zh';
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;');
+      }
+
+      function render() {
+        const userLabel = lang === 'zh' ? '用户' : 'User';
+        const aiLabel = lang === 'zh' ? '助手' : 'Assistant';
+        const copy = manifest.scenes.map((scene) => {
+          const text = scene[lang];
+          const name = SCENE_NAMES[scene.id]?.[lang] ?? scene.id;
+          return `
+            <section class="scene">
+              <h2>${escapeHtml(name)}</h2>
+              <p class="line"><b>${userLabel}：</b>${escapeHtml(text.user)}</p>
+              <p class="line ai"><b>${aiLabel}：</b>${escapeHtml(text.assistant)}</p>
+              <div class="track">
+                <span class="track-label user">${userLabel}</span>
+                <audio controls preload="none" src="${text.files.user}"></audio>
+                <a href="${text.files.user}" download>${lang === 'zh' ? '下载' : 'Download'}</a>
+              </div>
+              <div class="track">
+                <span class="track-label ai">${aiLabel}</span>
+                <audio controls preload="none" src="${text.files.assistant}"></audio>
+                <a href="${text.files.assistant}" download>${lang === 'zh' ? '下载' : 'Download'}</a>
+              </div>
+            </section>`;
+        }).join('');
+        scenesEl.innerHTML = copy;
+      }
+
+      langButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          lang = button.dataset.lang;
+          langButtons.forEach((b) => b.classList.toggle('active', b === button));
+          if (manifest) render();
+        });
+      });
+
+      fetch('manifest.json')
+        .then((response) => {
+          if (!response.ok) throw new Error(`manifest ${response.status}`);
+          return response.json();
+        })
+        .then((data) => {
+          manifest = data;
+          render();
+        })
+        .catch((error) => {
+          scenesEl.textContent = `无法加载 manifest.json：${error.message}`;
+        });
+    </script>
+  </body>
+</html>

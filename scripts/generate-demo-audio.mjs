@@ -129,14 +129,23 @@ async function synthesize(text, { voice, language }) {
 }
 
 const jobs = [];
+const manifestScenes = [];
 for (const scene of SCENES) {
+  const entry = { id: scene.id, zh: {}, en: {} };
   for (const lang of ['zh', 'en']) {
     const copy = scene[lang];
+    entry[lang].user = copy.user;
+    entry[lang].assistant = copy.assistant;
+    entry[lang].files = {
+      user: `${lang}/${scene.id}.user.wav`,
+      assistant: `${lang}/${scene.id}.assistant.wav`,
+    };
     jobs.push(
       { file: resolve(OUT_DIR, lang, `${scene.id}.user.wav`), text: copy.user, voice: USER_VOICE, language: lang },
       { file: resolve(OUT_DIR, lang, `${scene.id}.assistant.wav`), text: copy.assistant, voice: ASSISTANT_VOICE, language: lang },
     );
   }
+  manifestScenes.push(entry);
 }
 
 let ok = 0;
@@ -167,3 +176,15 @@ for (const job of jobs) {
 }
 
 console.log(`\nDone: ${ok} generated, ${skipped} skipped, ${failed} failed → ${OUT_DIR}`);
+
+// Write the manifest consumed by the demo-audio listing page.
+await writeFile(
+  resolve(OUT_DIR, 'manifest.json'),
+  JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    assistantVoice: ASSISTANT_VOICE,
+    userVoice: USER_VOICE,
+    scenes: manifestScenes,
+  }, null, 2),
+);
+console.log('manifest → public/demo-audio/manifest.json');
