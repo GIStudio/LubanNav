@@ -62,7 +62,8 @@ Cache-Control: no-store
 | 404 | `not_found` | 方法或路径不匹配 |
 | 413 | `request_too_large` | 请求体超过 128 KB |
 | 429 | `rate_limited` | 超过频率限制 |
-| 502 | `upstream_rejected` / `invalid_upstream_sdp` | 百炼拒绝或返回非法 SDP |
+| 401/403/429/5xx | `upstream_rejected`（附 `upstreamStatus`、`upstreamCode`） | 百炼上游按原状态透传：401/403 = Key 权限/地域/Workspace 配置问题；429 = 模型并发或配额满；5xx = 服务瞬时故障。`upstreamCode` 为百炼错误码（如 `InvalidApiKey`） |
+| 502 | `invalid_upstream_sdp` | 上游 2xx 但返回的 SDP 不以 `v=0` 开头 |
 | 503 | `service_not_configured` | 服务端环境变量缺失 |
 | 504 | `upstream_timeout` | 百炼交换超过 20 s |
 | 500 | `voice_gateway_failed` / `internal_error` | 其他服务端错误（5xx 对外统一脱敏） |
@@ -78,7 +79,13 @@ Content-Type: application/sdp
 Body: <offerSdp>
 ```
 
-超时 20 s（AbortController）。上游非 2xx 会记录 `x-request-id` 到服务端日志。
+超时 20 s（AbortController）。上游非 2xx 会记录 `x-request-id` 到服务端日志，并**按原状态码透传**给客户端（见上表），便于前端区分授权失败、并发限流与服务故障。
+
+### 与限流/自动重连的配合
+
+- 每次建连/重连都会经过本网关重新换取 Answer SDP（token 随会话一次性下发，无法复用缓存），因此网关限流直接决定自动重连的可用节奏。
+- 客户端断线自动重连按 1→2→3→5→8→12→15 s 退避；一旦收到上游 401/403/429（透传状态），客户端切换到 60 s 慢速档，避免把网关和百炼打得更死，恢复后自动回到快速档。
+- `RATE_LIMIT_PER_WINDOW` 默认 **30 次 / 5 分钟**（≈ 每 10 s 一次）：覆盖 15 s 间隔的自动重连（20 次/5 min）+ 手动操作余量。若需支撑多台平板同时演示，可适当调大，但请先确认百炼侧模型并发配额（如 2 路 QPS）。
 
 ## 4. 环境变量
 
@@ -88,7 +95,7 @@ Body: <offerSdp>
 | `QWEN_WORKSPACE_ID` | 是 | 北京地域 Workspace ID（仅允许 `[a-zA-Z0-9-]`） |
 | `LUBANNAV_ACCESS_CODE`（或 `ACCESS_CODE`） | 是 | 演示访问码 |
 | `ALLOWED_ORIGINS` | 否 | 逗号分隔来源白名单，默认 `https://gistudio.github.io` |
-| `RATE_LIMIT_PER_WINDOW` | 否 | 5 分钟窗口内每 `客户端IP:Origin` 的最大请求数，默认 10 |
+| `RATE_LIMIT_PER_WINDOW` | 否 | 5 分钟窗口内每 `客户端IP:Origin` 的最大请求数，默认 30（配合前端自动重连节奏，见上） |
 | `FC_SERVER_PORT` / `PORT` | 否 | 监听端口，默认 9000 |
 
 **安全要求**：前三项严禁写入 GitHub Pages、仓库或任何 `VITE_*` 变量（所有 `VITE_*` 都会进入构建后的公开 JavaScript）。访问码保存在本浏览器 localStorage（前端键 `luban-nav:voice-access-code`，清空输入框即删除），也可由分享链接 `?accessCode=...` 自动预填并覆盖保存，页面读取后立即从 URL 移除（不留在地址栏、浏览器历史或复制分享链接中）。
@@ -106,10 +113,12 @@ Body: <offerSdp>
 
 | 网关行为 | 前端处理（`qwenRealtime.js`） |
 | --- | --- |
-| 401 | 提示「访问码无效，请重新输入」 |
-| 403 | 提示「当前网页来源未被允许」 |
-| 429 | 提示「请求过于频繁」 |
-| 502 | 提示「百炼语音服务暂时拒绝连接」 |
+| 401 `invalid_access_code` | 提示「访问码无效，请重新输入」 |
+| 403 `origin_not_allowed` | 提示「当前网页来源未被允许」 |
+| 429 `rate_limited` | 提示「请求过于频繁」 |
+| 透传 `upstreamStatus=401/403` | 提示「百炼授权失败，请检查语音网关的 API Key 与 Workspace 配置」；重连切 60 s 慢速档 |
+| 透传 `upstreamStatus=429` | 提示「百炼并发或限流，正在等待后自动重试」；重连切 60 s 慢速档 |
+| 透传上游 5xx | 提示「百炼语音服务暂时拒绝连接，正在自动重试」；快速档自动重连 |
 | 非 JSON / 缺 `answerSdp` | `gateway-payload` 错误 |
 | 网络不可达 | `gateway-network` 错误 |
 

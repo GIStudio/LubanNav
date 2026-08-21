@@ -17,6 +17,7 @@
 | [car7-local-ble-test.md](car7-local-ble-test.md) | 用 Mac 模拟 car7、Android 手机验收 BLE 闭环的操作手册 | 测试者 |
 | [ble-simulator.md](ble-simulator.md) | car7 macOS BLE 模拟器：Swift 包结构、Car7Protocol API、运行行为与命令行选项 | 模拟器维护者 |
 | [voice-gateway.md](voice-gateway.md) | 语音网关函数计算服务：HTTP 接口、环境变量、错误码、与前端 WebRTC 会话的关系 | 服务运维者 |
+| [qwen-models.md](qwen-models.md) | Qwen/百炼模型接入总览：实时语音链路与韧性机制、qwen3-tts-flash 音频合成、multimodal-dialog 套件对比、授权排查 | 服务运维者、前端开发者 |
 
 ## 快速定位
 

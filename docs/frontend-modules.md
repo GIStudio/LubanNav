@@ -101,33 +101,36 @@
 
 | 导出 | 说明 |
 | --- | --- |
-| `DEFAULT_VOICE_CONFIG` | `{gatewayEndpoint, model:'qwen3.5-omni-flash-realtime', voice:'Tina', maxSessionMs:180000}`；网关地址优先级 `VITE_VOICE_GATEWAY_URL` → `VITE_VOICE_TOKEN_URL` → 内置函数计算地址 |
-| `VoiceSessionError` | 带 `code` 的错误类：`access-code`、`offer-sdp`、`gateway-network`、`gateway-rejected`（含 HTTP `status`）、`gateway-payload`、`unsupported-browser`、`microphone-denied/missing`、`webrtc-disconnected`、`model-error` 等 |
-| `requestWebRtcAnswer({endpoint, accessCode, offerSdp, fetchImpl})` | 与网关交换 SDP，返回 Answer SDP 字符串；校验访问码非空与 `v=0` 开头 |
-| `buildSessionUpdate({instructions, voice})` | `session.update` 事件：PCM 16k 输入 / 24k 输出、`qwen3-asr-flash-realtime` 转写、`semantic_vad`(0.5 / 800ms)、`max_tokens:512`、`temperature:0.6`、`enable_search:false`、`tools:[NAVIGATION_TOOL]` |
+| `DEFAULT_VOICE_CONFIG` | `{gatewayEndpoint, model:'qwen3.5-omni-flash-realtime', voice:'Tina', maxSessionMs:600000}`（10 分钟，到期自动续接）；网关地址优先级 `VITE_VOICE_GATEWAY_URL` → `VITE_VOICE_TOKEN_URL` → 内置函数计算地址 |
+| `VoiceSessionError` | 带 `code` 的错误类：`access-code`、`offer-sdp`、`gateway-network`、`gateway-rejected`（含 HTTP `status`，透传上游 401/403/429/5xx 供重连区分）、`gateway-payload`、`unsupported-browser`、`microphone-denied/missing`、`webrtc-disconnected`、`model-error` 等 |
+| `requestWebRtcAnswer({endpoint, accessCode, offerSdp, fetchImpl})` | 与网关交换 SDP，返回 Answer SDP 字符串；校验访问码非空与 `v=0` 开头；按网关响应区分访问码无效 / 来源被拒 / 网关限流 / **百炼授权失败（401/403）** / **百炼并发限流（429）** / 服务故障（5xx），给出对应提示 |
+| `buildSessionUpdate({instructions, voice, interactionMode})` | `session.update` 事件：PCM 16k 输入 / 24k 输出、`qwen3-asr-flash-realtime` 转写、`semantic_vad`（全双工 0.5/800ms；按住说话 0.7/2500ms 防误触发）、`max_tokens:512`、`temperature:0.6`、`enable_search:false`、`tools:[NAVIGATION_TOOL]` |
 | `buildFunctionCallOutput(callId, output)` | `conversation.item.create`（`function_call_output`）事件 |
 | `buildResponseCreate()` | `response.create` 事件（工具结果回传后触发模型继续） |
 | `waitForIceGatheringComplete(pc, timeoutMs=8000)` | ICE 收集完成或超时 |
 | `QwenRealtimeSession` | 会话类（继承 `EventTarget`），见下 |
 
-`QwenRealtimeSession` 构造参数：`{accessCode, instructions, audioElement, gatewayEndpoint, fetchImpl, mediaDevices, PeerConnection, maxSessionMs, functionHandlers}`。
+`QwenRealtimeSession` 构造参数：`{accessCode, instructions, audioElement, gatewayEndpoint, fetchImpl, mediaDevices, PeerConnection, maxSessionMs, functionHandlers, autoReconnect, disconnectGraceMs, interactionMode}`。
 
-- 方法：`start()`（麦克风 → PeerConnection → DataChannel `oai-events` → Offer/Answer → 3 分钟计时）、`stop(reason)`、`updateInstructions(text)`、`setMicrophoneEnabled(bool)`、`send(payload)`。
+- 方法：`start()`（麦克风 → PeerConnection → DataChannel `oai-events` → Offer/Answer → 10 分钟计时）、`stop(reason)`、`updateInstructions(text)`、`setMicrophoneEnabled(bool)`、`send(payload)`、`connectPeerConnection()`（建连，供重连复用）、`reconnect(reason)`、`handleSessionLimit()`、`pressTalkStart()/pressTalkEnd()`（按住说话）、`updateInteractionMode(mode)`（会话中实时切换并重推 `session.update`）。
 - 事件（`addEventListener`）：`status`（`detail.{status,message}`）、`user-transcript-delta` / `user-transcript`、`assistant-transcript-delta` / `assistant-transcript`、`function-call`、`error`。
-- `status` 取值：`requesting-microphone`、`connecting`、`authorizing`、`listening`、`user-speaking`、`thinking`、`assistant-speaking`、`audio-blocked`、`time-limit`、`ended`、`error`。
+- `status` 取值：`requesting-microphone`、`connecting`、`authorizing`、`listening`、`user-speaking`、`thinking`、`assistant-speaking`、`reconnecting`、`audio-blocked`、`time-limit`、`ended`、`error`。
 - 安全机制：`event_id` 去重（`seenEventIds`）、`call_id` 去重（`completedFunctionCalls`）；未注册工具返回 `unsupported_tool`；工具执行异常返回 `tool_execution_failed`。
-- WebRTC `connectionState` 变为 `failed/disconnected` 时自动 `fail()` 并清理。
+- 韧性机制：
+  - **自动重连**：`connectionState` 为 `disconnected` 时给 4 s 宽限期等 ICE 自愈；`failed` 或宽限期后仍未恢复 → `reconnect()` 重新过网关换 token。退避 1→2→3→5→8→12→15 s 无限重试（用户 `stop()` 即退出）；收到 401/403/429（授权/并发问题）切 60 s 慢速档并显示具体原因。
+  - **会话上限**：默认 10 分钟，`time-limit` 触发时自动 `reconnect('time-limit')` 续接，重连成功即重置计时——走路长对话不中断。
+  - **按住说话**（`interactionMode='tap2talk'`）：保持服务端 `semantic_vad`（零协议风险）但调高阈值/拉长静默，`session.updated` 后麦克风保持静音，仅按住（`pressTalkStart`）时开麦，松开（`pressTalkEnd`）后 VAD 提交本轮。
 
 ## 7.5 共享语音会话 src/lib/voiceSession.js
 
-两个语音 UI（菜单内的 `VoiceAssistant` 面板与地图上的 `VoiceQuickControl` 麦克风坞）共享的实时会话 store。会话生命周期、`status`、转写、`accessCode`、`supported` 收归一处，App 不再用 `ref` + 状态回调在两个组件之间传话。
+两个语音 UI（菜单内的 `VoiceAssistant` 面板与地图上的 `VoiceQuickControl` 麦克风坞）共享的实时会话 store。会话生命周期、`status`、转写、`accessCode`、`supported`、交互模式收归一处，App 不再用 `ref` + 状态回调在两个组件之间传话。
 
 | 导出 | 说明 |
 | --- | --- |
-| `voiceSession` | 模块级 store：`{subscribe, snapshot, setAccessCode, attachAudio, setHandlers, updateInstructions, start, stop}`。`start()` 用当前 `accessCode` + `attachAudio` 注册的音频元素 + `setHandlers` 注册的回调（`onUserTranscript` / `onAssistantTranscript` / `onNavigationCommand`）创建 `QwenRealtimeSession` |
-| `useVoiceSession()` | `useSyncExternalStore` 封装，返回 `{status, statusMessage, liveTranscript, accessCode, supported, active, configured, start, stop, setAccessCode}` |
+| `voiceSession` | 模块级 store：`{subscribe, snapshot, setAccessCode, setInteractionMode, attachAudio, setHandlers, updateInstructions, pressTalkStart, pressTalkEnd, start, stop}`。`start()` 用当前 `accessCode` + `attachAudio` 注册的音频元素 + `setHandlers` 注册的回调（`onUserTranscript` / `onAssistantTranscript` / `onNavigationCommand`）创建 `QwenRealtimeSession` |
+| `useVoiceSession()` | `useSyncExternalStore` 封装，返回 `{status, statusMessage, liveTranscript, accessCode, interactionMode, supported, active, configured, start, stop, setAccessCode, setInteractionMode, pressTalkStart, pressTalkEnd}` |
 
-要点：`updateInstructions` 在会话已启动时走 `session.updateInstructions`；`start` 在非活跃状态、不支持或未填访问码时是安全的 no-op。访问码持久化到 localStorage（键 `luban-nav:voice-access-code`）：`setAccessCode` 保存、清空输入移除、模块初始化时自动读回；localStorage 不可用时优雅降级为仅内存。配套 `voiceSession.test.js`。
+要点：`updateInstructions` 在会话已启动时走 `session.updateInstructions`；`start` 在非活跃状态、不支持或未填访问码时是安全的 no-op。访问码持久化到 localStorage（键 `luban-nav:voice-access-code`）：`setAccessCode` 保存、清空输入移除、模块初始化时自动读回；localStorage 不可用时优雅降级为仅内存。交互模式持久化到 `luban-nav:interaction-mode`（`duplex` / `tap2talk`），`setInteractionMode` 会实时推送到进行中的会话。配套 `voiceSession.test.js`。
 
 ## 8. 机器人协议 src/lib/robotProtocol.js
 

@@ -94,8 +94,8 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
   → session.updated 后打开麦克风，进入聆听
 ```
 
-- 模型：`qwen3.5-omni-flash-realtime`，音色 `Tina`；输入 PCM 16 kHz、输出 PCM 24 kHz；ASR 转写模型 `qwen3-asr-flash-realtime`；`semantic_vad`（threshold 0.5，静音 800 ms）。
-- **单次会话前端限制 3 分钟**，到时自动结束；访问码保存在本浏览器 localStorage（键 `luban-nav:voice-access-code`，清空输入框即删除），也可用 `?accessCode=` 链接参数预填并覆盖保存。
+- 模型：`qwen3.5-omni-flash-realtime`，音色 `Tina`；输入 PCM 16 kHz、输出 PCM 24 kHz；ASR 转写模型 `qwen3-asr-flash-realtime`；`semantic_vad`（全双工 threshold 0.5 / 静音 800 ms；按住说话 0.7 / 2500 ms）。
+- **单次会话前端限制 10 分钟，到期自动续接**；网络波动自动重连（1→15 s 退避，授权/并发类错误切 60 s 慢速档），行走演示不会因校园网抖动静默断线。支持两种交互模式：全双工（默认）与按住说话（嘈杂环境更稳定，按住开麦、松开结束本轮）。访问码保存在本浏览器 localStorage（键 `luban-nav:voice-access-code`，清空输入框即删除），也可用 `?accessCode=` 链接参数预填并覆盖保存；交互模式保存在 `luban-nav:interaction-mode`。
 - 音频由浏览器与百炼直连；只有 SDP 交换经过函数计算（见 [voice-gateway.md](voice-gateway.md)）。
 
 ### 5.2 界面
