@@ -41,7 +41,7 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 - **渲染**：Leaflet Canvas，自定义 pane 层级（水域 220 → 道路 260/270 → 建筑 320 → 室内 380 → 路线 430 → 地点 470）；道路按 `highway` 分级设色与线宽，步道虚线，隧道半透明；室内通道与电梯用独立颜色并带「待核验」tooltip。
 - **地点标记**：按分类过滤（全部 / 入口 / 教学 / 室内 / 服务 / 住宿 / 运动）；点击标记直接设为目的地；电梯、平台 POI 有特殊形状颜色；当前目的地高亮并常驻名称标签。
 - **路线绘制**：主路线绿色虚线 + 光晕；室内段叠加青色高亮并提示楼层与「近似待核验」；起终点圆点；自动 `fitBounds`。
-- **机器人位置**：BLE 回传的合法 WGS84 位置以橙色标记显示，tooltip 含航向角。
+- **机器人位置**：小车遥测（WiFi RTK 或 BLE 回传）的合法 WGS84 位置以橙色标记显示，tooltip 含航向角；浏览器定位以蓝色半透明圆点兜底，左上角角标显示当前定位源。
 - **缩放控制**：`＋ / −` 与「显示完整校园」按钮；地图边界锁定校园范围外扩 20%。
 
 ## 3. A\* 分层路网
@@ -140,17 +140,34 @@ URL 参数 `?q=<文本>` 在页面首次加载时等价于发送一条文本消�
 - **分享链接**：`?event=<id>` 指定活动，`event=none` 表示普通校园导航。
 - **语音上下文**：活动配置会注入助手 instructions，模型可回答场所安排，但同样不能为未绑定地点编造 ID。
 
-## 7. Web Bluetooth 机器人控制
+## 7. 机器人控制（WiFi 直连 + Web Bluetooth 双链路）
 
-详细协议见 [robot-ble-protocol.md](robot-ble-protocol.md)，模拟器见 [ble-simulator.md](ble-simulator.md)。
+机器人面板提供两种传输方式，协议完全一致（JSON Lines，见
+[robot-ble-protocol.md](robot-ble-protocol.md)）：
 
-- **入口**：右上角菜单「机器人联络」页。需要 HTTPS 安全上下文与支持 Web Bluetooth 的 Chromium 浏览器；设备选择必须由按钮点击触发。
+- **WiFi 局域网（推荐，默认）**：WebSocket 直连车机 `ws://10.7.181.161:8900/`
+  （`car7-wifi-bridge`，部署见 [robot-wifi-link.md](robot-wifi-link.md)）。
+  车机 Intel 组合卡 WiFi/BT 共存压制 BLE 广播（实测 WiFi 占用时 0 条广告/60 s），
+  导航链路优先走 WiFi。**HTTPS 页面不能访问 `ws://` 局域网地址**（混合内容），
+  联调请用 `http://localhost:5173` 本地开发页或 HTTP 部署页；正式 HTTPS 需 `wss://`。
+- **蓝牙 BLE**：Web Bluetooth GATT 直连（`car7-ble-bridge`）。需要 HTTPS 安全
+  上下文与支持 Web Bluetooth 的 Chromium 浏览器；设备选择必须由按钮点击触发。
+
+- **入口**：右上角菜单「机器人联络」页。连接/设置按所选传输显示。
 - **GATT 与分包设置**：设备名前缀（默认 `car7`，可空）、Service / Command(RX) / Telemetry(TX) 三个 UUID（默认 Nordic UART Service）、每包字节（默认 185，1–512）、包间隔（默认 5 ms，0–1000）。设置持久化在 `localStorage`。默认按现代 BLE MTU（Android+BlueZ ≥185B）调优：89 KB 加密路线从约 53 s 降到约 4 s；旧 20B MTU 固件请手动调回。
 - **连接诊断**：按 `device-selection → gatt-connect → primary-service → command-characteristic → telemetry-characteristic → notifications` 六阶段报错，每阶段给出针对性中文建议（例如 `primary-service` 失败说明固件不是 NUS，需要用 nRF Connect 读真实 GATT 表）。
 - **下发路线**：仅 `robot` 模式路线可发送；必须人工点击「下发当前路线」，路线变化不会自动推送。消息为 UTF-8 JSON Lines，按字节分包顺序写入；传输进度条实时显示分片进度。
 - **STOP**：中止未完成的路线传输（先写一个 LF 让固件丢弃半行），优先发送 `emergency_stop`。它只是辅助入口，不能替代物理急停。
-- **遥测**：TX Notify 回传 `position / ack / status`；合法 WGS84 位置显示在地图与面板上；通信记录保留最近 5 条。
-- **断连安全**：GATT 断开时自动取消传输、释放引用、重置解码缓冲。
+- **遥测**：回传 `position / ack / status`。WiFi 链路的位置来自真机 RTK
+  （`/fix` + `/imu` + `/odom`，2 Hz，`fixStatus` 标注固定解/浮点解/回放；
+  室内无固定解时按路线航点回放以便演示闭环）。合法 WGS84 位置显示在地图与
+  面板上；通信记录保留最近 5 条。
+- **定位融合与实时进度**：小车 RTK 位置 5 秒内新鲜 → 用 RTK；否则回落浏览器
+  定位（`watchPosition` 高精度，兜底）。地图橙色圆点 = 小车 RTK（含航向），
+  蓝色半透明圆点 = 浏览器定位，左上角角标显示当前定位源。面板实时显示定位源、
+  速度、沿路线的剩余距离/进度百分比与距下一航点距离。
+- **断连安全**：连接断开时自动取消传输、释放引用、重置解码缓冲；WiFi 链路
+  意外断线按指数退避自动重连（1→15 s）。
 
 ## 8. 可通行面候选（研究性数据）
 

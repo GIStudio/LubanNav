@@ -32,6 +32,7 @@
 | [docs/frontend-modules.md](docs/frontend-modules.md) | 前端 `src/lib` 与组件的接口参考 |
 | [docs/data-pipeline.md](docs/data-pipeline.md) | 数据管线：OSM 抓取、路网生成算法、脚本与配置 |
 | [docs/robot-ble-protocol.md](docs/robot-ble-protocol.md) | 机器人 BLE GATT 与 JSON Lines 消息协议 |
+| [docs/robot-wifi-link.md](docs/robot-wifi-link.md) | 机器人 WiFi 链路：WebSocket 直连车机、RTK 遥测、部署与网页直连调查 |
 | [docs/car7-local-ble-test.md](docs/car7-local-ble-test.md) | Mac 模拟器 + Android 手机 BLE 验收手册 |
 | [docs/ble-simulator.md](docs/ble-simulator.md) | car7 BLE 模拟器（Swift 包）说明 |
 | [docs/voice-gateway.md](docs/voice-gateway.md) | 语音网关函数计算服务接口 |
@@ -169,18 +170,32 @@ GET https://<user>.github.io/<repo>/api/v1/routes/w2-elevator/third-floor-platfo
 
 ## 浏览器连接机器人小车
 
-LubanNav 使用 [Web Bluetooth API](https://developer.chrome.com/docs/capabilities/bluetooth) 让网页作为 BLE Central / GATT Client 连接机器人小车。GitHub Pages 是 HTTPS 安全上下文；设备选择仍必须由操作者点击按钮触发，浏览器不会在后台静默连接设备。
+LubanNav 提供两条机器人通信链路，协议完全相同（UTF-8 JSON Lines，见
+[docs/robot-ble-protocol.md](docs/robot-ble-protocol.md)）：
+
+1. **WiFi 局域网（推荐）**：网页经 WebSocket 直连车机 `ws://10.7.181.161:8900/`
+   （`car7-wifi-bridge` 服务），实时下发指令并接收 RTK 定位遥测（`/fix` +
+   `/imu` + `/odom`，2 Hz）。车机 Intel 组合卡存在 WiFi/BT 共存压制，WiFi
+   必须占用时 BLE 广播会被饿死，因此导航链路优先走 WiFi。HTTPS 页面不能访问
+   `ws://` 局域网地址（混合内容），请用 `http://localhost` 本地开发页或 HTTP
+   部署页联调；详见 [docs/robot-wifi-link.md](docs/robot-wifi-link.md)。
+2. **Web Bluetooth**：网页作为 BLE Central / GATT Client 连接小车
+   （`car7-ble-bridge`，BlueZ 外设）。GitHub Pages 是 HTTPS 安全上下文；设备
+   选择仍必须由操作者点击按钮触发，浏览器不会在后台静默连接设备。
 
 推荐使用 Android Chrome，或支持 Web Bluetooth 的 macOS / Windows / ChromeOS Chromium 浏览器。小车必须提供 BLE GATT Service；传统 Bluetooth Classic RFCOMM 串口不属于 Web Bluetooth 的能力范围。
 
-使用流程：
+使用流程（WiFi 与 BLE 面板操作一致）：
 
 1. 在导航对象中选择“机器人”，确认路线避开未核验的室内段。
-2. 展开“GATT 与分包设置”，填写小车固件的 Service、Command/RX 和 Telemetry/TX UUID。设备名前缀默认为 `car7`，UUID 默认值兼容 Nordic UART Service。
-3. 点击“选择并连接小车”，在浏览器设备选择器中人工选择设备。
-4. 点击“下发当前路线”。网页把路线编码为 UTF-8 JSON Lines，默认按 20 字节顺序写入；切换路线不会自动向小车发送。
-5. 小车通过 TX Notify 回传 `position`、`ack` 或 `status`。合法 WGS84 位置会显示在地图上。
-6. “STOP”会中止未完成的路线传输并优先发送 `emergency_stop`，但不能替代物理急停。
+2. 展开“机器人联络”，传输方式选 **WiFi 局域网**，保持车机地址
+   `ws://10.7.181.161:8900`（或选蓝牙 BLE 并填写 GATT 设置），点击连接。
+3. 点击“下发当前路线”。网页把路线编码为 UTF-8 JSON Lines 流式下发
+   （`navigation_start` → 航点行 → `navigation_end`）；切换路线不会自动发送。
+4. 小车通过遥测回传 `position`（RTK 固定解/浮点解或回放）、`ack`、`status`。
+   合法 WGS84 位置显示在地图上（橙色 = 小车 RTK，蓝色 = 浏览器定位兜底），
+   面板实时显示定位源、速度、沿路线的剩余距离与进度百分比。
+5. “STOP”优先发送 `emergency_stop`（可中断传输中路线），但不能替代物理急停。
 
 固件消息、分包重组和安全边界详见 [`docs/robot-ble-protocol.md`](docs/robot-ble-protocol.md)，机器可读合约位于 `api/v1/robot-ble-protocol.json`。
 
@@ -438,14 +453,18 @@ src/components/ChatAssistant.jsx  对话入口
 src/components/VoiceAssistant.jsx 语音会话配置界面（会话在共享 store）
 src/components/VoiceQuickControl.jsx 地图麦克风坞（直接读共享会话）
 src/components/SystemMenu.jsx   语音/机器人模态面板
-src/components/RobotControl.jsx     Web Bluetooth 连接、任务下发与遥测面板
+src/components/RobotControl.jsx     Web Bluetooth / WiFi 连接、任务下发与遥测面板
 src/components/RobotDirectionPad.jsx 手动方向盘 + 速度滑块
+src/lib/robotWifiLink.js           WiFi（WebSocket）机器人传输层
+src/lib/positionStore.js           定位融合：小车 RTK 主 + 浏览器定位兜底
 services/voice-gateway/server.mjs  函数计算 SDP 代理、访问码与 CORS 防护
 scripts/fetch-osm-campus.mjs      OSM / Overpass 快照刷新器
 scripts/lib/osm-routing.mjs       道路转图、连通分量与入口吸附算法
 scripts/generate-osm-routing.mjs  OSM 寻路图生成器
 scripts/generate-static-api.mjs   GitHub Pages 静态 GET API 生成器
+tools/car7-wifi-tools/             WiFi 桥 Mac 侧验收/驱动脚本（纯标准库）
 docs/robot-ble-protocol.md        BLE GATT、JSON Lines 分包与固件消息合约
+docs/robot-wifi-link.md           WiFi 直连、RTK 遥测、混合内容调查与部署
 ```
 
 地点 ID 仍是稳定 API 合约；OSM way/node ID、入口来源和吸附距离是可随数据刷新变化的派生信息。真实机器人部署还需要至少增加：厘米级或满足任务要求的定位、现场可通行性校验、动态避障、门禁/电梯接口、实时封路、速度与制动安全层，以及人工急停机制。
