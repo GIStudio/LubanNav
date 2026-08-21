@@ -32,7 +32,14 @@ function indoorRoutePoints(path) {
   return path.slice(start, end);
 }
 
-export function CampusMap({ route, destination, robotPosition, onSelectDestination }) {
+export function CampusMap({
+  route,
+  destination,
+  robotPosition,
+  browserPosition,
+  positionSource,
+  onSelectDestination,
+}) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerLayerRef = useRef(null);
@@ -154,7 +161,30 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
         )
         .addTo(layer);
     }
-  }, [destination, lang, onSelectDestination, robotPosition, route?.request.mode, selectedCategory]);
+
+    if (browserPosition) {
+      const browserMarker = L.circleMarker(
+        [browserPosition.latitude, browserPosition.longitude],
+        {
+          pane: 'locationPane',
+          radius: 7,
+          color: '#3a86ff',
+          weight: 2,
+          fillColor: '#3a86ff',
+          fillOpacity: 0.45,
+          dashArray: '3 3',
+        },
+      );
+      browserMarker
+        .bindTooltip(t('map.browserHere'), {
+          className: 'location-tooltip browser',
+          direction: 'bottom',
+          offset: [0, 10],
+          permanent: true,
+        })
+        .addTo(layer);
+    }
+  }, [browserPosition, destination, lang, onSelectDestination, positionSource, robotPosition, route?.request.mode, selectedCategory]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -291,6 +321,12 @@ export function CampusMap({ route, destination, robotPosition, onSelectDestinati
             })
             : t('map.noteOutdoor')}
         </div>
+        {positionSource && (
+          <div class={`position-source-chip ${positionSource === 'robot' ? 'rtk' : 'browser'}`} role="status">
+            <i />
+            {t(`map.positionSources.${positionSource}`)}
+          </div>
+        )}
         <div class="zoom-controls" aria-label={t('map.zoomAria')}>
           <button onClick={() => mapRef.current?.zoomIn()} aria-label={t('map.zoomIn')}>＋</button>
           <button onClick={resetView} aria-label={t('map.zoomReset')}>{zoom.toFixed(1)}</button>

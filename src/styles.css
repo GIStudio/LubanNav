@@ -3804,3 +3804,175 @@ h2 {
 [data-theme='light'] .voice-mode-switch button.active {
   color: #ffffff;
 }
+
+/* ── robot transport tabs (BLE / WiFi) ─────────────────────────────────── */
+
+.robot-transport-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.robot-transport-tabs button {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: rgba(2, 16, 26, 0.25);
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.robot-transport-tabs button strong {
+  font: 700 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+}
+
+.robot-transport-tabs button small {
+  font-size: 8.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.robot-transport-tabs button.active {
+  border-color: var(--acid);
+  background: rgba(185, 242, 39, 0.07);
+  color: var(--acid);
+}
+
+.robot-transport-tabs button.active small {
+  color: var(--text);
+}
+
+.robot-wifi-url {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.robot-wifi-url span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.robot-wifi-url input {
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  background: rgba(2, 16, 26, 0.35);
+  color: var(--text);
+  font: 600 10px/1.2 var(--mono);
+}
+
+.robot-wifi-url input:focus {
+  border-color: var(--cyan);
+  outline: none;
+}
+
+.robot-hint-warn {
+  padding: 8px 10px;
+  border-left: 2px solid var(--orange);
+  background: rgba(255, 157, 99, 0.06);
+}
+
+.robot-position-source {
+  margin-top: 6px;
+  color: var(--cyan) !important;
+  font-weight: 700 !important;
+}
+
+/* ── live route progress (RTK/browser position along the route) ────────── */
+
+.robot-live-progress {
+  margin-top: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: rgba(2, 16, 26, 0.25);
+}
+
+.robot-live-progress-bar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.robot-live-progress-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--acid));
+  transition: width 0.4s ease;
+}
+
+.robot-live-progress-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.robot-live-progress-row strong {
+  color: var(--acid);
+  font: 700 12px/1 var(--mono);
+}
+
+.robot-live-progress-row span {
+  color: var(--muted);
+  font: 600 8.5px/1 var(--mono);
+}
+
+.robot-live-arrived {
+  display: block;
+  margin-top: 7px;
+  color: var(--acid);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* ── map live position chip + browser marker tooltip ───────────────────── */
+
+.position-source-chip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 480;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  background: rgba(2, 16, 26, 0.78);
+  color: var(--text);
+  font: 700 9px/1 var(--mono);
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+
+.position-source-chip i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.position-source-chip.rtk i {
+  background: var(--orange);
+  box-shadow: 0 0 6px var(--orange);
+}
+
+.position-source-chip.browser i {
+  background: #3a86ff;
+  box-shadow: 0 0 6px #3a86ff;
+}
+
+.location-tooltip.browser {
+  border-color: rgba(58, 134, 255, 0.55);
+  color: #bfd7ff;
+}

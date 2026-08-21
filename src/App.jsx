@@ -15,6 +15,7 @@ import { useI18n, localizedName } from './lib/i18n.js';
 import { useTheme } from './lib/theme.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 import { locateCurrentPlace } from './lib/locate.js';
+import { createPositionStore } from './lib/positionStore.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
 import { useEventProfiles } from './lib/useEventProfiles.js';
@@ -38,11 +39,34 @@ export function App() {
     { role: 'assistant', text: t('chat.welcome') },
   ]);
   const [showDetails, setShowDetails] = useState(false);
-  const [robotPosition, setRobotPosition] = useState(null);
   const [routeStartedAt, setRouteStartedAt] = useState(() => Date.now());
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
   const systemMenuButtonRef = useRef(null);
+
+  // Position fusion store: car RTK telemetry is the primary source, the
+  // browser's geolocation is the fallback (see lib/positionStore.js). The
+  // robot marker follows RTK positions; the browser dot stays as fallback.
+  const positionStoreRef = useRef(null);
+  if (!positionStoreRef.current) {
+    positionStoreRef.current = createPositionStore({
+      geolocation: typeof navigator !== 'undefined' ? navigator.geolocation : null,
+    });
+  }
+  const positionStore = positionStoreRef.current;
+  const [posState, setPosState] = useState(() => positionStore.getState());
+  useEffect(() => {
+    const unsubscribe = positionStore.subscribe(setPosState);
+    positionStore.startBrowserWatch();
+    return () => {
+      unsubscribe();
+      positionStore.stopBrowserWatch();
+    };
+  }, [positionStore]);
+
+  function handleRobotPosition(position) {
+    positionStore.setRobotPosition(position);
+  }
 
   // Two-phase UI: a voice-first welcome screen until a route exists, then the
   // full navigation workspace. Only *non-default* route params (real share
@@ -488,7 +512,9 @@ export function App() {
           <CampusMap
             route={route}
             destination={to}
-            robotPosition={robotPosition}
+            robotPosition={posState.robot}
+            browserPosition={posState.browser}
+            positionSource={posState.source}
             onSelectDestination={selectDestination}
           />
           <VoiceQuickControl onConfigure={() => openSystemMenu('voice')} />
@@ -516,8 +542,8 @@ export function App() {
         onVoiceUserTranscript={handleVoiceUserTranscript}
         onVoiceAssistantTranscript={handleVoiceAssistantTranscript}
         onVoiceNavigationCommand={handleVoiceNavigationCommand}
-        onRobotPosition={setRobotPosition}
-        robotPosition={robotPosition}
+        onRobotPosition={handleRobotPosition}
+        robotPosition={posState.robot}
         routeStartedAt={routeStartedAt}
       />
     </>
