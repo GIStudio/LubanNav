@@ -229,7 +229,19 @@ def main():
             seen, pos.get("fixStatus"), pos.get("latitude"), pos.get("longitude"),
             pos.get("headingDegrees"), pos.get("accuracyMeters")))
 
-    print("[4] direction stop (no motion)")
+    print("[4] goto_target: single WGS84 waypoint (next-step nav)")
+    client.send_command({
+        "protocol": "luban-nav-ble", "protocolVersion": 1, "type": "goto_target",
+        "priority": "nav", "commandId": "goto-test", "taskId": task_id,
+        "longitude": 113.47775, "latitude": 22.88845,
+        "speedMetersPerSecond": 0.3, "arrivalRadiusMeters": 0.8,
+        "createdAt": iso_now(),
+    })
+    goto_ack = client.next_message(lambda o: o.get("type") == "ack" and o.get("status") == "accepted",
+                                   label="goto ack")
+    print("    ack: {} ({})".format(goto_ack.get("status"), goto_ack.get("message", "")))
+
+    print("[5] direction stop (no motion)")
     client.send_command({
         "protocol": "luban-nav-ble", "protocolVersion": 1, "type": "direction",
         "priority": "ble", "commandId": "dir-stop", "direction": "stop",
@@ -241,7 +253,7 @@ def main():
     print("    ack: {}".format(stop_ack.get("status")))
 
     if args.direction_motion:
-        print("[5] DANGER direction forward 0.10 m")
+        print("[6] DANGER direction forward 0.10 m")
         client.send_command({
             "protocol": "luban-nav-ble", "protocolVersion": 1, "type": "direction",
             "priority": "ble", "commandId": "dir-fwd", "direction": "forward",
@@ -260,7 +272,7 @@ def main():
         client.next_message(lambda o: o.get("type") == "ack", label="direction backward ack")
         print("    ack: accepted (chassis should move back ~10cm)")
 
-    print("[6] emergency stop")
+    print("[7] emergency stop")
     client.send_command({
         "protocol": "luban-nav-ble", "protocolVersion": 1, "type": "emergency_stop",
         "priority": "safety", "commandId": "stop-test", "taskId": task_id,

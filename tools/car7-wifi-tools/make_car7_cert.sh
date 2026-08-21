@@ -74,9 +74,11 @@ echo "[3/4] 产物: $OUT_DIR/{ca.crt, server.crt, server.key}"
 
 # 3. （可选）本机（Mac）信任 CA —— 之后本机浏览器/工具可直接用 wss
 if [ "${INSTALL_MACOS:-}" = "1" ]; then
-  echo "[3b] 安装 CA 到 macOS 用户钥匙串（可随时移除）"
+  echo "[3b] 安装 CA 到 macOS 登录钥匙串（Safari/其他工具可用）"
   security add-trusted-cert -d -r trustRoot -k "$HOME/Library/Keychains/login.keychain-db" ca.crt
-  echo "      已信任。移除: sudo security delete-certificate -c 'LubanNav Car7 Local CA'"
+  echo "      ★ Chrome/Chromium 只信任系统钥匙串，需再执行一次（需要密码）："
+  echo "        sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${OUT_DIR}/ca.crt"
+  echo "      移除: sudo security delete-certificate -c 'LubanNav Car7 Local CA'"
 fi
 
 # 4. （可选）上传到车机（需车机在线）
