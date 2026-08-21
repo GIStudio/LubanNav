@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import socket
+import ssl
 import struct
 import sys
 import time
@@ -52,13 +53,21 @@ def ws_frame(opcode, payload: bytes, mask=True) -> bytes:
 
 
 class WsClient:
-    def __init__(self, url, timeout=10.0):
-        assert url.startswith("ws://"), "only ws:// supported"
-        hostport = url[5:].rstrip("/")
+    def __init__(self, url, timeout=10.0, ca_file=None):
+        assert url.startswith(("ws://", "wss://")), "only ws:// / wss:// supported"
+        scheme, _, hostport = url.partition("://")
+        hostport = hostport.rstrip("/")
         host, _, port = hostport.partition(":")
-        self.sock = socket.create_connection((host, int(port or 80)), timeout=timeout)
+        port = int(port or (443 if scheme == "wss" else 80))
+        self.sock = socket.create_connection((host, port), timeout=timeout)
+        if scheme == "wss":
+            context = ssl.create_default_context(cafile=ca_file)
+            if ca_file is None:
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+            self.sock = context.wrap_socket(self.sock, server_hostname=host)
         self.buffer = b""
-        self._handshake(host, port or "80")
+        self._handshake(host, str(port))
 
     def _handshake(self, host, port):
         key = base64.b64encode(os.urandom(16)).decode()
@@ -186,13 +195,16 @@ def navigation_stream(task_id, count=6):
 def main():
     parser = argparse.ArgumentParser(description="car7 WiFi bridge closed-loop test")
     parser.add_argument("--url", default="ws://10.7.181.161:8900")
+    parser.add_argument("--ca", default=None,
+                        help="trust this CA file for wss:// (make_car7_cert.sh 生成的 ca.crt)；"
+                             "缺省时不校验证书（仅用于自测）")
     parser.add_argument("--waypoints", type=int, default=6)
     parser.add_argument("--direction-motion", action="store_true",
                         help="DANGER: also send a real forward/backward move (wheels must be safe)")
     args = parser.parse_args()
 
     print("[1] WebSocket handshake: {}".format(args.url))
-    client = WsClient(args.url)
+    client = WsClient(args.url, ca_file=args.ca)
     print("    connected")
 
     print("[2] streaming navigation task ({} waypoints)".format(args.waypoints))

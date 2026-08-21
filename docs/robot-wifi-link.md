@@ -143,11 +143,43 @@ RTK；否则回落到 30 秒内新鲜的浏览器定位；都没有则显示无�
 
 ## 已知限制与后续
 
-- **混合内容**：HTTPS 部署需 `wss://`（车机 TLS）或中继，见上文调查结论。
 - **RTK 固定解**：室内无固定解时网页显示“路线回放（RTK 暂无固定解）”；
   推到室外后自动切换为真实 RTK 位置。
 - **多客户端**：桥支持多连接并发（当前实现会向所有连接广播遥测）。
-- **wss 路线**：可给桥加 TLS 终止（如 caddy/nginx 反代 8900），前端只改 URL。
+
+## 启用 wss（HTTPS 页面也能直连）
+
+wss = WebSocket over TLS，**必须有证书**；但内网小车不需要公网/付费证书——
+自己当 CA 给车机 IP 签发一张即可。三种路径按省事程度排序：
+
+1. **零证书（现场演示首选）**：页面也用 HTTP（`http://localhost` 开发页或把
+   构建产物放到车机/局域网 HTTP 服务器），直接 `ws://`，无需任何证书。
+2. **本地 CA + wss（HTTPS 页面直连）**：`tools/car7-wifi-tools/make_car7_cert.sh`
+   一次生成本地 CA 与车机证书（SAN 含 IP），把 `ca.crt` 装到每个使用设备
+   （Mac 钥匙串 / Android 设置→安全→安装 CA 证书），车机桥以
+   `--tls-cert/--tls-key` 启动，网页地址填 `wss://10.7.181.161:8443`。
+   已实测：Python 客户端 `--ca ca.crt` 全链校验 + 浏览器 wss E2E 均通过。
+3. **真证书**：有域名时用 acme.sh/certbot DNS-01 签 Let's Encrypt（内网无需
+   入站 80/443），同样喂给 `--tls-cert/--tls-key`。
+
+车机启用 wss（systemd 覆盖，端口 8443）：
+
+```bash
+sudo systemctl edit car7-wifi-bridge
+# [Service]
+# ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c \
+#   'source /opt/ros/humble/setup.bash && cd /workspace/campusCar-new-chassis/src/ble_bridge && \
+#    exec python3 car7_wifi_bridge.py --host 0.0.0.0 --port 8443 --direction --replay-fallback \
+#    --tls-cert /workspace/campusCar-new-chassis/src/ble_bridge/tls/server.crt \
+#    --tls-key /workspace/campusCar-new-chassis/src/ble_bridge/tls/server.key'
+sudo systemctl restart car7-wifi-bridge
+curl -k https://10.7.181.161:8443/        # TLS 状态页（-k 仅自测）
+python3 tools/car7-wifi-tools/wifi_central_test.py --url wss://10.7.181.161:8443 --ca ca.crt
+```
+
+> 自签证书浏览器没有“继续前往”按钮（WebSocket 不同于普通 HTTPS 页面），所以
+> 必须让浏览器信任签发 CA；`make_car7_cert.sh` 的 `--install-macos` /
+> Android 安装流程就是做这件事。
 
 ## 车机突然不可达（WiFi 掉线）排查
 

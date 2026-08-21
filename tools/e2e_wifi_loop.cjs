@@ -10,7 +10,10 @@ const WIFI_URL = process.env.WIFI_URL ?? 'ws://10.7.181.161:8900';
 
 async function main() {
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const context = await browser.newContext({
+  viewport: { width: 1440, height: 900 },
+  ignoreHTTPSErrors: process.env.WSS_INSECURE === '1',
+});
 await context.grantPermissions(['geolocation'], { origin: new URL(PAGE_URL).origin });
 await context.setGeolocation({ latitude: 22.88837, longitude: 113.47768 });
 const page = await context.newPage();
