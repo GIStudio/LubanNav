@@ -44,16 +44,26 @@
 - Intel 组合卡 USB **autosuspend**（`power/control=auto`，空闲挂起、广播停止）
   → 已禁用 + udev 规则 `99-bluetooth-nosuspend.rules` 持久化
 
-**遗留问题**：即使上述修复后，Mac 连续扫描仍可能 0 事件，而 `btmon` 显示
-bluetoothd 已下发 `LE Set Extended Advertising Enable`（Status: Success），
-`btmgmt advertising on` 强制开启后 MGMT `advertising` 设置可生效。
-结论：问题在 **bluetoothd 的广告启用路径 / Intel 控制器** 层，与桥代码无关。
+**共存实验（决定性）**：40 秒持续扫描（allow_duplicates）对比——
+
+| 条件 | car7 广告事件 |
+| --- | --- |
+| WiFi 开启（视频流在跑） | 0 条/60s（多次复现） |
+| WiFi 关闭（wlo1 down 45s） | 4 条/40s（RSSI -46/-53） |
+| WiFi 开启（流已停） | 0–2 条/40s |
+
+结论：**Intel 组合卡（8087:0033，WiFi+BT 共享天线）的 WiFi/BT 共存压制**是广播
+间歇的主因；bluetoothd 的 HCI 命令全部 Success，但射频层被共存逻辑饿死。
+
+**已排除的尝试**：`bluetoothd --experimental`（无效）；`btmgmt advertising on`
+（MGMT 设置可置位但为空广告）；广告对象加 `MinInterval/MaxInterval`（**非法
+dbus 属性，会注册失败 `Failed to parse advertisement`，勿加**）。
 
 **后续选项**：
-1. 用 Android 手机（真实演示设备）复测：若手机稳定发现，则影响面仅限部分扫描器
-2. 更换 USB BLE dongle（推荐 CSR8510A10 / RTL8761B，20-60 元，Linux 免驱）
-   绕过 Intel 组合卡；需把 BlueZ 默认控制器切到 dongle 并禁用 Intel 蓝牙
-3. 深挖 bluetoothd：检查 `/etc/bluetooth/main.conf` 与 `--experimental` 差异
+1. **NUC WiFi 改用 5GHz**（BT 只在 2.4GHz，无共存冲突）——最省事，先试这个
+2. 更换 USB BLE dongle（CSR8510A10 / RTL8761B，20-60 元，Linux 免驱），
+   把 BlueZ 默认控制器切到 dongle 并禁用 Intel 蓝牙
+3. 2.4GHz 信道调优 / 限制视频流带宽
 
 ## 排查工具
 
