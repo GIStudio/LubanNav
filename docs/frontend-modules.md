@@ -234,6 +234,9 @@ RobotDirectionPad 对两种传输透明复用。
 | --- | --- |
 | `route` | 当前路线响应（绘制路线、室内高亮、`fitBounds`） |
 | `destination` | 当前目的地 ID（高亮标记） |
+| `robotPosition` | 小车 RTK 位置（橙色圆点 + 航向 tooltip） |
+| `browserPosition` | 浏览器定位兜底（蓝色半透明圆点） |
+| `positionSource` | `'robot' | 'browser'`：地图左上角定位源角标 |
 | `robotPosition` | BLE 位置消息（橙色标记 + 航向 tooltip） |
 | `onSelectDestination(id)` | 点击地点标记回调 |
 
