@@ -3,6 +3,7 @@ import {
   bluetoothRequestOptions,
   createDirectionCommand,
   createEmergencyStop,
+  createGotoTarget,
   createNavigationTaskStream,
   encodeRobotMessage,
   normalizeBleConfig,
@@ -318,6 +319,17 @@ export class WebBluetoothRobotClient {
     return this.enqueueMessage(createDirectionCommand(direction, options), {
       priority: direction === 'stop',
     });
+  }
+
+  /**
+   * Send the car to one WGS84 waypoint. Navigation-level priority: preempts a
+   * streaming route transfer. Requires bridge/firmware support for
+   * `goto_target` (the WiFi bridge implements it; the classic BLE bridge
+   * rejects unknown types).
+   */
+  sendGotoTarget(longitude, latitude, options = {}) {
+    this.cancelNavigationTransfers('goto_target preempts the streaming route transfer');
+    return this.enqueueMessage(createGotoTarget(longitude, latitude, options));
   }
 
   cancelDirectionTransfers(reason) {

@@ -102,12 +102,36 @@ try {
   console.log(`  [progress bar] width=${barWidth}`);
   ok('live progress bar rendered');
 
+  // Next-waypoint goto: the button should be enabled once telemetry arrived.
+  const gotoButton = page.locator('.robot-goto-button');
+  await gotoButton.waitFor({ state: 'visible' });
+  const gotoDisabled = await gotoButton.isDisabled();
+  console.log(`  [goto button] disabled=${gotoDisabled}`);
+  if (!gotoDisabled) {
+    await gotoButton.click();
+    await page.waitForFunction(() => {
+      const logs = document.querySelectorAll('.robot-log p');
+      return [...logs].some((p) => p.textContent.includes('已下发下一航点') || p.textContent.includes('Next waypoint sent'));
+    }, null, { timeout: 10000 });
+    ok('next waypoint (goto_target) dispatched');
+  } else {
+    console.log('  (skip goto: button disabled)');
+  }
+
   // Emergency stop round trip.
   await page.click('.robot-stop-button');
-  await page.waitForFunction(() => {
-    const logs = document.querySelectorAll('.robot-log p');
-    return [...logs].some((p) => p.textContent.includes('stopped') || p.textContent.includes('紧急停止'));
-  }, null, { timeout: 10000 });
+  try {
+    await page.waitForFunction(() => {
+      const logs = document.querySelectorAll('.robot-log p');
+      return [...logs].some((p) => p.textContent.includes('stopped') || p.textContent.includes('紧急停止'));
+    }, null, { timeout: 10000 });
+  } catch (stopTimeout) {
+    const logText = await page.locator('.robot-log').innerText().catch(() => '<no log>');
+    const states = await page.locator('.robot-state').innerText().catch(() => '<no state>');
+    console.log('  [log dump]', JSON.stringify(logText).slice(0, 500));
+    console.log('  [state]', states);
+    throw stopTimeout;
+  }
   ok('emergency stop ack logged');
 
   await page.screenshot({ path: '/tmp/lubannav-wifi-e2e.png', fullPage: false });

@@ -36,7 +36,7 @@ const FIX_STATUS_LABEL_KEY = {
   replay: 'robot.wifi.replay',
 };
 
-export function RobotControl({ route, onRobotPosition }) {
+export function RobotControl({ route, onRobotPosition, browserPosition }) {
   const { t, lang } = useI18n();
 
   function friendlyError(error) {
@@ -265,6 +265,23 @@ export function RobotControl({ route, onRobotPosition }) {
     }
   }
 
+  async function sendNextWaypoint() {
+    if (!nextWaypoint) return;
+    try {
+      await client.sendGotoTarget(nextWaypoint.longitude, nextWaypoint.latitude, {
+        speedMetersPerSecond: 0.3,
+        taskId: client.lastTaskId ?? null,
+      });
+      addLog(t('robot.logs.gotoSent', {
+        index: nextWaypoint.index + 1,
+        latitude: nextWaypoint.latitude.toFixed(7),
+        longitude: nextWaypoint.longitude.toFixed(7),
+      }), 'success');
+    } catch (error) {
+      if (error?.name !== 'AbortError') addLog(friendlyError(error), 'error');
+    }
+  }
+
   function updateConfig(field, value) {
     setConfig((current) => ({
       ...current,
@@ -294,6 +311,17 @@ export function RobotControl({ route, onRobotPosition }) {
     () => (position ? progressAlongRoute(route, position) : null),
     [position, route],
   );
+
+  // 下一个要前进的经纬度：按小车当前位置沿路线取第一个未到达航点。
+  const nextWaypoint = useMemo(() => {
+    if (!position || !route?.path?.length) return null;
+    const progress = progressAlongRoute(route, position);
+    if (!progress) return null;
+    const points = route.navigationWaypoints ?? route.path;
+    const point = points[progress.nextIndex];
+    if (!point) return null;
+    return { index: progress.nextIndex, longitude: point.longitude, latitude: point.latitude };
+  }, [position, route]);
 
   const fixStatusLabel = position?.fixStatus ? t(FIX_STATUS_LABEL_KEY[position.fixStatus] ?? 'robot.wifi.noFix') : null;
   const positionSourceLabel = position?.fixStatus === 'replay'
@@ -451,6 +479,23 @@ export function RobotControl({ route, onRobotPosition }) {
         </button>
       </div>
 
+      <div class="robot-goto-row">
+        <button
+          class="robot-goto-button"
+          onClick={sendNextWaypoint}
+          disabled={!connected || !robotRoute || !nextWaypoint}
+        >
+          <span>{t('robot.sendNextWaypoint')}</span>
+          <small>{nextWaypoint
+            ? t('robot.nextWaypoint', {
+              index: nextWaypoint.index + 1,
+              latitude: nextWaypoint.latitude.toFixed(7),
+              longitude: nextWaypoint.longitude.toFixed(7),
+            })
+            : t('robot.needCarPosition')}</small>
+        </button>
+      </div>
+
       {progress && (
         <div class="robot-progress" role="status">
           <span style={{ width: `${(progress.sentChunks / progress.totalChunks) * 100}%` }} />
@@ -471,6 +516,12 @@ export function RobotControl({ route, onRobotPosition }) {
           </strong>
         ) : (
           <strong>{t('robot.waitingPosition')}<small>JSON Lines / WGS84</small></strong>
+        )}
+        {browserPosition && (
+          <div class="robot-browser-position">
+            <span>{t('robot.positionSources.browser')}</span>
+            <strong>{browserPosition.latitude.toFixed(7)}, {browserPosition.longitude.toFixed(7)}</strong>
+          </div>
         )}
       </div>
 

@@ -194,6 +194,17 @@ describe('WifiRobotLink protocol exchange', () => {
     expect(messages.map((m) => m.type)).toEqual(['ack', 'status']);
   });
 
+  it('sends a single-waypoint goto_target command', async () => {
+    const { link, server } = await connectPair();
+    await link.sendGotoTarget(113.4777, 22.8884, { speedMetersPerSecond: 0.3 });
+    const text = new TextDecoder().decode(server.received[0]);
+    const obj = JSON.parse(text);
+    expect(obj.type).toBe('goto_target');
+    expect(obj.longitude).toBe(113.4777);
+    expect(obj.latitude).toBe(22.8884);
+    expect(obj.speedMetersPerSecond).toBe(0.3);
+  });
+
   it('sends direction and emergency stop with priority ordering', async () => {
     const { link, server } = await connectPair();
     await link.sendDirection('forward', { amountMeters: 0.15 });

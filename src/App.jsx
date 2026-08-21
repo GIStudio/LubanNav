@@ -544,6 +544,7 @@ export function App() {
         onVoiceNavigationCommand={handleVoiceNavigationCommand}
         onRobotPosition={handleRobotPosition}
         robotPosition={posState.robot}
+        browserPosition={posState.browser}
         routeStartedAt={routeStartedAt}
       />
     </>

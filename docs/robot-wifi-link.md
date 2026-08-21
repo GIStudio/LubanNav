@@ -66,7 +66,8 @@ LF 结尾。**WebSocket 客户端必须保证每行以 LF 结束**（网页端
 指令优先级（`rc > ble > nav`，`safety` 跨层）与字段完全沿用。
 
 - 下行：`navigation_task` / `navigation_start` + `waypoint`* + `navigation_end`（流式）、
-  `direction`、`emergency_stop`，均带 `priority`。
+  `direction`、`goto_target`（单点经纬度目标，见 robot-ble-protocol.md）、
+  `emergency_stop`，均带 `priority`。
 - 上行：`ack`、`status`、`position`。`position` 在 BLE 合约基础上增加可选字段：
   - `fixStatus`：`rtk_fixed` / `rtk_float` / `dgps` / `gps_fix` / `no_fix` / `replay`（回放）
   - `speedMetersPerSecond`：来自 `/odom`

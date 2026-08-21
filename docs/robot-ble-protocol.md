@@ -116,6 +116,34 @@
 
 固件收到后应立即停止运动、清除当前任务，并返回确认。浏览器按钮只能作为辅助入口，不能替代小车上的物理急停、制动和失联看门狗。
 
+### 单点目标（下一个经纬度）
+
+`goto_target` 把小车送到**一个** WGS84 目标点（“下一步”导航）：网页端可基于
+小车当前位置沿路线取下一个未到达航点逐点下发，车机 WiFi 桥会写入单点
+campusCar 航点文件并以 `--drive` 启动 `gps_navigator` 做 RTK 闭环跟踪。
+
+```json
+{
+  "protocol": "luban-nav-ble",
+  "protocolVersion": 1,
+  "type": "goto_target",
+  "priority": "nav",
+  "commandId": "goto-example",
+  "taskId": "task-example",
+  "longitude": 113.4776815,
+  "latitude": 22.8883663,
+  "speedMetersPerSecond": 0.3,
+  "arrivalRadiusMeters": 0.6,
+  "createdAt": "2026-08-21T08:00:00.000Z"
+}
+```
+
+- `longitude` / `latitude` 必须是合法 WGS84 范围；`speedMetersPerSecond` 可选
+  （0.01–4.0），`arrivalRadiusMeters` 可选（0.1–10）。
+- 优先级 `nav`：新目标取代当前任务（取消未完成的流式路线与导航）；`direction`
+  与 `emergency_stop` 可随时打断。
+- 车机无 `--drive` 时只确认并导出单点文件（telemetry-only，不驱动电机）。
+
 ## 指令优先级（rc > ble > nav，safety 跨层）
 
 所有下行指令携带 `priority` 字段；固件按下表仲裁：

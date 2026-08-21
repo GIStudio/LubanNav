@@ -9,6 +9,7 @@ import {
   WAYPOINT_TYPE,
   bluetoothRequestOptions,
   createDirectionCommand,
+  createGotoTarget,
   createNavigationTask,
   createNavigationTaskStream,
   encodeRobotMessage,
@@ -213,5 +214,25 @@ describe('robot BLE protocol', () => {
       speedMetersPerSecond: null,
     });
     expect(() => createDirectionCommand('diagonal')).toThrow(/Unknown direction/);
+  });
+
+  it('builds a single-waypoint goto_target command', () => {
+    const goto = createGotoTarget(113.4777, 22.8884, { speedMetersPerSecond: 0.3, taskId: 'task-1' });
+    expect(goto).toMatchObject({
+      type: 'goto_target',
+      priority: 'nav',
+      longitude: 113.4777,
+      latitude: 22.8884,
+      speedMetersPerSecond: 0.3,
+      taskId: 'task-1',
+      arrivalRadiusMeters: null,
+    });
+    expect(goto.commandId).toMatch(/^goto-/);
+    const withRadius = createGotoTarget(113.4777, 22.8884, { arrivalRadiusMeters: 1.5 });
+    expect(withRadius.arrivalRadiusMeters).toBe(1.5);
+    const clamped = createGotoTarget(113.4777, 22.8884, { speedMetersPerSecond: 9 });
+    expect(clamped.speedMetersPerSecond).toBe(4.0);
+    expect(() => createGotoTarget(200, 22.8884)).toThrow(/WGS84/);
+    expect(() => createGotoTarget(113.4777, 95)).toThrow(/WGS84/);
   });
 });

@@ -262,6 +262,45 @@ export function createEmergencyStop(options = {}) {
 
 export const DIRECTION_NAMES = Object.freeze(['forward', 'backward', 'left', 'right', 'stop']);
 
+export const GOTO_TARGET_TYPE = 'goto_target';
+
+/**
+ * Send the car to ONE WGS84 waypoint — the "next step" navigation command.
+ * The WiFi bridge writes a single-waypoint campusCar file and (with --drive)
+ * launches gps_navigator for RTK closed-loop tracking of that target. Manual
+ * direction commands and emergency_stop still preempt it.
+ */
+export function createGotoTarget(longitude, latitude, options = {}) {
+  const lon = finiteNumber(longitude, 'longitude');
+  const lat = finiteNumber(latitude, 'latitude');
+  if (lon < -180 || lon > 180) throw new Error('longitude is outside WGS84 bounds');
+  if (lat < -90 || lat > 90) throw new Error('latitude is outside WGS84 bounds');
+  let speed = null;
+  if (options.speedMetersPerSecond != null) {
+    speed = Math.min(
+      ROS_MAX_LINEAR_SPEED_MPS,
+      Math.max(MIN_DIRECTION_SPEED_MPS, finiteNumber(options.speedMetersPerSecond, 'speedMetersPerSecond')),
+    );
+  }
+  let radius = null;
+  if (options.arrivalRadiusMeters != null) {
+    radius = Math.min(10, Math.max(0.1, finiteNumber(options.arrivalRadiusMeters, 'arrivalRadiusMeters')));
+  }
+  return {
+    protocol: ROBOT_PROTOCOL_NAME,
+    protocolVersion: ROBOT_PROTOCOL_VERSION,
+    type: GOTO_TARGET_TYPE,
+    priority: COMMAND_PRIORITY.navigation,
+    commandId: options.commandId ?? `goto-${Date.now().toString(36)}`,
+    taskId: options.taskId ?? null,
+    longitude: roundedCoordinate(lon),
+    latitude: roundedCoordinate(lat),
+    speedMetersPerSecond: speed,
+    arrivalRadiusMeters: radius,
+    createdAt: options.createdAt ?? new Date().toISOString(),
+  };
+}
+
 /**
  * Manual joystick command. Each command moves one fixed step (amountMeters /
  * amountDegrees) so a stray packet can never run the chassis continuously;

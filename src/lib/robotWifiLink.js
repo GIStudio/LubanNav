@@ -2,6 +2,7 @@ import {
   RobotMessageDecoder,
   createDirectionCommand,
   createEmergencyStop,
+  createGotoTarget,
   createNavigationTaskStream,
   encodeRobotMessage,
 } from './robotProtocol.js';
@@ -314,6 +315,13 @@ export class WifiRobotLink {
     return this.sendLines(createDirectionCommand(direction, options), {
       priority: direction === 'stop',
       meta: { type: 'direction', direction },
+    });
+  }
+
+  /** Send the car to one WGS84 waypoint (next-step navigation). */
+  sendGotoTarget(longitude, latitude, options = {}) {
+    return this.sendLines(createGotoTarget(longitude, latitude, options), {
+      meta: { type: 'goto_target', longitude, latitude },
     });
   }
 }

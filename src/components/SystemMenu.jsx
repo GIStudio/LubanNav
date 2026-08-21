@@ -62,6 +62,7 @@ export function SystemMenu({
   onVoiceNavigationCommand,
   onRobotPosition,
   robotPosition,
+  browserPosition,
   routeStartedAt,
 }) {
   const { t } = useI18n();
@@ -186,7 +187,11 @@ export function SystemMenu({
               <span>02</span>
               <p>{t('system.robotIntro')}</p>
             </div>
-            <RobotControl route={route} onRobotPosition={onRobotPosition} />
+            <RobotControl
+              route={route}
+              onRobotPosition={onRobotPosition}
+              browserPosition={browserPosition}
+            />
           </section>
         </div>
       </aside>
