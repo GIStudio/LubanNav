@@ -16,6 +16,8 @@
     "test": "vitest run",
     "ble:simulator": "CLANG_MODULE_CACHE_PATH=/tmp/lubannav-swift-module-cache SWIFTPM_MODULECACHE_OVERRIDE=/tmp/lubannav-swift-module-cache swift run --disable-sandbox --package-path tools/car7-ble-simulator car7-ble-simulator",
     "ble:simulator:test": "CLANG_MODULE_CACHE_PATH=/tmp/lubannav-swift-module-cache SWIFTPM_MODULECACHE_OVERRIDE=/tmp/lubannav-swift-module-cache swift test --disable-sandbox --package-path tools/car7-ble-simulator",
+    "wifi:test": "python3 tools/car7-wifi-tools/wifi_central_test.py",
+    "wifi:bridge:test": "cd artifacts/car7-wifi-bridge && python3 test_car7_wifi_bridge.py",
     "extract:paved": "uv run --script scripts/extract-paved-from-tiles.py --config config/paved-esri-tiles.json",
     "platform:safe": "uv run --script scripts/platform-safe-surface.py --config config/platform-safe-surface.json",
     "import:global-nav": "node scripts/import-global-nav.mjs",
