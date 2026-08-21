@@ -96,7 +96,8 @@ cd artifacts/car7-wifi-bridge && python3 test_car7_wifi_bridge.py
 python3 artifacts/car7-wifi-bridge/deploy_car7_wifi.py --commit "feat(wifi_bridge): ..."
 ```
 
-单元内容（已安装启用）：
+单元内容（已安装启用；`ExecStartPre` 先清理容器内残留实例，避免 systemd 重启
+时旧进程占用 8900 端口导致 bind 失败）：
 
 ```ini
 ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c \
