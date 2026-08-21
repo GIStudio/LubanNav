@@ -123,6 +123,10 @@ export function RobotControl({ route, onRobotPosition }) {
   const configLocked = connected || connectionBusy;
   const transferring = progress && progress.sentChunks < progress.totalChunks;
   const robotRoute = route?.request.mode === 'robot';
+  const mixedContentRisk = transport === 'wifi'
+    && typeof window !== 'undefined'
+    && window.location?.protocol === 'https:'
+    && wifiUrl.startsWith('ws://');
 
   function addLog(text, level = 'info') {
     if (!text) return;
@@ -364,7 +368,9 @@ export function RobotControl({ route, onRobotPosition }) {
             )}
           </div>
 
-          <small class="robot-hint robot-hint-warn">{t('robot.wifi.mixedContent')}</small>
+          <small class={`robot-hint ${mixedContentRisk ? 'robot-hint-warn' : ''}`}>
+            {t(mixedContentRisk ? 'robot.wifi.mixedContent' : 'robot.wifi.hint')}
+          </small>
 
           {activeConnection.error && (
             <div class="robot-diagnostic" role="alert">
