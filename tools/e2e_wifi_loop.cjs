@@ -9,7 +9,8 @@ const PAGE_URL = process.env.PAGE_URL ?? 'http://localhost:5174/?mode=robot';
 const WIFI_URL = process.env.WIFI_URL ?? 'ws://10.7.181.161:8900';
 
 async function main() {
-const browser = await chromium.launch();
+// --proxy-server=direct:// 绕过 Mac 系统代理（--no-proxy-server 在 macOS 上无效）直连局域网车机
+const browser = await chromium.launch({ args: ['--proxy-server=direct://'] });
 const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   ignoreHTTPSErrors: process.env.WSS_INSECURE === '1',
