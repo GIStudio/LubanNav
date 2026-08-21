@@ -61,7 +61,9 @@ curl http://10.7.181.161:8900/
 消息格式与 `docs/robot-ble-protocol.md` 相同：UTF-8、一行一个 JSON 对象、
 LF 结尾。**WebSocket 客户端必须保证每行以 LF 结束**（网页端
 `encodeRobotMessage` 已带 LF）；桥内 `JSONLineFramer` 仍按字节流重组，
-跨帧拆行也安全。指令优先级（`rc > ble > nav`，`safety` 跨层）与字段完全沿用。
+跨帧拆行也安全。桥同时接受 **text（0x1）与 binary（0x2）帧**——网页端
+`socket.send(Uint8Array)` 发的是二进制帧，两者都按 JSONL 字节处理。
+指令优先级（`rc > ble > nav`，`safety` 跨层）与字段完全沿用。
 
 - 下行：`navigation_task` / `navigation_start` + `waypoint`* + `navigation_end`（流式）、
   `direction`、`emergency_stop`，均带 `priority`。
@@ -146,3 +148,16 @@ RTK；否则回落到 30 秒内新鲜的浏览器定位；都没有则显示无�
   推到室外后自动切换为真实 RTK 位置。
 - **多客户端**：桥支持多连接并发（当前实现会向所有连接广播遥测）。
 - **wss 路线**：可给桥加 TLS 终止（如 caddy/nginx 反代 8900），前端只改 URL。
+
+## 车机突然不可达（WiFi 掉线）排查
+
+车机 Intel 组合卡 WiFi 本身不稳定（正是我们弃用 BLE 的原因），运行中可能
+掉线。网页表现为“连接超时”、SSH/curl 均不通：
+
+1. 确认车机是否还在同一局域网：`ping 10.7.181.161`、`nc -z 10.7.181.161 22`。
+2. 现场检查车机 WiFi：`nmcli device status` / `ip a show wlo1`；掉线则重连
+   （`nmcli dev wifi connect <SSID>` 或重启 NetworkManager）。
+3. 桥随 systemd 自启且掉线自动重启：`systemctl status car7-wifi-bridge`；
+   手动重启 `sudo systemctl restart car7-wifi-bridge`。
+4. 重启后自检：`curl http://10.7.181.161:8900/`（状态页）→
+   `python3 tools/car7-wifi-tools/wifi_central_test.py`（闭环验收）。
