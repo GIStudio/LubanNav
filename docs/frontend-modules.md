@@ -168,7 +168,43 @@
 - 事件（`subscribe(listener)`）：`{type:'state'|'message'|'position'|'transfer-progress'|'sent'|'transfer-error'|'telemetry-error', ...}`；`transfer-progress` 含 `sentChunks/totalChunks`。
 - `setConfig(config)`：连接中禁止修改。
 
-## 9.5 地图图层构造 src/lib/mapLayers.js
+## 9.5 WiFi 客户端 src/lib/robotWifiLink.js
+
+WebSocket 传输层，事件接口与 `WebBluetoothRobotClient` 对齐，RobotControl /
+RobotDirectionPad 对两种传输透明复用。
+
+| 导出 | 说明 |
+| --- | --- |
+| `DEFAULT_WIFI_URL` | `ws://10.7.181.161:8900`（车机 car7-wifi-bridge） |
+| `normalizeWifiUrl(input)` | 校验必须为 `ws://` / `wss://` |
+| `RobotWifiLinkError` | 带 `stage` / `context` 的连接错误 |
+| `WifiRobotLink` | WebSocket 客户端状态机，见下 |
+
+- `connect()`：新建 `WebSocket`（可注入 `WebSocketImpl` 便于测试）；打开后
+  `state='connected'`；失败/超时（10 s）→ `error`。
+- 断线处理：意外关闭 → `disconnected` + 指数退避自动重连（1→15 s，
+  `setAutoReconnect(false)` 可关闭）；`disconnect()` 为手动断开不重连。
+- 协议：`sendLines(lines, {priority, meta})` 逐行 `encodeRobotMessage`（JSON +
+  LF）发送，每行一个 WebSocket 二进制帧（桥端按文本/二进制兼容解析）；
+  `sendNavigationTask(route)` / `sendDirection(...)` / `sendEmergencyStop()`
+  与 BLE 客户端同名同参。
+- 事件：`{type:'state'|'message'|'position'|'sent'|'transfer-error'|'telemetry-error'}`。
+- 注意：**HTTPS 页面不能打开 `ws://` 局域网地址**（混合内容），联调用
+  `http://localhost` 或 HTTP 部署页；正式 HTTPS 需 `wss://`（车机 TLS）。
+
+## 9.6 定位融合 src/lib/positionStore.js
+
+| 导出 | 说明 |
+| --- | --- |
+| `createPositionStore({geolocation, robotStaleMs=5000, browserStaleMs=30000, getNow})` | 订阅式位置 store：`setRobotPosition(遥测)` / `startBrowserWatch()`（`watchPosition` 高精度）/ `stopBrowserWatch()`；`getState()` → `{robot, browser, active:{source:'robot'|'browser', position}, source, staleReason, watchError, watchingBrowser}`；`subscribe(listener)` 每次变化推送新状态 |
+| `nearestPointOnRoute(points, lat, lon)` | 路线折线最近顶点（haversine） |
+| `progressAlongRoute(route, position)` | `{nearestIndex, nextIndex, distanceToNextMeters, remainingMeters, totalMeters, percent, arrived}`，路线取 `navigationWaypoints ?? path` |
+
+融合规则：小车 RTK 位置 5 秒内新鲜 → `source='robot'`；否则回落 30 秒内新鲜
+的浏览器定位 → `source='browser'`；都过期 → `null`。浏览器定位需要安全上下文
+（HTTPS / localhost），不可用或拒绝时 store 静默无浏览器源。
+
+## 9.7 地图图层构造 src/lib/mapLayers.js
 
 纯 Leaflet 图层构造（不碰 React），从 `CampusMap.jsx` 移出：
 
@@ -177,7 +213,7 @@
 | `addOsmLayers(map, data)` | 把 OSM GeoJSON 按要素类分层渲染（水、水系、道路底/面、建筑），tooltip 用要素自带名称 |
 | `addIndoorLayers(map, data, t=translate)` | 室内路径/网络链接与垂直连接器图层；tooltip 绑定为**函数**（Leaflet 每次打开 tooltip 时重新求值），`t` 默认是 `i18n.js` 的 `translate`——在打开时读取当前语言，因此室内 tooltip 会随 zh/en 切换，无需重建图层 |
 
-## 9.6 应用外壳 hooks（src/lib/useEventProfiles.js / src/lib/useRouteQueryState.js）
+## 9.8 应用外壳 hooks（src/lib/useEventProfiles.js / src/lib/useRouteQueryState.js）
 
 `App.jsx` 编排中枢瘦身后的两块胶水，纯逻辑仍全部在 `eventMode.js` / `pathfinding.js`：
 
@@ -190,7 +226,7 @@
 
 ### App.jsx
 
-应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、机器人位置、系统菜单开关。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。挂载时读取 `?accessCode=` 链接参数并 `voiceSession.setAccessCode(...)` 预填/覆盖保存演示访问码，随即从 URL 删除该参数（凭据不留在地址栏、历史或复制分享链接）。
+应用外壳与全局状态：路线状态与 URL 同步（`useRouteQueryState`）、活动档案 CRUD（`useEventProfiles`）、对话消息、系统菜单开关。**定位融合**：挂载时创建 `createPositionStore` 并 `startBrowserWatch()`，`handleRobotPosition` 把小车遥测写入 store；`posState.robot` 传给地图/语音（橙色 RTK 标记），`posState.browser`（蓝色兜底点）与 `posState.source`（定位源角标）传给 `CampusMap`。负责 `handleQuery`（活动解析 → 通用解析 → 缓存回答）、语音工具回调 `handleVoiceNavigationCommand`（解析 → `applyNavigation` 寻路验证 → 更新状态并返回工具结果）；语音会话本身已移入共享 store（§7.5），App 不再桥接 ref/状态。挂载时读取 `?accessCode=` 链接参数并 `voiceSession.setAccessCode(...)` 预填/覆盖保存演示访问码，随即从 URL 删除该参数（凭据不留在地址栏、历史或复制分享链接）。
 
 ### components/CampusMap.jsx
 
