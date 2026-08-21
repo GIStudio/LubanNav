@@ -5,7 +5,11 @@ const PORT = Number(process.env.FC_SERVER_PORT || process.env.PORT || 9000);
 const MODEL = 'qwen3.5-omni-flash-realtime';
 const MAX_BODY_BYTES = 128 * 1024;
 const RATE_WINDOW_MS = 5 * 60 * 1000;
-const RATE_LIMIT = Number(process.env.RATE_LIMIT_PER_WINDOW || 10);
+// Generous cap: the client auto-reconnects after network hiccups (each
+// reconnect exchanges a fresh token through this gateway) and chatty
+// sessions can drive many exchanges, so 10/5min would 429 legitimate
+// walking demos. 30/5min keeps ~15s reconnect spacing well within budget.
+const RATE_LIMIT = Number(process.env.RATE_LIMIT_PER_WINDOW || 30);
 const ALLOWED_ORIGINS = new Set(
   (process.env.ALLOWED_ORIGINS || 'https://gistudio.github.io')
     .split(',')
@@ -113,25 +117,38 @@ async function exchangeSdp({ offerSdp, apiKey, workspaceId }) {
       body: offerSdp,
       signal: controller.signal,
     });
-    const answerSdp = await response.text();
+    const text = await response.text();
     if (!response.ok) {
       console.error(
         `[voice-gateway] upstream rejected status=${response.status}`,
         `requestId=${response.headers.get('x-request-id') || 'unknown'}`,
       );
-      const error = new Error('upstream_rejected');
-      error.status = 502;
+      // Pass the upstream status through so the client can distinguish
+      // auth failures (401/403), quota/concurrency pressure (429) and
+      // service outages (5xx) and back off accordingly.
+      let upstreamCode = null;
+      try {
+        upstreamCode = JSON.parse(text)?.code ?? null;
+      } catch {
+        // non-JSON upstream error body
+      }
+      const error = new Error(upstreamCode ? `upstream_${upstreamCode}` : 'upstream_rejected');
+      error.status = response.status;
       throw error;
     }
-    if (!answerSdp.startsWith('v=0')) {
+    if (!answerSdpOk(text)) {
       const error = new Error('invalid_upstream_sdp');
       error.status = 502;
       throw error;
     }
-    return answerSdp;
+    return text;
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function answerSdpOk(text) {
+  return typeof text === 'string' && text.startsWith('v=0');
 }
 
 async function handleRequest(request, response) {
@@ -183,8 +200,14 @@ async function handleRequest(request, response) {
       return sendJson(response, 504, { error: 'upstream_timeout' }, origin);
     }
     const status = Number(error.status) || 500;
-    const publicError = status >= 500 ? 'voice_gateway_failed' : error.message;
-    return sendJson(response, status, { error: publicError }, origin);
+    let publicError;
+    if (String(error.message).startsWith('upstream_')) {
+      // Relay the upstream failure code and its status to the client.
+      publicError = { error: 'upstream_rejected', upstreamStatus: status, upstreamCode: error.message.slice('upstream_'.length) };
+    } else {
+      publicError = { error: status >= 500 ? 'voice_gateway_failed' : error.message };
+    }
+    return sendJson(response, status, publicError, origin);
   }
 }
 
