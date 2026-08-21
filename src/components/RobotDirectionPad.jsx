@@ -30,6 +30,22 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
 
   useEffect(() => () => stopPadRepeat(), []);
 
+  /**
+   * Hold-to-drive: the button repeats one fixed step while held. The repeat
+   * interval is derived from the step size and the effective executor speed
+   * (capped at 0.5 m/s in move_executor) plus headroom, so commands never
+   * pile up in the executor queue — releasing the button stops motion
+   * promptly (endPadHold also sends an explicit stop).
+   */
+  function repeatIntervalMs() {
+    const stepMeters = config.directionStepMeters ?? DEFAULT_BLE_CONFIG.directionStepMeters;
+    const speedMetersPerSecond =
+      config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond;
+    const effectiveSpeed = Math.min(speedMetersPerSecond, 0.5); // move_executor clamp
+    const stepMs = (stepMeters / Math.max(effectiveSpeed, 0.02)) * 1000;
+    return Math.min(3000, Math.max(450, stepMs + 500));
+  }
+
   function startPadHold(direction, options) {
     return (event) => {
       if (!connected) return;
@@ -43,7 +59,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
       };
       const send = () => client.sendDirection(direction, command).catch(() => {});
       send();
-      padTimer.current = setInterval(send, 450);
+      padTimer.current = setInterval(send, repeatIntervalMs());
     };
   }
 
@@ -51,6 +67,8 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
     event?.preventDefault();
     padActiveRef.current = false;
     stopPadRepeat();
+    // 松开即停：清空执行器队列并立即停止，防止队列里未执行的步进继续跑。
+    if (connected) client.sendDirection('stop').catch(() => {});
   }
 
   function stopNow() {
@@ -63,7 +81,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
     <div class="robot-pad" aria-label={t('robot.pad.aria')}>
       <div class="robot-pad-head">
         <span>{t('robot.pad.title')}</span>
-        <small>{t('robot.pad.step', { meters: config.directionStepMeters ?? 0.15, degrees: config.directionStepDegrees ?? 15 })}</small>
+        <small>{t('robot.pad.step', { meters: config.directionStepMeters ?? DEFAULT_BLE_CONFIG.directionStepMeters, degrees: config.directionStepDegrees ?? DEFAULT_BLE_CONFIG.directionStepDegrees })}</small>
       </div>
       <label class="robot-speed-slider">
         <span>{t('robot.pad.speed')}</span>

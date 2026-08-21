@@ -191,7 +191,7 @@ describe('robot BLE protocol', () => {
     expect(forward).toMatchObject({
       type: 'direction',
       direction: 'forward',
-      amountMeters: 0.15,
+      amountMeters: 0.75,
       amountDegrees: null,
       speedMetersPerSecond: null,
     });

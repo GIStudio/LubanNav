@@ -38,8 +38,8 @@ export const DEFAULT_BLE_CONFIG = Object.freeze({
   telemetryCharacteristicUuid: '6e400003-b5a3-f393-e0a9-e50e24dcca9e',
   chunkBytes: 185,
   interChunkDelayMs: 5,
-  directionStepMeters: 0.15,
-  directionStepDegrees: 15,
+  directionStepMeters: 0.75,
+  directionStepDegrees: 75,
   directionSpeedMetersPerSecond: 2.0,
 });
 
@@ -91,11 +91,11 @@ export function normalizeBleConfig(input = {}) {
   }
   config.directionStepMeters = Math.min(
     1,
-    Math.max(0.05, finiteNumber(config.directionStepMeters ?? 0.15, 'directionStepMeters')),
+    Math.max(0.05, finiteNumber(config.directionStepMeters ?? 0.75, 'directionStepMeters')),
   );
   config.directionStepDegrees = Math.min(
     90,
-    Math.max(5, finiteNumber(config.directionStepDegrees ?? 15, 'directionStepDegrees')),
+    Math.max(5, finiteNumber(config.directionStepDegrees ?? 75, 'directionStepDegrees')),
   );
   config.directionSpeedMetersPerSecond = Math.min(
     ROS_MAX_LINEAR_SPEED_MPS,
@@ -330,7 +330,7 @@ export function createDirectionCommand(direction, options = {}) {
     direction,
     amountMeters:
       direction === 'forward' || direction === 'backward'
-        ? finiteNumber(options.amountMeters ?? 0.15, 'amountMeters')
+        ? finiteNumber(options.amountMeters ?? 0.75, 'amountMeters')
         : null,
     amountDegrees:
       direction === 'left' || direction === 'right'
