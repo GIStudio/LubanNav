@@ -31,35 +31,27 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
   useEffect(() => () => stopPadRepeat(), []);
 
   /**
-   * Hold-to-drive: the button repeats one fixed step while held. The repeat
-   * interval is derived from the step size and the effective executor speed
-   * (capped at 0.5 m/s in move_executor) plus headroom, so commands never
-   * pile up in the executor queue — releasing the button stops motion
-   * promptly (endPadHold also sends an explicit stop).
+   * Hold-to-drive (continuous, campusCar web_teleop style): while the button
+   * is held the bridge keeps publishing /cmd_vel at the configured speed.
+   * The command is re-sent every 200 ms to refresh the bridge-side deadman
+   * timer; releasing the button sends an explicit stop (endPadHold).
    */
-  function repeatIntervalMs() {
-    const stepMeters = config.directionStepMeters ?? DEFAULT_BLE_CONFIG.directionStepMeters;
-    const speedMetersPerSecond =
-      config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond;
-    const effectiveSpeed = Math.min(speedMetersPerSecond, 0.5); // move_executor clamp
-    const stepMs = (stepMeters / Math.max(effectiveSpeed, 0.02)) * 1000;
-    return Math.min(3000, Math.max(450, stepMs + 500));
-  }
+  const DEADMAN_REFRESH_MS = 200;
 
-  function startPadHold(direction, options) {
+  function startPadHold(direction) {
     return (event) => {
       if (!connected) return;
       event.preventDefault();
       if (padActiveRef.current) return; // another button already holds
       padActiveRef.current = true;
       const command = {
-        ...options,
+        continuous: true,
         speedMetersPerSecond:
           config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond,
       };
       const send = () => client.sendDirection(direction, command).catch(() => {});
       send();
-      padTimer.current = setInterval(send, repeatIntervalMs());
+      padTimer.current = setInterval(send, DEADMAN_REFRESH_MS);
     };
   }
 
@@ -81,7 +73,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
     <div class="robot-pad" aria-label={t('robot.pad.aria')}>
       <div class="robot-pad-head">
         <span>{t('robot.pad.title')}</span>
-        <small>{t('robot.pad.step', { meters: config.directionStepMeters ?? DEFAULT_BLE_CONFIG.directionStepMeters, degrees: config.directionStepDegrees ?? DEFAULT_BLE_CONFIG.directionStepDegrees })}</small>
+        <small>{t('robot.pad.continuous', { speed: (config.directionSpeedMetersPerSecond ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond).toFixed(2) })}</small>
       </div>
       <label class="robot-speed-slider">
         <span>{t('robot.pad.speed')}</span>
@@ -103,7 +95,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
           type="button"
           aria-label={t('robot.pad.forward')}
           disabled={!connected}
-          onPointerDown={startPadHold('forward', { amountMeters: config.directionStepMeters })}
+          onPointerDown={startPadHold('forward')}
           onPointerUp={endPadHold}
           onPointerLeave={endPadHold}
           onPointerCancel={endPadHold}
@@ -114,7 +106,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
           type="button"
           aria-label={t('robot.pad.left')}
           disabled={!connected}
-          onPointerDown={startPadHold('left', { amountDegrees: config.directionStepDegrees })}
+          onPointerDown={startPadHold('left')}
           onPointerUp={endPadHold}
           onPointerLeave={endPadHold}
           onPointerCancel={endPadHold}
@@ -133,7 +125,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
           type="button"
           aria-label={t('robot.pad.right')}
           disabled={!connected}
-          onPointerDown={startPadHold('right', { amountDegrees: config.directionStepDegrees })}
+          onPointerDown={startPadHold('right')}
           onPointerUp={endPadHold}
           onPointerLeave={endPadHold}
           onPointerCancel={endPadHold}
@@ -144,7 +136,7 @@ export function RobotDirectionPad({ connected, configLocked, client, config, onU
           type="button"
           aria-label={t('robot.pad.backward')}
           disabled={!connected}
-          onPointerDown={startPadHold('backward', { amountMeters: config.directionStepMeters })}
+          onPointerDown={startPadHold('backward')}
           onPointerUp={endPadHold}
           onPointerLeave={endPadHold}
           onPointerCancel={endPadHold}

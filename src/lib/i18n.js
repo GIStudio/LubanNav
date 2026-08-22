@@ -297,6 +297,7 @@ const zh = {
     pad: {
       title: '手动方向控制',
       step: '每步 {meters} m / {degrees}° · 按住连续',
+      continuous: '按住连续移动 · 速度 {speed} m/s · 松开即停',
       speed: '速度',
       speedAria: '方向控制速度',
       forward: '向前',
@@ -718,6 +719,7 @@ const en = {
     pad: {
       title: 'Manual Direction Pad',
       step: 'Step {meters} m / {degrees}° · hold to repeat',
+      continuous: 'Hold to drive continuously · {speed} m/s · release to stop',
       speed: 'Speed',
       speedAria: 'Direction control speed',
       forward: 'Move forward',

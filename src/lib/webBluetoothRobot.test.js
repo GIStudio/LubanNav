@@ -168,7 +168,7 @@ describe('WebBluetoothRobotClient', () => {
 
     fake.command.writes.length = 0;
     await client.sendDirection('right');
-    expect(decodeWrites()).toMatchObject({ direction: 'right', amountDegrees: 15 });
+    expect(decodeWrites()).toMatchObject({ direction: 'right', amountDegrees: 75 });
 
     fake.command.writes.length = 0;
     await client.sendDirection('stop');

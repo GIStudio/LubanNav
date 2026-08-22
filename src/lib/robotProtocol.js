@@ -302,9 +302,14 @@ export function createGotoTarget(longitude, latitude, options = {}) {
 }
 
 /**
- * Manual joystick command. Each command moves one fixed step (amountMeters /
- * amountDegrees) so a stray packet can never run the chassis continuously;
- * the web UI repeats it while the operator holds the pad button.
+ * Manual joystick command.
+ *
+ * Stepped form (default): each command moves one fixed step (amountMeters /
+ * amountDegrees); the web UI repeats it while the operator holds the button.
+ *
+ * Continuous form (options.continuous): no step amounts — the robot keeps
+ * publishing /cmd_vel at speedMetersPerSecond until stop / emergency_stop /
+ * deadman (mirrors campusCar web_teleop).
  */
 export function createDirectionCommand(direction, options = {}) {
   if (!DIRECTION_NAMES.includes(direction)) {
@@ -321,6 +326,21 @@ export function createDirectionCommand(direction, options = {}) {
           ),
         )
       : null;
+  if (options.continuous) {
+    return {
+      protocol: ROBOT_PROTOCOL_NAME,
+      protocolVersion: ROBOT_PROTOCOL_VERSION,
+      type: 'direction',
+      priority: COMMAND_PRIORITY.manual,
+      commandId: options.commandId ?? `dir-${Date.now().toString(36)}`,
+      direction,
+      amountMeters: null,
+      amountDegrees: null,
+      speedMetersPerSecond: moving ? (speed ?? DEFAULT_BLE_CONFIG.directionSpeedMetersPerSecond) : null,
+      continuous: true,
+      createdAt: options.createdAt ?? new Date().toISOString(),
+    };
+  }
   return {
     protocol: ROBOT_PROTOCOL_NAME,
     protocolVersion: ROBOT_PROTOCOL_VERSION,
@@ -334,7 +354,7 @@ export function createDirectionCommand(direction, options = {}) {
         : null,
     amountDegrees:
       direction === 'left' || direction === 'right'
-        ? finiteNumber(options.amountDegrees ?? 15, 'amountDegrees')
+        ? finiteNumber(options.amountDegrees ?? 75, 'amountDegrees')
         : null,
     speedMetersPerSecond: speed,
     createdAt: options.createdAt ?? new Date().toISOString(),
