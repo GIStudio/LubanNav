@@ -28,6 +28,38 @@ describe('assistant knowledge cache', () => {
     expect(getCachedAssistantReply('四大枢纽').text).toContain('功能、信息、系统和社会');
   });
 
+  it('describes the green campus from the introduction copy', () => {
+    const reply = getCachedAssistantReply('学校环境怎么样');
+    expect(reply.key).toBe('greenCampus');
+    expect(reply.text).toContain('中央花园');
+    expect(reply.text).toContain('黑天鹅');
+    expect(reply.text).toContain('光伏');
+    expect(reply.text).toContain('雨水');
+    expect(getCachedAssistantReply('绿色校园')).toMatchObject({ key: 'greenCampus' });
+    expect(getCachedAssistantReply('校园里有黑天鹅吗')).toMatchObject({ key: 'greenCampus' });
+  });
+
+  it('keeps the school overview accurate after enrichment', () => {
+    const overview = getCachedAssistantReply('学校简介').text;
+    expect(overview).toContain('2022 年 6 月 29 日');
+    expect(overview).toContain('庆盛枢纽');
+    expect(overview).toContain('具有独立法人资格');
+    expect(overview).toContain('高水平示范性合作大学');
+    expect(overview).toContain('1.13 平方公里');
+    expect(overview).toContain('二期正在建设');
+    expect(overview).toContain('万名师生');
+  });
+
+  it('answers phase-2 construction with the official scale', () => {
+    const reply = getCachedAssistantReply('学校二期有多大');
+    expect(reply.key).toBe('phase2');
+    expect(reply.text).toContain('73 万平方米');
+    expect(reply.text).toContain('953 亩');
+    expect(reply.text).toContain('69.5 亿元');
+    expect(reply.text).toContain('万名');
+    expect(getCachedAssistantReply('二期工程')).toMatchObject({ key: 'phase2' });
+  });
+
   it('offers the robot carrier platform when asked to carry the bag', () => {
     const reply = getCachedAssistantReply('你可以帮我背包吗？');
     expect(reply.key).toBe('bagCarry');
