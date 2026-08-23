@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { useFullscreen } from '../lib/fullscreen.js';
 import { useI18n } from '../lib/i18n.js';
 import { useTheme } from '../lib/theme.js';
 import { useVoiceSession } from '../lib/voiceSession.js';
@@ -33,6 +34,7 @@ function weatherEmoji(code, isDay) {
 export function LandingPage({ onEnter, onConfigureVoice }) {
   const { t, lang, setLang } = useI18n();
   const { theme, toggleTheme } = useTheme();
+  const fullscreen = useFullscreen();
   const {
     status,
     statusMessage,
@@ -122,6 +124,16 @@ export function LandingPage({ onEnter, onConfigureVoice }) {
             aria-label={theme === 'dark' ? t('topbar.themeToLight') : t('topbar.themeToDark')}
           >
             <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
+          </button>
+          <button
+            type="button"
+            class="pref-toggle"
+            onClick={() => fullscreen.toggle()}
+            disabled={!fullscreen.supported}
+            title={fullscreen.isFullscreen ? t('system.exitFullscreen') : t('system.fullscreen')}
+            aria-label={fullscreen.isFullscreen ? t('system.exitFullscreen') : t('system.fullscreen')}
+          >
+            <span aria-hidden="true">{fullscreen.isFullscreen ? '⤢' : '⛶'}</span>
           </button>
         </div>
       </header>
