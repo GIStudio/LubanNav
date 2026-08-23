@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { CarStatusBadge } from './components/CarStatusBadge.jsx';
 import { CampusInsights } from './components/CampusInsights.jsx';
 import { CampusMap } from './components/CampusMap.jsx';
 import { ChatAssistant } from './components/ChatAssistant.jsx';
@@ -15,6 +16,7 @@ import { useI18n, localizedName } from './lib/i18n.js';
 import { useTheme } from './lib/theme.js';
 import { findRoute, formatDuration } from './lib/pathfinding.js';
 import { locateCurrentPlace } from './lib/locate.js';
+import { createCarStatusPoller } from './lib/carStatus.js';
 import { createPositionStore } from './lib/positionStore.js';
 import { resolveNavigationCommand } from './lib/voiceNavigation.js';
 import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
@@ -47,6 +49,21 @@ export function App() {
   // Position fusion store: car RTK telemetry is the primary source, the
   // browser's geolocation is the fallback (see lib/positionStore.js). The
   // robot marker follows RTK positions; the browser dot stays as fallback.
+  // Car status poller (car7-status-server on the NUC) -> top-bar badge.
+  const carStatusPollerRef = useRef(null);
+  if (!carStatusPollerRef.current) {
+    carStatusPollerRef.current = createCarStatusPoller();
+  }
+  const [carStatus, setCarStatus] = useState(() => carStatusPollerRef.current.getState());
+  useEffect(() => {
+    const unsubscribe = carStatusPollerRef.current.subscribe(setCarStatus);
+    carStatusPollerRef.current.start();
+    return () => {
+      unsubscribe();
+      carStatusPollerRef.current.stop();
+    };
+  }, []);
+
   const positionStoreRef = useRef(null);
   if (!positionStoreRef.current) {
     positionStoreRef.current = createPositionStore({
@@ -384,6 +401,7 @@ export function App() {
             <span>STATIC · OFFLINE READY</span>
             <span class="version">V0.3.0</span>
           </div>
+          <CarStatusBadge status={carStatus} />
           <button
             type="button"
             class="pref-toggle"

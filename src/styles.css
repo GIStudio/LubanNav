@@ -4034,3 +4034,96 @@ h2 {
   color: #7db4ff;
   font: 700 9.5px/1.3 var(--mono);
 }
+
+/* ── car status badge (top bar) ────────────────────────────────────────── */
+
+.car-status-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.car-status-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(2, 16, 26, 0.45);
+  color: var(--muted);
+  cursor: pointer;
+  font: 700 9px/1 var(--mono);
+  letter-spacing: 0.04em;
+}
+
+.car-status-trigger:hover {
+  border-color: var(--cyan);
+}
+
+.car-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bad);
+  box-shadow: 0 0 5px var(--bad);
+}
+
+.car-status-badge.online .car-status-dot {
+  background: var(--ok);
+  box-shadow: 0 0 5px var(--ok);
+}
+
+.car-status-badge.online .car-status-trigger {
+  color: var(--text);
+}
+
+.car-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.car-status-fix {
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.car-status-fix.ok { color: var(--ok); }
+.car-status-fix.warn { color: var(--warn); }
+.car-status-fix.bad { color: var(--bad); }
+
+.car-status-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 900;
+  width: 260px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel, #131c2e);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.car-status-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 10px;
+}
+
+.car-status-row span { color: var(--muted); }
+.car-status-row strong { font-family: var(--mono); font-weight: 600; }
+
+.car-status-hint {
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 8.5px;
+  line-height: 1.5;
+}
