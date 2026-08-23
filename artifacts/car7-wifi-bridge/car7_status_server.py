@@ -37,6 +37,7 @@ try:  # rclpy exists only inside the container
     from rclpy.node import Node
     from sensor_msgs.msg import Imu, NavSatFix
     from nav_msgs.msg import Odometry
+    from geometry_msgs.msg import Twist
     from std_msgs.msg import String as StdString
 except ImportError:  # pragma: no cover
     rclpy = None
@@ -44,6 +45,7 @@ except ImportError:  # pragma: no cover
     Imu = None
     NavSatFix = None
     Odometry = None
+    Twist = None
     StdString = None
 
 SERVICE_NAME = "car7-status-server"
@@ -245,6 +247,7 @@ class RosCollector:
         self.heading = None
         self.nav_status = None
         self.logger_status = None
+        self.last_motion = None   # time.monotonic() of last non-zero motion command / actual speed
         self.node = None
         self.ready = threading.Event()
 
@@ -264,6 +267,7 @@ class RosCollector:
         self.node = Node("car7_status_server")
         self.node.create_subscription(NavSatFix, "/fix", self._on_fix, 10)
         self.node.create_subscription(Odometry, "/odom", self._on_odom, 10)
+        self.node.create_subscription(Twist, "/cmd_vel", self._on_cmd_vel, 10)
         self.node.create_subscription(StdString, "/nav_status", self._on_nav_status, 10)
         self.node.create_subscription(StdString, "/rtk_fixed_log/status", self._on_logger_status, 10)
         self.ready.set()
@@ -291,6 +295,16 @@ class RosCollector:
     def _on_odom(self, msg):
         self.speed = round(float(msg.twist.twist.linear.x), 3)
         self.heading = _odom_yaw_degrees(msg)
+        # 底盘实际在动 (实体手柄/手动接管会体现为 odom 速度非零)
+        if self.speed is not None and abs(self.speed) > 0.02:
+            self.last_motion = time.monotonic()
+
+    def _on_cmd_vel(self, msg):
+        # 任何非零 /cmd_vel (网页操控台方向、teleop) 也视为有驱动指令
+        linear = float(msg.linear.x) if msg.linear.x == msg.linear.x else 0.0
+        angular = float(msg.angular.z) if msg.angular.z == msg.angular.z else 0.0
+        if abs(linear) > 0.02 or abs(angular) > 0.02:
+            self.last_motion = time.monotonic()
 
     def _on_nav_status(self, msg):
         self.nav_status = (msg.data or "").strip()
@@ -435,6 +449,12 @@ class StatusCollector:
                 fix["longitude"] = fallback["lon"]
                 fix["approximate"] = True
                 fix_label = "{}（最后已知位置）".format(fix_label)
+        # 遥控器/手动操控检测: 车被驱动(速度或非零 /cmd_vel) 且导航器未运行 → 有人在手动遥控
+        motion_ago = None
+        if self.ros is not None and self.ros.last_motion is not None:
+            motion_ago = round(time.monotonic() - self.ros.last_motion, 1)
+        navigator_running = self.navigator.status().get("running", False)
+        remote_active = (motion_ago is not None and motion_ago < 3.0 and not navigator_running)
         return {
             "service": SERVICE_NAME,
             "version": SERVICE_VERSION,
@@ -446,6 +466,11 @@ class StatusCollector:
             "headingDegrees": self.ros.heading if self.ros else None,
             "navStatus": self.ros.nav_status if self.ros else None,
             "logger": self.ros.logger_status if self.ros else None,
+            "remote": {
+                "manualActive": remote_active,
+                "motionSecondsAgo": motion_ago,
+                "navigatorRunning": navigator_running,
+            },
             "jsonl": read_jsonl_stats(str(jsonl_path)),
             "roadnet": read_roadnet_stats(str(roadnet_path)),
             "bridge": self.bridge,
@@ -477,6 +502,10 @@ PAGE_HTML = """<!DOCTYPE html>
   .row strong { font-family:var(--mono); font-weight:600; }
   .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:.72rem; font-weight:700; }
   .badge.ok { background:rgba(62,207,142,.15); color:var(--ok); }
+  .remote-banner { display:none; margin:0 0 14px; padding:10px 14px; border:1px solid var(--bad); border-radius:10px;
+                   background:rgba(227,93,106,.16); color:var(--bad); font-weight:700; font-size:.9rem; text-align:center;
+                   animation:rcpulse 1.4s ease-in-out infinite; }
+  @keyframes rcpulse { 0%,100%{opacity:1;} 50%{opacity:.55;} }
   .badge.warn { background:rgba(255,180,84,.15); color:var(--warn); }
   .badge.bad { background:rgba(227,93,106,.15); color:var(--bad); }
   #nav { margin-top:10px; font-size:.8rem; color:var(--muted); font-family:var(--mono); }
@@ -515,6 +544,7 @@ PAGE_HTML = """<!DOCTYPE html>
 <body>
   <h1>🚗 car7 实时状态</h1>
   <div class="sub">HKUST(GZ) LubanNav · 10.7.181.161 · <span id="conn" class="badge warn">连接中…</span></div>
+  <div id="remote" class="remote-banner" role="status">🚨 遥控器操控中（手动接管，导航暂停）</div>
   <div class="grid">
     <div class="card">
       <h2>RTK 定位</h2>
@@ -638,6 +668,17 @@ function render(data) {
   }
   $('conn').textContent = '实时连接';
   $('conn').className = 'badge ok';
+  // 遥控器/手动操控检测：页顶红色高亮
+  const remote = data.remote || {};
+  const rcEl = $('remote');
+  if (rcEl) {
+    if (remote.manualActive) {
+      rcEl.textContent = '🚨 遥控器操控中（手动接管，导航暂停） · ' + (remote.motionSecondsAgo ?? '') + 's 前';
+      rcEl.style.display = 'block';
+    } else {
+      rcEl.style.display = 'none';
+    }
+  }
 }
 if (window.EventSource) {
   const es = new EventSource('/api/stream');
