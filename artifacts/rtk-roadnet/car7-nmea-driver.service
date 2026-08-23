@@ -1,0 +1,21 @@
+[Unit]
+# 容器不可用时服务会失败重试；禁用 systemd 默认 StartLimit（10s/5 次），
+# 确保容器恢复后服务自动拉起（否则会停在 failed 不再重试）
+StartLimitIntervalSec=0
+StartLimitBurst=0
+Description=car7 RTK NMEA driver (auto serial port matching)
+Documentation=file:///home/pc/campusCar/src/rtk_tools/rtk_nmea_start.sh
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=pc
+# 启动前清理容器内残留驱动，避免多实例抢串口
+ExecStartPre=-/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'pkill -9 -f "[n]mea_serial_driver" || true'
+ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'source /opt/ros/humble/setup.bash && bash /workspace/campusCar-new-chassis/src/rtk_tools/rtk_nmea_start.sh'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

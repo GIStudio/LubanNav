@@ -1,0 +1,21 @@
+[Unit]
+# 容器不可用时服务会失败重试；禁用 systemd 默认 StartLimit（10s/5 次），
+# 确保容器恢复后服务自动拉起（否则会停在 failed 不再重试）
+StartLimitIntervalSec=0
+StartLimitBurst=0
+Description=car7 RTK Fixed persistent logger (Fixed-only /fix -> JSONL, never truncates)
+Documentation=file:///home/pc/campusCar/src/rtk_tools/README.md
+After=network.target
+
+[Service]
+Type=simple
+User=pc
+WorkingDirectory=/home/pc/campusCar
+ExecStart=/home/pc/campusCar/src/rtk_tools/rtk_fixed_logger_run.sh
+Restart=on-failure
+RestartSec=10
+# 只记 status==4 (RTK_FIXED) 到 data/logs/rtk_fixed.jsonl（追加，跨启动保留）。
+# 安装：sudo cp rtk-fixed-logger.service /etc/systemd/system/ && sudo systemctl enable --now rtk-fixed-logger
+
+[Install]
+WantedBy=multi-user.target

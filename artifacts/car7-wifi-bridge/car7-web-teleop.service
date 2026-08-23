@@ -1,0 +1,20 @@
+[Unit]
+# 容器不可用时服务会失败重试；禁用 systemd 默认 StartLimit（10s/5 次），
+# 确保容器恢复后服务自动拉起（否则会停在 failed 不再重试）
+StartLimitIntervalSec=0
+StartLimitBurst=0
+Description=car7 web teleop (campusCar joystick -> /cmd_vel, port 8090)
+Documentation=file:///home/pc/campusCar/scripts/web_teleop.sh
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=pc
+ExecStartPre=-/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'pkill -9 -f "[w]eb_teleop" || true'
+ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'source /opt/ros/humble/setup.bash && cd /workspace/campusCar-new-chassis && exec bash scripts/web_teleop.sh --port 8090'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+[Unit]
+# 容器不可用时服务会失败重试；禁用 systemd 默认 StartLimit（10s/5 次），
+# 确保容器恢复后服务自动拉起（否则会停在 failed 不再重试）
+StartLimitIntervalSec=0
+StartLimitBurst=0
+Description=car7 automatic road-network builder (nearest-k graph from RTK Fixed log)
+Documentation=file:///home/pc/campusCar/src/rtk_tools/README.md
+After=rtk-fixed-logger.service
+Wants=rtk-fixed-logger.service
+
+[Service]
+Type=simple
+User=pc
+WorkingDirectory=/home/pc/campusCar
+ExecStart=/usr/bin/python3 /home/pc/campusCar/src/rtk_tools/roadnet_builder.py --watch
+Restart=on-failure
+RestartSec=3
+# 增量读取 rtk_fixed.jsonl，每点关联最近 3 个点，原子写 data/maps/campus_road_network.json。
+# 安装：sudo cp rtk-roadnet-builder.service /etc/systemd/system/ && sudo systemctl enable --now rtk-roadnet-builder
+
+[Install]
+WantedBy=multi-user.target

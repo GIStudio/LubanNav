@@ -1,0 +1,29 @@
+[Unit]
+# 容器不可用时服务会失败重试；禁用 systemd 默认 StartLimit（10s/5 次），
+# 确保容器恢复后服务自动拉起（否则会停在 failed 不再重试）
+StartLimitIntervalSec=0
+StartLimitBurst=0
+Description=car7 WiFi bridge (LubanNav robot protocol over WebSocket)
+Documentation=file:///home/pc/campusCar/src/ble_bridge/README.md
+After=docker.service network-online.target move-executor.service
+Requires=docker.service
+Wants=move-executor.service
+
+[Service]
+Type=simple
+User=pc
+# docker exec 的 CLI 进程被 systemd 终止时，容器内的桥进程不会随之退出，
+# 会残留并占用 8900 端口导致新实例 bind 失败。启动前先清理容器内残留实例。
+ExecStartPre=-/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'pkill -9 -f "[c]ar7_wifi_bridge" || true'
+# Runs INSIDE the campuscar container (host /home/pc/campusCar is mounted at
+# /workspace/campusCar-new-chassis) so rclpy can subscribe /fix /imu /odom and
+# gps_navigator.py can be launched with the ROS environment already sourced.
+# --direction: web joystick steps drive the real chassis via move_executor.
+# --drive is intentionally NOT enabled here; enable it only after现场核验
+# (RTK fixed, 航向, 速度上限, 失联看门狗, 实体急停) 且人工确认.
+ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'source /opt/ros/humble/setup.bash && cd /workspace/campusCar-new-chassis/src/ble_bridge && exec python3 car7_wifi_bridge.py --host 0.0.0.0 --port 8900 --direction --replay-fallback --campuscar-export /workspace/campusCar-new-chassis/data/lubannav-campuscar-route.json --goto-export /workspace/campusCar-new-chassis/data/lubannav-goto-target.json'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

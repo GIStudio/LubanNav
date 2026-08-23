@@ -1,0 +1,21 @@
+[Unit]
+# 容器不可用时服务会失败重试；禁用 systemd 默认 StartLimit（10s/5 次），
+# 确保容器恢复后服务自动拉起（否则会停在 failed 不再重试）
+StartLimitIntervalSec=0
+StartLimitBurst=0
+Description=car7 live status dashboard (HTTP + SSE)
+Documentation=file:///home/pc/campusCar/src/ble_bridge/README.md
+After=docker.service network-online.target car7-wifi-bridge.service
+Requires=docker.service
+Wants=car7-wifi-bridge.service
+
+[Service]
+Type=simple
+User=pc
+ExecStartPre=-/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'pkill -9 -f "[c]ar7_status_server" || true'
+ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'source /opt/ros/humble/setup.bash && cd /workspace/campusCar-new-chassis/src/ble_bridge && exec python3 car7_status_server.py --host 0.0.0.0 --port 8901 --data-dir /workspace/campusCar-new-chassis/data'
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
