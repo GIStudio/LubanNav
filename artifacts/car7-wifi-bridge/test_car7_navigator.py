@@ -93,6 +93,24 @@ def test_arrival_advances_waypoint():
     check("arrival enters ALIGN", nav2.state in (nav2.STATE_ALIGN, nav2.STATE_FORWARD), nav2.state)
 
 
+def test_align_timeout_forces_forward():
+    """转向超过 max_align_secs 仍未对齐 → 强制回 FORWARD, 杜绝 360/720 无限转。"""
+    wps = [{"lat": 0.0, "lon": 0.0}, {"lat": 0.0, "lon": 2e-4}]
+    nav2 = nav.StopAndGoNavigator(wps, radius=0.3, min_leg=0.0, max_align_secs=0.0)
+    nav2.on_position(0.0, 0.0, 0.0)
+    nav2.on_position(3e-6, 0.0, 0.0)  # 建航向(东)
+    nav2._begin_align()
+    lin, ang = nav2._align_cmd(math.atan2(0, 1))  # 目标正东
+    check("align timeout -> FORWARD", nav2.state == nav2.STATE_FORWARD, nav2.state)
+
+
+def test_align_speed_high_enough_for_diff():
+    """转正时保持足够前进 (>=0.15) 以便 RTK 差分航向更新, 避免原地蹭无位移死循环。"""
+    nav2 = nav.StopAndGoNavigator([], min_leg=0.0)
+    check("align_speed supports RTK diff", nav2.align_speed >= 0.15, nav2.align_speed)
+    check("tolerant heading min_move", nav.HeadingEstimator().min_move <= 0.03, nav.HeadingEstimator().min_move)
+
+
 if __name__ == "__main__":
     test_build_key_waypoints()
     test_angle_diff()
@@ -100,5 +118,7 @@ if __name__ == "__main__":
     test_right_turn_when_target_is_east_but_heading_north()
     test_forward_when_aligned_east()
     test_arrival_advances_waypoint()
+    test_align_timeout_forces_forward()
+    test_align_speed_high_enough_for_diff()
     print("\n{} passed, {} failed".format(PASSED, len(FAILED)))
     sys.exit(1 if FAILED else 0)

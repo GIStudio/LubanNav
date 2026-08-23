@@ -25,6 +25,7 @@ car7 无 IMU 轨迹导航器（stop-and-go，RTK 差分航向）
 import sys
 import math
 import json
+import time
 import argparse
 from pathlib import Path
 
@@ -100,7 +101,7 @@ class HeadingEstimator:
     仅在车位移超过 min_move 时更新, 并用低通平滑。返回 None 表示尚无可靠航向。
     """
 
-    def __init__(self, min_move=0.05, alpha=0.35):
+    def __init__(self, min_move=0.02, alpha=0.5):
         self.min_move = min_move
         self.alpha = alpha
         self.last = None       # (x, y)
@@ -139,9 +140,9 @@ class StopAndGoNavigator:
     STATE_DONE = "DONE"
 
     def __init__(self, waypoints, speed=3.0, radius=0.6, min_leg=1.2,
-                 turn_thresh_deg=25.0, k_turn=1.6, align_speed=0.06,
-                 align_tol_deg=8.0, k_align=2.0, max_ang=0.8, decel_dist=1.5,
-                 start_speed=0.12, min_speed=0.08):
+                 turn_thresh_deg=25.0, k_turn=1.6, align_speed=0.18,
+                 align_tol_deg=8.0, k_align=1.2, max_ang=0.6, decel_dist=1.5,
+                 start_speed=0.12, min_speed=0.08, max_align_secs=6.0):
         self.waypoints = build_key_waypoints(waypoints, min_leg, turn_thresh_deg)
         self.speed = speed
         self.radius = radius
@@ -153,11 +154,13 @@ class StopAndGoNavigator:
         self.decel_dist = decel_dist
         self.start_speed = start_speed
         self.min_speed = min_speed
+        self.max_align_secs = max_align_secs
         self.wp_index = 0
         self.state = self.STATE_FORWARD
         self.pos = None       # (x, y)
         self.origin = None    # (lat0, lon0, alt0)
         self.hdg = HeadingEstimator()
+        self.align_start = 0.0
 
     # --- 位置输入 (由 ROS fix 回调调用) ---
     def on_position(self, lat, lon, alt):
@@ -216,7 +219,7 @@ class StopAndGoNavigator:
             if self.wp_index >= len(self.waypoints):
                 self.state = self.STATE_DONE
                 return (0.0, 0.0)
-            self.state = self.STATE_ALIGN
+            self._begin_align()
             return self._align_cmd()
 
         target_bearing = math.atan2(dy, dx)  # ENU: 东=0, 北=pi/2
@@ -229,7 +232,7 @@ class StopAndGoNavigator:
         if hdg is not None:
             turn = angle_diff(target_bearing, hdg)
             if abs(turn) >= self.align_tol * 1.5:
-                self.state = self.STATE_ALIGN
+                self._begin_align()
                 return self._align_cmd(target_bearing)
 
         # 直行: 接近目标减速
@@ -244,13 +247,26 @@ class StopAndGoNavigator:
             ang = clamp(self.k_turn * 0.35 * angle_diff(target_bearing, hdg), -self.max_ang, self.max_ang)
         return (lin, ang)
 
+    def _begin_align(self):
+        """进入转向状态: 重置差分基准(避免 stale 航向误导) + 记转向超时起点。"""
+        self.state = self.STATE_ALIGN
+        self.align_start = time.monotonic()
+        if self.pos is not None:
+            self.hdg.reset_at(self.pos[0], self.pos[1])
+
     def _align_cmd(self, target_bearing=None):
-        """蠕动转正: 保持小 linear.x 以便 RTK 差分航向, 用差速纠偏到 target_bearing。"""
+        """转正: 保持足够前进速度以便 RTK 差分航向持续更新, 差速纠偏到 target_bearing。
+
+        若非 target_bearing 或无航向, 先前进建立差分; 超过 max_align_secs 仍未对齐
+        则强制回 FORWARD (前进追赶), 避免原地无限转圈 (360/720/1080°)。"""
         if target_bearing is None:
             return (self.align_speed, 0.0)
+        if time.monotonic() - self.align_start > self.max_align_secs:
+            self.state = self.STATE_FORWARD
+            return (0.0, 0.0)
         hdg = self.hdg.heading
         if hdg is None:
-            # 无航向: 缓慢前进以让差分建立航向, 不加角速度
+            # 无航向: 保持前进以让差分建立航向, 不加角速度
             return (self.align_speed, 0.0)
         err = angle_diff(target_bearing, hdg)
         if abs(err) <= self.align_tol:
