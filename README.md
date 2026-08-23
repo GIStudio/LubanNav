@@ -424,6 +424,18 @@ W2/E2 使用用户标注截图中的近似位置补充两组 POI：稳定 ID `w2
 
 图书馆当前加入约 51 米的 0 层室内段。W2/E2 大堂、电梯、三楼平台、平台餐厅和中部二楼电梯路径均来自用户描述与截图近似定位，尚未经过楼层图或现场测量。三楼平台已按用户确认修正为室外空间，并连同 W2/E2 电梯访问链路开放机器人搜索；平台餐厅、中部二楼路径和图书馆室内段仍只进入步行搜索空间。路线开放不等同于无人值守控制许可，真实小车仍需现场核验门宽、电梯交互、定位、避障与急停。
 
+## 容器部署
+
+前端是纯静态产物，可整体放进一个容器：构建阶段用 Node 生成寻路图与静态 API，运行阶段用 nginx 服务，**只需开放 1 个端口（8080）**。可选的自建语音网关（端口 9000）与机器人 WiFi 桥（端口 8900）按需加开。
+
+```bash
+docker build -f deploy/Dockerfile -t luban-nav .
+docker run -d -p 8080:8080 luban-nav
+# 或：cd deploy && docker compose up -d   （--profile voice 同时起语音网关）
+```
+
+完整说明（端口规划、局域网语音网关配置、新开容器规格建议）见 [`deploy/README.md`](deploy/README.md)。
+
 ## GitHub Pages 部署
 
 仓库已经包含 `.github/workflows/deploy-pages.yml`。将默认分支推送为 `main` 后，在 GitHub 仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。此后每次推送到 `main` 都会先测试、构建，再部署 Pages。

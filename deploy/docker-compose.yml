@@ -1,0 +1,40 @@
+# LubanNav 容器编排（在 deploy/ 目录执行）
+#   docker compose up -d                 # 只起网站（8080）
+#   docker compose --profile voice up -d # 同时起语音网关（9000）
+#
+# 让前端指向自建语音网关（可选）：
+#   VITE_VOICE_GATEWAY_URL=http://<宿主机IP>:9000/voice/session \
+#   VOICE_ALLOWED_ORIGINS=http://<宿主机IP>:8080 \
+#   docker compose --profile voice up -d --build
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        # 留空则使用默认的阿里云函数计算语音网关
+        VITE_VOICE_GATEWAY_URL: ${VITE_VOICE_GATEWAY_URL:-}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  voice-gateway:
+    build:
+      context: ..
+      dockerfile: deploy/voice-gateway.Dockerfile
+    profiles: ["voice"]
+    env_file:
+      - path: ./voice-gateway.env
+        required: false
+    environment:
+      PORT: "9000"
+      # 必须包含站点 Origin（默认值按 localhost 实验场景，局域网请覆盖）
+      ALLOWED_ORIGINS: ${VOICE_ALLOWED_ORIGINS:-http://localhost:8080}
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
