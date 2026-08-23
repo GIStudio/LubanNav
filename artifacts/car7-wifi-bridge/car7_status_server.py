@@ -527,8 +527,20 @@ PAGE_HTML = """<!DOCTYPE html>
   #traj-stop { border-color:var(--bad); color:var(--bad); }
   #traj-info { margin-top:8px; font-size:.76rem; color:var(--muted); font-family:var(--mono); }
   .tl { margin-top:10px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.02); }
-  .tl-row { display:flex; align-items:center; gap:8px; font-size:.72rem; color:var(--muted); font-family:var(--mono); }
-  .tl-row input[type=range] { flex:1; min-width:0; accent-color:var(--accent); }
+  .tl-row { display:flex; align-items:center; gap:10px; font-size:.72rem; color:var(--muted); font-family:var(--mono); }
+  .tl-track { position:relative; flex:1; min-width:0; height:22px; }
+  .tl-track::before { content:''; position:absolute; left:0; right:0; top:50%; height:4px; transform:translateY(-50%);
+                      background:var(--line); border-radius:999px; }
+  .tl-track::after { content:''; position:absolute; top:50%; height:4px; transform:translateY(-50%);
+                     left:var(--p0,0%); right:calc(100% - var(--p1,100%));
+                     background:var(--accent); border-radius:999px; }
+  .tl-slider { position:absolute; left:0; top:0; width:100%; height:22px; margin:0;
+               -webkit-appearance:none; appearance:none; background:transparent; pointer-events:none; }
+  .tl-slider::-webkit-slider-thumb { -webkit-appearance:none; pointer-events:auto; width:14px; height:14px;
+                                     border-radius:50%; background:var(--accent); border:2px solid var(--bg);
+                                     box-shadow:0 0 0 1px var(--accent); cursor:pointer; }
+  .tl-slider::-moz-range-thumb { pointer-events:auto; width:14px; height:14px; border-radius:50%;
+                                 background:var(--accent); border:2px solid var(--bg); cursor:pointer; }
   .tl-time { min-width:118px; white-space:nowrap; }
   .tl-count { margin-top:4px; font-size:.7rem; color:var(--muted); font-family:var(--mono); }
   .seg-btns { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
@@ -590,8 +602,10 @@ PAGE_HTML = """<!DOCTYPE html>
     <div class="tl">
       <div class="tl-row">
         <span id="tl-start-t" class="tl-time">—</span>
-        <input id="tl-start" type="range" min="0" max="0" value="0" disabled title="轨迹段起点"/>
-        <input id="tl-end" type="range" min="0" max="0" value="0" disabled title="轨迹段终点"/>
+        <div class="tl-track" id="tl-track">
+          <input id="tl-start" class="tl-slider" type="range" min="0" max="0" value="0" disabled title="轨迹段起点"/>
+          <input id="tl-end" class="tl-slider" type="range" min="0" max="0" value="0" disabled title="轨迹段终点"/>
+        </div>
         <span id="tl-end-t" class="tl-time">—</span>
       </div>
       <div class="tl-count" id="tl-count">时间轴 —</div>
@@ -808,18 +822,34 @@ function currentSegment() {
   return trajPoints.slice(s, e);
 }
 
+function updateFill() {
+  const track = document.getElementById('tl-track');
+  if (!track) return;
+  const maxIdx = Math.max(trajPoints.length - 1, 1);
+  const p0 = Math.min(100, (trajSegStart / maxIdx) * 100);
+  const p1 = Math.min(100, (Math.max(trajSegEnd, 1) / maxIdx) * 100);
+  track.style.setProperty('--p0', p0 + '%');
+  track.style.setProperty('--p1', p1 + '%');
+}
+
 function refreshTimeline() {
   const n = trajPoints.length;
+  const maxIdx = Math.max(n - 1, 1);
   tlStart.disabled = tlEnd.disabled = n < 2;
-  tlStart.max = tlEnd.max = Math.max(n - 1, 1);
-  tlStart.value = trajSegStart;
-  tlEnd.value = trajSegEnd;
+  // 单轴双端: 起止有序, 同一根时间轴 (start 上限 = 当前 end, end 下限 = 当前 start)
+  tlStart.min = 0;
+  tlStart.max = Math.max(Math.min(trajSegEnd, maxIdx), 1);
+  tlEnd.min = Math.min(trajSegStart, maxIdx);
+  tlEnd.max = maxIdx;
+  tlStart.value = Math.min(trajSegStart, tlStart.max);
+  tlEnd.value = Math.max(Math.min(trajSegEnd, maxIdx), tlEnd.min);
   const a = trajPoints[trajSegStart], b = trajPoints[Math.max(trajSegEnd - 1, trajSegStart)];
   tlStartT.textContent = '起 ' + fmtTime(a && a.t);
   tlEndT.textContent = '止 ' + fmtTime(b && b.t);
   const seg = currentSegment();
   tlCount.textContent = '时间轴 ' + fmtTz(trajPoints[0] && trajPoints[0].t) + ' → ' + fmtTz(trajPoints[n - 1] && trajPoints[n - 1].t)
     + ' · 全轨 ' + n + ' 点 · 选段 ' + seg.length + ' 点';
+  updateFill();
 }
 
 function setSegment(start, end) {
