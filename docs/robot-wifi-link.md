@@ -143,6 +143,18 @@ python3 tools/car7-wifi-tools/wifi_central_test.py   # Mac 侧闭环验收脚本
 定位融合逻辑（`src/lib/positionStore.js`）：小车 RTK 位置 5 秒内新鲜 → 用
 RTK；否则回落到 30 秒内新鲜的浏览器定位；都没有则显示无定位。
 
+## RTK 日志三层备份（NUC 电源不稳防护）
+
+NUC 电源不稳会莫名重启；RTK 固定记录做了三层保护（文件全程追加、绝不截断）：
+
+| 层 | 位置 | 机制 |
+| --- | --- | --- |
+| ① 主日志 | `campusCar/data/logs/rtk_fixed.jsonl` | logger 追加写 + 每条 `fsync`（断电不丢最后几条） |
+| ② 实时双写 | `campusCar/rtk_backup/rtk_fixed.jsonl` | logger 每条记录同时写入（独立于 data/logs） |
+| ③ host 快照 | `/home/pc/rtk_logs/rtk_fixed.jsonl` | systemd 定时器 `car7-rtk-backup.timer` 每 30 秒同步（独立于 campusCar 的家目录） |
+
+logger 支持 `--backup-path`（默认容器挂载卷内 `rtk_backup/`）；host 定时器单元与 logger/run 脚本一起在 `artifacts/rtk-roadnet/` 部署（`deploy_rtk_roadnet.py`）。
+
 ## 已知限制与后续
 
 - **RTK 固定解**：室内无固定解时网页显示“路线回放（RTK 暂无固定解）”；
