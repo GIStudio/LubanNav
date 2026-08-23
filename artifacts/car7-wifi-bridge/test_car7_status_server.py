@@ -97,11 +97,26 @@ def test_save_and_load_trajectory():
         check("saved meta", payload["meta"]["count"] == 3, payload["meta"])
 
 
+def test_annotate_speeds():
+    # 沿直线, 相邻 ~5m, 每秒一点 → 每边速度 ~5 m/s
+    lat0, lon0 = 22.88, 113.47
+    pts = [{"lat": lat0 + i * 5e-5, "lon": lon0, "t": "2026-08-23T00:00:0{}Z".format(i)} for i in range(6)]
+    out = status.annotate_speeds(list(pts))
+    check("annotate speedAvg windowed", out[2]["speedAvg"] and 3 < out[2]["speedAvg"] < 8, out[2])
+    check("annotate speedInstant", out[2]["speedInstant"] is not None, out[2])
+    # 断段: 第2点后跳到 >10m
+    pts2 = [dict(p) for p in pts[:3]]
+    pts2.append({"lat": 22.90, "lon": 113.47, "t": "2026-08-23T00:00:03Z"})
+    out2 = status.annotate_speeds(list(pts2))
+    check("annotate 断段不跨段(无speedAvg)", out2[3].get("speedAvg") is None, out2[3])
+
+
 if __name__ == "__main__":
     test_jsonl_stats()
     test_roadnet_stats()
     test_snapshot_structure_without_ros()
     test_page_contains_ui()
     test_save_and_load_trajectory()
+    test_annotate_speeds()
     print("\n{} passed, {} failed".format(PASSED, len(FAILED)))
     sys.exit(1 if FAILED else 0)

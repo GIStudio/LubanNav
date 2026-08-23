@@ -129,6 +129,73 @@ def read_trajectory(path: str, max_points: int = 2000) -> list:
     return points[-max_points:]
 
 
+def _haversine_m(lat1, lon1, lat2, lon2) -> float:
+    import math
+    R = 6371000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+def _t_epoch(t) -> float | None:
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat((t or "").replace("Z", "+00:00")).timestamp()
+    except (ValueError, TypeError):
+        return None
+
+
+def annotate_speeds(points: list, window: int = 5, max_gap_m: float = 10.0) -> list:
+    """给轨迹点附加 5 点窗口平均速度 (m/s)。
+
+    - 相邻点间距 > max_gap_m(10m) 视为断段: 不跨段求平均(不算同一个轨迹)。
+    - 每点 speedAvg: 以该点为中心、前后各 window//2 条相邻边速度(不跨断段)的平均。
+    - 每点 speedInstant: 最近一条有效相邻边的瞬时速度。
+    返回原地给 points 增添 speedAvg / speedInstant 字段。
+    """
+    n = len(points)
+    if n < 2:
+        return points
+    edge_v = [None] * (n - 1)
+    for i in range(n - 1):
+        gap = _haversine_m(points[i]["lat"], points[i]["lon"], points[i + 1]["lat"], points[i + 1]["lon"])
+        if gap > max_gap_m:
+            continue  # 断段
+        t0 = _t_epoch(points[i].get("t"))
+        t1 = _t_epoch(points[i + 1].get("t"))
+        if t0 is None or t1 is None or t1 <= t0:
+            continue
+        edge_v[i] = gap / (t1 - t0)
+    half = window // 2
+    for k in range(n):
+        vals = []
+        cnt = 0
+        i = k - 1
+        while i >= 0 and cnt < half:
+            if edge_v[i] is None:
+                break
+            vals.append(edge_v[i])
+            cnt += 1
+            i -= 1
+        cnt = 0
+        i = k
+        while i < n - 1 and cnt < half:
+            if edge_v[i] is None:
+                break
+            vals.append(edge_v[i])
+            cnt += 1
+            i += 1
+        if vals:
+            points[k]["speedAvg"] = round(sum(vals) / len(vals), 3)
+        if 0 <= k - 1 < len(edge_v) and edge_v[k - 1] is not None:
+            points[k]["speedInstant"] = round(edge_v[k - 1], 3)
+        elif 0 <= k < len(edge_v) and edge_v[k] is not None:
+            points[k]["speedInstant"] = round(edge_v[k], 3)
+    return points
+
+
 def campuscar_waypoint_payload(points: list) -> dict:
     """campusCar gps_navigator.py 可读的 {origin, waypoints[]} 格式。"""
     waypoints = [{"lat": p["lat"], "lon": p["lon"], "alt": 0} for p in points]
@@ -360,7 +427,7 @@ class StatusCollector:
         self.navigator = NavigatorRunner(data_dir)
 
     def trajectory(self) -> dict:
-        points = read_trajectory(str(self.data_dir / "logs" / "rtk_fixed.jsonl"))
+        points = annotate_speeds(read_trajectory(str(self.data_dir / "logs" / "rtk_fixed.jsonl")))
         meta = {
             "count": len(points),
             "firstT": points[0]["t"] if points else None,
@@ -773,7 +840,11 @@ function trajReplayTick() {
   const seg = currentSegment();
   if (!seg.length) { stopTrajReplay(); return; }
   const p = seg[trajReplayIdx];
-  if (trajMap && trajPlayMarker && p) trajPlayMarker.setLatLng([p.lat, p.lon]);
+  if (trajMap && trajPlayMarker && p) {
+    trajPlayMarker.setLatLng([p.lat, p.lon]);
+    const sp = (p.speedAvg != null ? p.speedAvg : p.speedInstant);
+    trajPlayMarker.setTooltipContent(sp != null ? '速度 ' + sp.toFixed(2) + ' m/s' : '回放 · 无速度');
+  }
   drawTrajectory(trajReplayIdx, seg);
   trajReplayIdx = (trajReplayIdx + 1) % seg.length;
 }

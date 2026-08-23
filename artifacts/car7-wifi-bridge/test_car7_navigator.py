@@ -93,6 +93,16 @@ def test_arrival_advances_waypoint():
     check("arrival enters ALIGN", nav2.state in (nav2.STATE_ALIGN, nav2.STATE_FORWARD), nav2.state)
 
 
+def test_odom_yaw_calibration():
+    """odom 原始朝北(pi/2), 但 RTK 差分向东(0) → 标定 offset=-pi/2, 对齐后 heading=0(东)。"""
+    nav2 = nav.StopAndGoNavigator([{"lat": 0.0, "lon": 0.0}, {"lat": 0.0, "lon": 2e-4}], radius=0.3, min_leg=0.0)
+    nav2.set_odom_yaw(math.pi / 2)
+    nav2.on_position(0.0, 0.0, 0.0)
+    nav2.on_position(0.0, 0.1, 0.0)  # 经度+ → 向东
+    check("odom 已标定", nav2.yaw_offset is not None, nav2.yaw_offset)
+    check("标定后 heading 向东", abs(nav2.heading()) < 0.2, nav2.heading())
+
+
 def test_align_timeout_forces_forward():
     """转向超过 max_align_secs 仍未对齐 → 强制回 FORWARD, 杜绝 360/720 无限转。"""
     wps = [{"lat": 0.0, "lon": 0.0}, {"lat": 0.0, "lon": 2e-4}]
@@ -118,6 +128,7 @@ if __name__ == "__main__":
     test_right_turn_when_target_is_east_but_heading_north()
     test_forward_when_aligned_east()
     test_arrival_advances_waypoint()
+    test_odom_yaw_calibration()
     test_align_timeout_forces_forward()
     test_align_speed_high_enough_for_diff()
     print("\n{} passed, {} failed".format(PASSED, len(FAILED)))

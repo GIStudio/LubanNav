@@ -60,6 +60,13 @@ def bearing_enu(dx, dy):
     return math.atan2(dy, dx)
 
 
+def quat_to_yaw(x, y, z, w):
+    """四元数 → 偏航角 (rad, ENU: 东=0, 北=pi/2, 逆时针正)。"""
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
 def haversine(lat1, lon1, lat2, lon2):
     """球面距离 (米)。"""
     R = 6371000.0
@@ -161,6 +168,27 @@ class StopAndGoNavigator:
         self.origin = None    # (lat0, lon0, alt0)
         self.hdg = HeadingEstimator()
         self.align_start = 0.0
+        # 朝向源: 优先 /odom yaw (连续可靠), 用 RTK 差分方向做一次 ENU 对齐标定
+        self.odom_yaw = None       # 最近 odom yaw (ENU)
+        self.yaw_offset = None     # ENU 对齐偏移 (标定后 heading = odom_yaw + offset)
+
+    def set_odom_yaw(self, yaw):
+        self.odom_yaw = yaw
+
+    def calibrate_yaw(self):
+        """用 RTK 差分方向标定 odom→ENU 偏移: offset = rtk_dir - odom_yaw。"""
+        if self.yaw_offset is not None or self.odom_yaw is None:
+            return
+        rtk_dir = self.hdg.heading
+        if rtk_dir is None:
+            return
+        self.yaw_offset = angle_diff(rtk_dir, self.odom_yaw)
+
+    def heading(self):
+        # 已标定: 用 odom(连续) + ENU 偏移; 未标定: 回退 RTK 差分方向
+        if self.yaw_offset is not None and self.odom_yaw is not None:
+            return self.odom_yaw + self.yaw_offset
+        return self.hdg.heading
 
     # --- 位置输入 (由 ROS fix 回调调用) ---
     def on_position(self, lat, lon, alt):
@@ -169,6 +197,7 @@ class StopAndGoNavigator:
         x, y, _ = gps_to_enu(lat, lon, alt, *self.origin)
         self.pos = (x, y)
         self.hdg.update(x, y)
+        self.calibrate_yaw()
         return self.pos
 
     def reset_heading(self, lat, lon, alt):
@@ -297,8 +326,8 @@ def main():
     parser.add_argument("--min-leg", type=float, default=1.2)
     parser.add_argument("--turn-thresh", type=float, default=25.0)
     parser.add_argument("--k-turn", type=float, default=1.6)
-    parser.add_argument("--k-align", type=float, default=2.0)
-    parser.add_argument("--max-ang", type=float, default=0.8)
+    parser.add_argument("--k-align", type=float, default=1.2)
+    parser.add_argument("--max-ang", type=float, default=0.6)
     parser.add_argument("--hz", type=float, default=10.0)
     parser.add_argument("--fix-topic", default="/fix")
     parser.add_argument("--cmd-topic", default="/cmd_vel")
@@ -313,6 +342,7 @@ def main():
     from rclpy.node import Node
     from sensor_msgs.msg import NavSatFix
     from geometry_msgs.msg import Twist
+    from nav_msgs.msg import Odometry
 
     # 加载航点
     with open(args.waypoints, "r", encoding="utf-8") as handle:
@@ -331,11 +361,19 @@ def main():
             super().__init__("car7_navigator")
             self.pub = self.create_publisher(Twist, args.cmd_topic, 10)
             self.sub = self.create_subscription(NavSatFix, args.fix_topic, self._on_fix, 10)
+            self.sub_odom = self.create_subscription(Odometry, "/odom", self._on_odom, 10)
             self.gps_ok = False
             self.create_timer(1.0 / args.hz, self._control)
             self.get_logger().info(
                 "car7-nav 启动: {} 个关键点 (原{}点) speed={} radius={} turn_thresh={}".format(
                     len(nav.waypoints), len(wps), args.speed, args.radius, args.turn_thresh))
+
+        def _on_odom(self, msg):
+            q = msg.pose.pose.orientation
+            nav.set_odom_yaw(quat_to_yaw(q.x, q.y, q.z, q.w))
+            if nav.yaw_offset is None:
+                # 首次拿到 odom 朝向即尝试用 RTK 差分方向标定(若已有)
+                nav.calibrate_yaw()
 
         def _on_fix(self, msg):
             if msg.status.status < 0:

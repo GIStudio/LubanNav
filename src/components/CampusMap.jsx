@@ -320,6 +320,7 @@ export function CampusMap({
     // highlight the current replay point
     if (trajectoryPlaying && trajectoryIndex != null && trajectory[trajectoryIndex]) {
       const point = trajectory[trajectoryIndex];
+      const sp = point.speedAvg != null ? point.speedAvg : point.speedInstant;
       L.circleMarker([point.lat, point.lon], {
         pane: 'locationPane',
         radius: 6,
@@ -328,7 +329,7 @@ export function CampusMap({
         fillColor: '#ffb454',
         fillOpacity: 1,
         interactive: false,
-      }).addTo(layer);
+      }).addTo(layer).bindTooltip(sp != null ? `速度 ${sp.toFixed(2)} m/s` : '回放', { className: 'osm-feature-tooltip', sticky: true });
     }
   }, [trajectory, trajectoryPlaying, trajectoryIndex]);
 
