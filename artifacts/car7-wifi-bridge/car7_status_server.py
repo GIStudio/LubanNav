@@ -151,7 +151,7 @@ class NavigatorRunner:
         self.points = 0
         self.lock = threading.Lock()
 
-    def start(self, points: list, speed: float = 0.3, radius: float = 0.8,
+    def start(self, points: list, speed: float = 3.0, radius: float = 0.8,
               min_leg: float = 1.2, turn_thresh: float = 25.0) -> dict:
         with self.lock:
             if self.process is not None and self.process.poll() is None:
@@ -964,11 +964,11 @@ function startTrajReplay() {
 async function navigateTrajectory() {
   const seg = currentSegment();
   if (!seg.length) { alert('没有轨迹可导航，先加载'); return; }
-  if (!confirm('将沿选中的 ' + seg.length + ' 个轨迹点自主行驶（速度 0.3 m/s，需要 RTK 固定解）！确认开始？')) return;
+  if (!confirm('将沿选中的 ' + seg.length + ' 个轨迹点自主行驶（速度 3.0 m/s，需要 RTK 固定解）！确认开始？')) return;
   try {
     const r = await fetch('/api/trajectory/start', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ speed: 0.3, points: seg, minLeg: 1.2, turnThresh: 25 }),
+      body: JSON.stringify({ speed: 3.0, points: seg, minLeg: 1.2, turnThresh: 25 }),
     });
     const d = await r.json();
     trajInfo.textContent = d.ok
@@ -1174,7 +1174,7 @@ class Handler(BaseHTTPRequestHandler):
                            "application/json; charset=utf-8")
                 return
             result = self.collector.navigator.start(
-                points, speed=float(data.get("speed", 0.3)), radius=float(data.get("radius", 0.8)),
+                points, speed=float(data.get("speed", 3.0)), radius=float(data.get("radius", 0.8)),
                 min_leg=float(data.get("minLeg", 1.2)), turn_thresh=float(data.get("turnThresh", 25.0)))
             result.update({"trajectoryPoints": len(points)})
             self._send(200, json.dumps(result, ensure_ascii=False), "application/json; charset=utf-8")

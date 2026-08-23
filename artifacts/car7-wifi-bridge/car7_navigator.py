@@ -138,7 +138,7 @@ class StopAndGoNavigator:
     STATE_ALIGN = "ALIGN"
     STATE_DONE = "DONE"
 
-    def __init__(self, waypoints, speed=0.3, radius=0.6, min_leg=1.2,
+    def __init__(self, waypoints, speed=3.0, radius=0.6, min_leg=1.2,
                  turn_thresh_deg=25.0, k_turn=1.6, align_speed=0.06,
                  align_tol_deg=8.0, k_align=2.0, max_ang=0.8, decel_dist=1.5,
                  start_speed=0.12, min_speed=0.08):
@@ -276,7 +276,7 @@ class StopAndGoNavigator:
 def main():
     parser = argparse.ArgumentParser(description="car7 无 IMU 轨迹导航 (stop-and-go + RTK 差分航向)")
     parser.add_argument("--waypoints", required=True)
-    parser.add_argument("--speed", type=float, default=0.3)
+    parser.add_argument("--speed", type=float, default=3.0)
     parser.add_argument("--radius", type=float, default=0.6)
     parser.add_argument("--min-leg", type=float, default=1.2)
     parser.add_argument("--turn-thresh", type=float, default=25.0)
