@@ -13,6 +13,7 @@ export function CarStatusBadge({ status }) {
   const fixLabel = data?.fixLabel;
   const fixClass = fixLabel === 'RTK 固定解' || fixLabel === 'RTK fixed'
     ? 'ok' : (fixLabel && fixLabel !== '无信号' ? 'warn' : 'bad');
+  const remoteActive = status?.online && data?.remote?.manualActive === true;
 
   return (
     <div class={`car-status-badge ${status?.online ? 'online' : 'offline'}`}>
@@ -29,11 +30,18 @@ export function CarStatusBadge({ status }) {
           {status?.online && data && (
             <small class={`car-status-fix ${fixClass}`}>{fixLabel ?? '—'}</small>
           )}
+          {remoteActive && <small class="car-status-rc">🚨 遥控器操控中</small>}
         </span>
       </button>
 
       {open && status?.online && data && (
         <div class="car-status-popover" role="dialog" aria-label={t('carStatus.detailAria')}>
+          {remoteActive && (
+            <div class="car-status-row car-status-rc-row">
+              <span>🚨 遥控</span>
+              <strong class="car-status-rc">手动操控中（导航暂停）</strong>
+            </div>
+          )}
           <div class="car-status-row">
             <span>{t('carStatus.rtk')}</span>
             <strong class={`car-status-fix ${fixClass}`}>{fixLabel ?? '—'}</strong>

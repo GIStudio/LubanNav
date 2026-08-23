@@ -4126,6 +4126,19 @@ h2 {
 .car-status-fix.warn { color: var(--warn); }
 .car-status-fix.bad { color: var(--bad); }
 
+.car-status-rc {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bad);
+  padding: 1px 6px;
+  border: 1px solid var(--bad);
+  border-radius: 999px;
+  animation: carstatus-rc-pulse 1.4s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes carstatus-rc-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.car-status-rc-row strong { color: var(--bad); }
+
 .car-status-popover {
   position: absolute;
   top: calc(100% + 8px);
