@@ -1,0 +1,18 @@
+[Unit]
+Description=car7 self-heal watchdog (auto-resolve service crash / stale procs / code drift / RTK loss)
+Documentation=file:///home/pc/campusCar/src/ble_bridge/car7_selfheal.sh
+After=docker.service network-online.target
+Wants=docker.service
+StartLimitIntervalSec=0
+StartLimitBurst=0
+
+[Service]
+Type=simple
+# root 以便免 sudo 重启 systemd 单元并 docker exec 探测
+User=root
+ExecStart=/bin/bash /home/pc/campusCar/src/ble_bridge/car7_selfheal.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

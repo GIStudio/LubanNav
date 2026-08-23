@@ -43,6 +43,8 @@ DEFAULT_FILES = [
     "car7-web-teleop.service",
     "car7_serial_watchdog.sh",
     "car7-serial-watchdog.service",
+    "car7_selfheal.sh",
+    "car7-selfheal.service",
     "README.md",
 ]
 
