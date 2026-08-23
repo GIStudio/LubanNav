@@ -256,7 +256,40 @@ a {
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 10px;
   overflow: hidden;
+  position: relative;
 }
+
+.trajectory-nav {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(15, 46, 63, 0.96), rgba(7, 28, 43, 0.95));
+  box-shadow: var(--shadow, 0 6px 22px rgba(0, 0, 0, 0.35));
+}
+.traj-nav-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.traj-nav-title { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+.traj-nav-info { color: var(--muted); font-size: 0.72rem; font-family: var(--mono, monospace); }
+.traj-nav-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.traj-nav-controls button {
+  flex: 1; min-width: 72px; padding: 7px 8px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: transparent; color: var(--text); font-size: 0.74rem; font-weight: 700; cursor: pointer;
+}
+.traj-nav-controls button:hover { border-color: #4aa3ff; }
+.traj-nav-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+.traj-nav-controls button.primary { border-color: #3ecf8e; color: #3ecf8e; }
+.traj-nav-controls button.danger { border-color: #e35d6a; color: #e35d6a; }
+.traj-nav-speed { display: flex; gap: 6px; align-items: center; font-size: 0.72rem; color: var(--muted); }
+.traj-nav-speed input { width: 90px; accent-color: #3ecf8e; }
+.traj-nav-speed strong { font-family: var(--mono, monospace); color: var(--text); }
 
 .route-control,
 .event-panel,

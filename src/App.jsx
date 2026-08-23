@@ -23,6 +23,7 @@ import { buildWeatherAdvisory, fetchWeather } from './lib/weather.js';
 import { useEventProfiles } from './lib/useEventProfiles.js';
 import { useRouteQueryState } from './lib/useRouteQueryState.js';
 import { voiceSession } from './lib/voiceSession.js';
+import { TrajectoryNav } from './components/TrajectoryNav.jsx';
 
 export function App() {
   const { t, lang, setLang } = useI18n();
@@ -45,6 +46,17 @@ export function App() {
   const [systemMenuOpen, setSystemMenuOpen] = useState(false);
   const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
   const systemMenuButtonRef = useRef(null);
+
+  // Real RTK trajectory navigation (TrajectoryNav -> CampusMap green line).
+  const [trajectoryPoints, setTrajectoryPoints] = useState([]);
+  const [trajectoryPlaying, setTrajectoryPlaying] = useState(false);
+  const [trajectoryIndex, setTrajectoryIndex] = useState(0);
+  const handleTrajectoryChange = useCallback((update) => {
+    if (!update) return;
+    if (Object.prototype.hasOwnProperty.call(update, 'points')) setTrajectoryPoints(update.points ?? []);
+    if (Object.prototype.hasOwnProperty.call(update, 'playing')) setTrajectoryPlaying(update.playing ?? false);
+    if (Object.prototype.hasOwnProperty.call(update, 'index')) setTrajectoryIndex(update.index ?? 0);
+  }, []);
 
   // Position fusion store: car RTK telemetry is the primary source, the
   // browser's geolocation is the fallback (see lib/positionStore.js). The
@@ -534,7 +546,11 @@ export function App() {
             browserPosition={posState.browser}
             positionSource={posState.source}
             onSelectDestination={selectDestination}
+            trajectory={trajectoryPoints}
+            trajectoryPlaying={trajectoryPlaying}
+            trajectoryIndex={trajectoryIndex}
           />
+          <TrajectoryNav onTrajectoryChange={handleTrajectoryChange} />
           <VoiceQuickControl onConfigure={() => openSystemMenu('voice')} />
         </section>
       </div>

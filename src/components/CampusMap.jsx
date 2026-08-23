@@ -39,11 +39,15 @@ export function CampusMap({
   browserPosition,
   positionSource,
   onSelectDestination,
+  trajectory,          // [{lat, lon, t}] — the car's recorded RTK trajectory line
+  trajectoryPlaying,   // boolean — highlight a point along the trajectory
+  trajectoryIndex,     // number — index into trajectory to highlight
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerLayerRef = useRef(null);
   const routeLayerRef = useRef(null);
+  const trajectoryLayerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [mapStatus, setMapStatus] = useState('loading');
   const [zoom, setZoom] = useState(17);
@@ -77,6 +81,7 @@ export function CampusMap({
     mapRef.current = map;
     markerLayerRef.current = L.layerGroup().addTo(map);
     routeLayerRef.current = L.layerGroup().addTo(map);
+    trajectoryLayerRef.current = L.layerGroup().addTo(map);
 
     Promise.all(
       [OSM_DATA_URL, INDOOR_DATA_URL, LOCAL_NAV_DATA_URL].map((url) =>
@@ -267,6 +272,65 @@ export function CampusMap({
       animate: true,
     });
   }, [route, lang]);
+
+  // Car's recorded RTK trajectory (green line) + optional live replay point.
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = trajectoryLayerRef.current;
+    if (!map || !layer) return;
+    layer.clearLayers();
+    if (!trajectory?.length) return;
+    const latLngs = trajectory.map((point) => [point.lat, point.lon]);
+    L.polyline(latLngs, {
+      pane: 'locationPane',
+      color: '#3ecf8e',
+      opacity: 0.3,
+      weight: 14,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(layer);
+    L.polyline(latLngs, {
+      pane: 'locationPane',
+      color: '#3ecf8e',
+      opacity: 1,
+      weight: 4,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(layer);
+    L.circleMarker(latLngs[0], {
+      pane: 'locationPane',
+      radius: 7,
+      color: '#071c2c',
+      weight: 3,
+      fillColor: '#3ecf8e',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(layer);
+    L.circleMarker(latLngs[latLngs.length - 1], {
+      pane: 'locationPane',
+      radius: 8,
+      color: '#071c2c',
+      weight: 3,
+      fillColor: '#e35d6a',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(layer);
+    // highlight the current replay point
+    if (trajectoryPlaying && trajectoryIndex != null && trajectory[trajectoryIndex]) {
+      const point = trajectory[trajectoryIndex];
+      L.circleMarker([point.lat, point.lon], {
+        pane: 'locationPane',
+        radius: 6,
+        color: '#071c2c',
+        weight: 3,
+        fillColor: '#ffb454',
+        fillOpacity: 1,
+        interactive: false,
+      }).addTo(layer);
+    }
+  }, [trajectory, trajectoryPlaying, trajectoryIndex]);
 
   function resetView() {
     mapRef.current?.fitBounds(CAMPUS_BOUNDS, { padding: [28, 28], animate: true });
