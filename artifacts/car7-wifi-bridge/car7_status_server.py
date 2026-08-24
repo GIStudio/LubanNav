@@ -260,17 +260,33 @@ class NavigatorRunner:
     def start(self, points: list, speed: float = 3.0, radius: float = 0.8,
               min_leg: float = 1.2, turn_thresh: float = 25.0) -> dict:
         with self.lock:
-            if self.process is not None and self.process.poll() is None:
-                return {"ok": False, "error": "navigation already running"}
             if len(points) < 3:
                 return {"ok": False, "error": "轨迹点太少（至少 3 个）"}
+            legacy = os.environ.get("CAR7_NAVIGATOR", "").lower() == "legacy"
+            # 单实例: 启动前清掉 container 内已在跑的 car7_navigator(新的顶掉旧的, 只留一个)
+            if not legacy:
+                try:
+                    subprocess.run(["pkill", "-9", "-f", "[c]ar7_navigator"],
+                                   capture_output=True, timeout=3)
+                except Exception:
+                    pass
+                if self.process is not None:
+                    if self.process.poll() is None:
+                        try:
+                            self.process.terminate()
+                        except Exception:
+                            pass
+                    try:
+                        self.process.wait(timeout=3)
+                    except Exception:
+                        pass
+                    self.process = None
             path = self.data_dir / "lubannav-trajectory.json"
             try:
                 path.write_text(json.dumps(campuscar_waypoint_payload(points),
                                            ensure_ascii=False, indent=1), encoding="utf-8")
             except OSError as exc:
                 return {"ok": False, "error": "轨迹文件写入失败: {}".format(exc)}
-            legacy = os.environ.get("CAR7_NAVIGATOR", "").lower() == "legacy"
             script = self.LEGACY_SCRIPT if legacy else self.NAV_SCRIPT
             if legacy:
                 cmd = ("source /opt/ros/humble/setup.bash && exec python3 "
