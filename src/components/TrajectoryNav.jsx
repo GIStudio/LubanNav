@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useState } from 'preact/hooks';
 import {
   startTrajectory,
   stopTrajectory,
@@ -6,17 +6,16 @@ import {
 } from '../lib/car7Trajectory.js';
 
 /**
- * TrajectoryNav — 右上角面包屑下的"轨迹导航"入口（顶栏按钮 + 下拉面板）。
+ * TrajectoryNav — 右上角面包屑下的"轨迹重演"入口（顶栏按钮 + 下拉面板）。
  *
- * 需求:
- *  - 鲁班 nav 直接下发命令让小车沿轨迹走 (8901 POST /api/trajectory/start -> car7_navigator)。
- *  - 不在地图上铺大控制条, 只作为顶栏右上角面包屑展示; 点开可切换轨迹/速度/下发/停止。
- *  - 内部"模拟回放": 加载演示轨迹后自动让地图高亮点沿轨迹移动(无回放控件)。
+ * 展示模式: 不用校园 findRoute, 直接接入我们做的 RTK 轨迹重演——
+ *   - 启动小车沿 RTK 轨迹真实行走(8901 POST /api/trajectory/start -> car7_navigator);
+ *   - 前端"走过的轨迹段"由实时 RTK 位置驱动(CampusMap 只绘制点+已走过的路线)。
+ * 这里只负责: 选轨迹 / 调速度 / 启动真车重演 / 停止。进度绘制交给 App(实时 RTK)。
  *
- * 轨迹数据: public/data/trajectories/*.json (昨晚车机拷贝的 E1 三楼→中央平台段)。
  * Props:
- *   onTrajectoryChange(update) — 上报 {points, playing, index} 给 App -> CampusMap 画绿线+移动高亮点。
- *   replayTrigger({points, nav, tick}) — 演示流程(打招呼→放包后)触发回放。
+ *   onTrajectoryChange({points}) — 上报轨迹点给 App -> CampusMap(仅供 progress 用)。
+ *   replayTrigger({points, nav, tick}) — 演示流程(打招呼→放包)触发重演。
  */
 export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
   const [open, setOpen] = useState(false);
@@ -26,33 +25,10 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
   const [info, setInfo] = useState('—');
   const [busy, setBusy] = useState(false);
   const [speed, setSpeed] = useState(DEFAULT_NAV_SPEED);
-  const timerRef = useRef(null);
-  const pointsRef = useRef([]);
-  pointsRef.current = points;
 
-  const report = useCallback((pts, playing, idx) => {
-    onTrajectoryChange?.({ points: pts, playing, index: idx });
+  const report = useCallback((pts) => {
+    onTrajectoryChange?.({ points: pts });
   }, [onTrajectoryChange]);
-
-  // 内部"模拟回放": 沿轨迹推进高亮点, 无任何回放控件
-  const startAutoSim = useCallback((pts) => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    const arr = pts?.length ? pts : pointsRef.current;
-    if (!arr.length) return;
-    let i = 0;
-    report(arr, true, 0);
-    timerRef.current = setInterval(() => {
-      i = (i + 1) % arr.length;
-      report(arr, true, i);
-    }, 160);
-  }, [report]);
-
-  const stopAutoSim = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
 
   const loadTrajectory = useCallback(async (file) => {
     setInfo('加载轨迹…');
@@ -62,69 +38,56 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
       const data = await r.json();
       const pts = data.points || [];
       setPoints(pts);
+      report(pts);
       setInfo(`已加载「${data.meta?.count ?? pts.length} 点」 · 速度 ${speed.toFixed(1)} m/s`);
-      startAutoSim(pts); // 加载即模拟回放(内部)
     } catch (error) {
       setInfo(`轨迹加载失败: ${error.message}`);
     }
-  }, [speed, startAutoSim]);
+  }, [speed, report]);
 
-  // 挂载: 读内置演示轨迹列表, 默认选第一个并自动播放(模拟)
+  // 挂载: 读内置演示轨迹列表, 默认选第一个并上报(进度绘制交给实时RTK)
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       try {
         const r = await fetch('/data/trajectories/index.json', { cache: 'no-store' });
         if (!r.ok) throw new Error('no demo list');
         const list = await r.json();
-        if (cancelled) return;
         setDemoList(list);
-        const first = list[0]?.file;
-        if (first) {
-          setSelected(first);
-          await loadTrajectory(first);
-        }
+        if (list[0]?.file) { setSelected(list[0].file); await loadTrajectory(list[0].file); }
       } catch {
-        if (!cancelled) setInfo('未找到演示轨迹');
+        setInfo('未找到演示轨迹');
       }
     })();
-    return () => {
-      cancelled = true;
-      stopAutoSim();
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 外部触发"开始轨迹回放"(演示流程: 打招呼→放包提示后调用): 模拟 + 可选真车下发
+  // 演示流程触发: 启动小车沿轨迹重演(真车), 并上报轨迹给前端
   useEffect(() => {
     if (!replayTrigger?.points?.length) return;
     const pts = replayTrigger.points;
     setPoints(pts);
+    report(pts);
     if (replayTrigger.nav) {
-      setInfo('正在下发导航…');
+      setInfo('正在启动小车…');
       startTrajectory(pts, { speed })
-        .then((data) => setInfo(data?.ok
-          ? `🚗 导航已下发：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s`
-          : `❌ ${data?.error || '启动失败'}`))
-        .catch((error) => setInfo(`导航下发失败: ${error.message}`));
+        .then((data) => setInfo(data?.ok ? `🚗 轨迹重演已启动：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s` : `❌ ${data?.error || '启动失败'}`))
+        .catch((error) => setInfo(`启动失败: ${error.message}`));
     } else {
-      setInfo(`演示回放：${pts.length} 点`);
+      setInfo(`轨迹重演：${pts.length} 点`);
     }
-    startAutoSim(pts); // 模拟回放(小车 marker 沿轨迹动)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [replayTrigger?.tick]);
 
   const navigate = async () => {
     if (!points.length) { setInfo('请先加载轨迹'); return; }
-    if (!window.confirm(`让小车沿这条轨迹自主行驶（速度 ${speed.toFixed(1)} m/s，需 RTK 固定解，将暂停模拟）。确认下发？`)) return;
-    stopAutoSim();
+    if (!window.confirm(`启动小车沿这条 RTK 轨迹重演（速度 ${speed.toFixed(1)} m/s，需 RTK 固定解）。确认？`)) return;
     setBusy(true);
-    setInfo('正在下发导航…');
+    setInfo('正在启动小车…');
     try {
       const data = await startTrajectory(points, { speed });
-      setInfo(data?.ok ? `🚗 导航已下发：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s` : `❌ ${data?.error || '启动失败'}`);
+      setInfo(data?.ok ? `🚗 轨迹重演已启动：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s` : `❌ ${data?.error || '启动失败'}`);
     } catch (error) {
-      setInfo(`导航下发失败: ${error.message}`);
+      setInfo(`启动失败: ${error.message}`);
     } finally {
       setBusy(false);
     }
@@ -134,8 +97,7 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
     setBusy(true);
     try {
       const data = await stopTrajectory();
-      setInfo(data?.stopped ? '⏹ 导航已停止' : '导航未在运行');
-      startAutoSim(); // 停后回模拟
+      setInfo(data?.stopped ? '⏹ 轨迹重演已停止' : '小车未在重演');
     } catch (error) {
       setInfo(`停止失败: ${error.message}`);
     } finally {
@@ -143,8 +105,7 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
     }
   };
 
-  const stateLabel = busy ? '下发中…'
-    : points.length ? (/已下发|导航已下发/.test(info) ? '导航中' : '模拟中') : '待命';
+  const stateLabel = busy ? '启动中…' : (/已启动/.test(info) ? '重演中' : '待命');
 
   return (
     <div class="trajcrumb">
@@ -175,9 +136,9 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
           </div>
           <div class="trajcrumb-row">
             <button type="button" class="primary" onClick={navigate} disabled={busy || !points.length}>
-              {busy ? '下发中…' : '🚗 下发导航'}
+              {busy ? '启动中…' : '🚗 轨迹重演'}
             </button>
-            <button type="button" class="danger" onClick={stop} disabled={busy}>⏹ 停止导航</button>
+            <button type="button" class="danger" onClick={stop} disabled={busy}>⏹ 停止</button>
           </div>
         </div>
       )}

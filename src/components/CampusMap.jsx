@@ -40,14 +40,15 @@ export function CampusMap({
   positionSource,
   onSelectDestination,
   trajectory,          // [{lat, lon, t}] — the car's recorded RTK trajectory line
-  trajectoryPlaying,   // boolean — highlight a point along the trajectory
-  trajectoryIndex,     // number — index into trajectory to highlight
+  trajectoryProgress,  // number — how many points the car has already *walked* (draw only this prefix)
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerLayerRef = useRef(null);
   const routeLayerRef = useRef(null);
   const trajectoryLayerRef = useRef(null);
+  // 轨迹重演模式: 有 trajectory 数据时, 只绘制已走过的轨迹, 隐藏校园 route(不调用 findRoute 展示)
+  const replayMode = Array.isArray(trajectory) && trajectory.length > 0;
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [mapStatus, setMapStatus] = useState('loading');
   const [zoom, setZoom] = useState(17);
@@ -195,6 +196,7 @@ export function CampusMap({
     const map = mapRef.current;
     const layer = routeLayerRef.current;
     if (!map || !layer || !route?.path.length) return;
+    if (replayMode) { layer.clearLayers(); return; } // 轨迹重演模式: 清掉校园 findRoute, 改用 RTK 轨迹回放
     layer.clearLayers();
 
     const latLngs = route.path.map((node) => [node.latitude, node.longitude]);
@@ -271,67 +273,44 @@ export function CampusMap({
       maxZoom: 18.25,
       animate: true,
     });
-  }, [route, lang]);
+  }, [route, lang, replayMode]);
 
-  // Car's recorded RTK trajectory (green line) + optional live replay point.
+  // 轨迹重演: 只绘制"已走过的轨迹段"(progress 前缀), 未走的路线不展示。
   useEffect(() => {
     const map = mapRef.current;
     const layer = trajectoryLayerRef.current;
     if (!map || !layer) return;
     layer.clearLayers();
     if (!trajectory?.length) return;
-    const latLngs = trajectory.map((point) => [point.lat, point.lon]);
+    const walkedEnd = Math.max(1, Math.min(trajectoryProgress ?? trajectory.length, trajectory.length));
+    const walked = trajectory.slice(0, walkedEnd);
+    const latLngs = walked.map((point) => [point.lat, point.lon]);
+    const p0 = [trajectory[0].lat, trajectory[0].lon];
+    const pEnd = latLngs[latLngs.length - 1];
+    // 走过的线: 宽半透明底 + 实线(带人走过的轨迹)
     L.polyline(latLngs, {
-      pane: 'locationPane',
-      color: '#3ecf8e',
-      opacity: 0.3,
-      weight: 14,
-      lineCap: 'round',
-      lineJoin: 'round',
-      interactive: false,
+      pane: 'locationPane', color: '#3ecf8e', opacity: 0.22, weight: 14,
+      lineCap: 'round', lineJoin: 'round', interactive: false,
     }).addTo(layer);
     L.polyline(latLngs, {
-      pane: 'locationPane',
-      color: '#3ecf8e',
-      opacity: 1,
-      weight: 4,
-      lineCap: 'round',
-      lineJoin: 'round',
-      interactive: false,
+      pane: 'locationPane', color: '#3ecf8e', opacity: 1, weight: 4,
+      lineCap: 'round', lineJoin: 'round', interactive: false,
     }).addTo(layer);
-    L.circleMarker(latLngs[0], {
-      pane: 'locationPane',
-      radius: 7,
-      color: '#071c2c',
-      weight: 3,
-      fillColor: '#3ecf8e',
-      fillOpacity: 1,
-      interactive: false,
-    }).addTo(layer);
-    L.circleMarker(latLngs[latLngs.length - 1], {
-      pane: 'locationPane',
-      radius: 8,
-      color: '#071c2c',
-      weight: 3,
-      fillColor: '#e35d6a',
-      fillOpacity: 1,
-      interactive: false,
-    }).addTo(layer);
-    // highlight the current replay point
-    if (trajectoryPlaying && trajectoryIndex != null && trajectory[trajectoryIndex]) {
-      const point = trajectory[trajectoryIndex];
-      const sp = point.speedAvg != null ? point.speedAvg : point.speedInstant;
-      L.circleMarker([point.lat, point.lon], {
-        pane: 'locationPane',
-        radius: 6,
-        color: '#071c2c',
-        weight: 3,
-        fillColor: '#ffb454',
-        fillOpacity: 1,
-        interactive: false,
-      }).addTo(layer).bindTooltip(sp != null ? `速度 ${sp.toFixed(2)} m/s` : '回放', { className: 'osm-feature-tooltip', sticky: true });
+    // 起点
+    L.circleMarker(p0, {
+      pane: 'locationPane', radius: 7, color: '#071c2c', weight: 3,
+      fillColor: '#3ecf8e', fillOpacity: 1, interactive: false,
+    }).addTo(layer).bindTooltip('起点', { className: 'osm-feature-tooltip', sticky: true });
+    // 当前点(小车正走到此处)
+    if (pEnd) {
+      const cp = walked[walked.length - 1];
+      const sp = cp.speedAvg != null ? cp.speedAvg : cp.speedInstant;
+      L.circleMarker(pEnd, {
+        pane: 'locationPane', radius: 8, color: '#071c2c', weight: 3,
+        fillColor: '#ffb454', fillOpacity: 1, interactive: false,
+      }).addTo(layer).bindTooltip(sp != null ? `速度 ${sp.toFixed(2)} m/s` : '重演中', { className: 'osm-feature-tooltip', sticky: true });
     }
-  }, [trajectory, trajectoryPlaying, trajectoryIndex]);
+  }, [trajectory, trajectoryProgress]);
 
   function resetView() {
     mapRef.current?.fitBounds(CAMPUS_BOUNDS, { padding: [28, 28], animate: true });

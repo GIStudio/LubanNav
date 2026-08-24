@@ -48,18 +48,13 @@ export function App() {
   const [systemMenuPanel, setSystemMenuPanel] = useState('voice');
   const systemMenuButtonRef = useRef(null);
 
-  // Real RTK trajectory navigation (TrajectoryNav -> CampusMap green line).
+  // 轨迹重演: 只展示已走过的轨迹段(progress), 由实时 RTK 位置驱动; 不调用校园 findRoute 展示
   const [trajectoryPoints, setTrajectoryPoints] = useState([]);
-  const [trajectoryPlaying, setTrajectoryPlaying] = useState(false);
-  const [trajectoryIndex, setTrajectoryIndex] = useState(0);
   const handleTrajectoryChange = useCallback((update) => {
-    if (!update) return;
-    if (Object.prototype.hasOwnProperty.call(update, 'points')) setTrajectoryPoints(update.points ?? []);
-    if (Object.prototype.hasOwnProperty.call(update, 'playing')) setTrajectoryPlaying(update.playing ?? false);
-    if (Object.prototype.hasOwnProperty.call(update, 'index')) setTrajectoryIndex(update.index ?? 0);
+    if (update && Object.prototype.hasOwnProperty.call(update, 'points')) setTrajectoryPoints(update.points ?? []);
   }, []);
 
-  // 8/25 演示流程: 打招呼 → 用户说「带我去三楼平台」→ 放包提示 → 开始轨迹回放(模拟+真车下发)
+  // 8/25 演示流程: 打招呼 → 用户说「带我去三楼平台」→ 放包提示 → 启动小车沿 RTK 轨迹重演
   const [replayTrigger, setReplayTrigger] = useState(null);
   const handleThirdFloorFlow = useCallback(() => {
     setPhase('nav');
@@ -69,7 +64,10 @@ export function App() {
       { role: 'assistant', text: '请把包裹放到我车上（已就绪），我这就带您前往三楼平台 🚗' },
     ]);
     loadReplayPoints()
-      .then((pts) => setReplayTrigger({ points: pts, nav: true, tick: Date.now() }))
+      .then((pts) => {
+        setTrajectoryPoints(pts);                                        // 前端轨迹重演(只画走过的段)
+        setReplayTrigger({ points: pts, nav: true, tick: Date.now() });  // 启动小车沿轨迹重演(真车)
+      })
       .catch(() => setMessages((items) => [...items, { role: 'assistant', text: '轨迹加载失败，请稍后重试。' }]));
   }, []);
   const startThirdFloorFlowIfRequested = useCallback((query) => {
@@ -106,6 +104,19 @@ export function App() {
   }
   const positionStore = positionStoreRef.current;
   const [posState, setPosState] = useState(() => positionStore.getState());
+  // 小车已"走到"的轨迹索引 = 实时 RTK 位置在轨迹中的最近点(驱动前端的"走过的轨迹段")
+  const trajectoryProgress = useMemo(() => {
+    if (!trajectoryPoints.length || posState.robot?.latitude == null) return 0;
+    const rlat = posState.robot.latitude;
+    const rlon = posState.robot.longitude;
+    let best = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < trajectoryPoints.length; i += 1) {
+      const d = ((trajectoryPoints[i].lat - rlat) ** 2 + (trajectoryPoints[i].lon - rlon) ** 2);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return best + 1;
+  }, [trajectoryPoints, posState.robot]);
   useEffect(() => {
     const unsubscribe = positionStore.subscribe(setPosState);
     positionStore.startBrowserWatch();
@@ -576,8 +587,7 @@ export function App() {
             positionSource={posState.source}
             onSelectDestination={selectDestination}
             trajectory={trajectoryPoints}
-            trajectoryPlaying={trajectoryPlaying}
-            trajectoryIndex={trajectoryIndex}
+            trajectoryProgress={trajectoryProgress}
           />
           <VoiceQuickControl onConfigure={() => openSystemMenu('voice')} />
         </section>      </div>
