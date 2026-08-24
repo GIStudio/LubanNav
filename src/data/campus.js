@@ -174,10 +174,10 @@ export const NODES = [
   ], { poiType: 'elevator', level: '1', servedLevels: ['1', '2', '3', '4', '5'] }),
   publicNode('w3', 'W-3', 'W-3', 160, 270, 'academic', ['w3', '西三']),
   publicNode('w4', 'W-4', 'W-4', 195, 175, 'academic', ['w4', '西四']),
-  publicNode('e1', 'E-1', 'E-1', 545, 435, 'academic', ['e1', '东一']),
+  publicNode('e1', 'E1', 'E1', 545, 435, 'academic', ['e1', '东一']),
   publicNode('e2', 'E2-大堂', 'E2 Lobby', 436, 328, 'academic', [
     'e2',
-    'E-2',
+    'E2',
     'E2大堂',
     'E2正门',
     '东二',
@@ -185,11 +185,11 @@ export const NODES = [
   ], { poiType: 'lobby', level: '1' }),
   publicNode('e2-elevator', 'E2-电梯', 'E2 Elevator', 449, 337, 'indoor', [
     'E2电梯',
-    'E-2电梯',
+    'E2电梯',
     '东二电梯',
   ], { poiType: 'elevator', level: '1', servedLevels: ['1', '2', '3', '4', '5'] }),
-  publicNode('e3', 'E-3', 'E-3', 575, 270, 'academic', ['e3', '东三']),
-  publicNode('e4', 'E-4', 'E-4', 540, 175, 'academic', ['e4', '东四']),
+  publicNode('e3', 'E3', 'E3', 575, 270, 'academic', ['e3', '东三']),
+  publicNode('e4', 'E4', 'E4', 540, 175, 'academic', ['e4', '东四']),
   publicNode(
     'third-floor-platform',
     '三楼中央',

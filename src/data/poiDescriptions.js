@@ -45,7 +45,7 @@ export const POI_DESCRIPTIONS = {
     description: 'W-4 科研楼，西侧学术楼群之一。',
   },
   e1: {
-    description: 'E-1 科研楼，东侧学术楼群之一。',
+    description: 'E1 科研楼，东侧学术楼群之一。',
   },
   e2: {
     description: 'E2 大堂，东翼科研楼入口；楼内电梯服务 1–5F，可直达 3 楼室外平台。',
@@ -54,10 +54,10 @@ export const POI_DESCRIPTIONS = {
     description: 'E2 电梯，服务 1–5F，是前往 3 楼室外平台的东侧通道。',
   },
   e3: {
-    description: 'E-3 科研楼，东侧学术楼群之一。',
+    description: 'E3 科研楼，东侧学术楼群之一。',
   },
   e4: {
-    description: 'E-4 科研楼，东侧学术楼群之一。',
+    description: 'E4 科研楼，东侧学术楼群之一。',
   },
   'third-floor-platform': {
     description: '三楼中央，位于演讲厅与饭堂上方的 3 楼露天平台，是户外实验与活动的常用场地。',
