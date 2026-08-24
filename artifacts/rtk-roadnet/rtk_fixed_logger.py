@@ -94,10 +94,9 @@ def should_log(status, fixed_statuses, lat, lon, last_lat, last_lon, min_dist_m)
         return False, None
     if not is_valid_coordinate(lat, lon):
         return False, None
-    if last_lat is not None and last_lon is not None:
-        if haversine_m(lat, lon, last_lat, last_lon) < min_dist_m:
-            return False, None
-    return True, haversine_m(lat, lon, last_lat, last_lon) if last_lat is not None else 0.0
+    # 位置去重已移除: 每次 RTK 固定解都记录(含静止), 让时间轴记录持续到最新
+    dist = haversine_m(lat, lon, last_lat, last_lon) if (last_lat is not None and last_lon is not None) else 0.0
+    return True, dist
 
 
 class RtkFixedLoggerNode(Node or object):
@@ -182,6 +181,72 @@ class RtkFixedLoggerNode(Node or object):
         self.pub_stats.publish(StdString(data=text))
 
 
+# ---------------------------------------------------------------------------
+# 单实例守卫：无论从哪里启动（systemd / host / 容器内 / docker exec），
+# 都只保留最新一个实例。任何新的启动都会"顶替"旧的（杀掉旧进程）。
+# ---------------------------------------------------------------------------
+SINGLE_INSTANCE_PID_FILE = "data/rtk_fixed_logger.pid"
+SINGLE_INSTANCE_OPTS = {
+    "host": "data/rtk_fixed_logger.pid",
+    "container": "/workspace/campusCar-new-chassis/data/rtk_fixed_logger.pid",
+}
+
+
+def _single_instance_path():
+    """返回单实例 PID 文件路径（host 与容器内基于各自 cwd 自适应）。"""
+    # 容器内 cwd=.../campusCar-new-chassis；host cwd=/home/pc/campusCar。
+    # 两者 data/ 是同一挂载卷，PID 文件中存的 PID 均为宿主命名空间可见。
+    return SINGLE_INSTANCE_PID_FILE if os.path.exists("data") else SINGLE_INSTANCE_PID_FILE
+
+
+def _adopt_single_instance(pidfile=None):
+    """单实例守卫：若已有存活实例则杀之，再写入自身 PID 并持锁。
+
+    用 flock 互斥文件 + PID 文件实现原子「新顶旧」。任何来源启动本进程
+    都会调用它，确保同一时刻全车只有一个 rtk_fixed_logger 在跑。
+
+    返回一个保持打开的锁文件句柄；调用方需持有其引用，进程存活期间锁不被释放。
+    """
+    import fcntl
+    import signal
+    import struct
+
+    pidfile = pidfile or _single_instance_path()
+    lockfile = pidfile + ".lock"
+    # data/ 目录存在（run.sh 已 mkdir -p）；确保锁目录可写
+    Path(pidfile).parent.mkdir(parents=True, exist_ok=True)
+
+    lock_f = open(lockfile, "w")
+    try:
+        fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        # 有别的进程持锁 → 说明已有实例正在跑，杀掉它（新顶旧）
+        try:
+            old_pid = int(open(pidfile).read().strip())
+        except Exception:
+            old_pid = None
+            # 无 PID 记录也拿不到锁：说明仍在握手/半死，直接尝试杀 rtk_fixed_logger 进程
+        if old_pid is not None and old_pid != os.getpid():
+            try:
+                os.kill(old_pid, signal.SIGKILL)
+                print("[rtk_fixed_logger] 单实例守卫: 杀掉旧实例 pid=%s" % old_pid, flush=True)
+            except (ProcessLookupError, PermissionError):
+                pass
+        # 等旧进程释放锁（最多 3s 轮询）
+        deadline = time.time() + 3.0
+        while time.time() < deadline:
+            try:
+                fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                time.sleep(0.2)
+
+    with open(pidfile, "w") as pf:
+        pf.write(str(os.getpid()))
+    print("[rtk_fixed_logger] 单实例守卫: 就绪 pid=%s pidfile=%s" % (os.getpid(), pidfile), flush=True)
+    return lock_f
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         prog="rtk_fixed_logger",
@@ -219,6 +284,8 @@ def main(argv=None):
               file=sys.stderr)
         return 1
     args, statuses = parse_args(argv)
+    # 单实例守卫（new-replaces-old）：不管谁启动都只留最新一个
+    lock_f = _adopt_single_instance()
     rclpy.init()
     node = RtkFixedLoggerNode(args.fix_topic, statuses, args.min_dist, args.log_path,
                               backup_path=args.backup_path)
@@ -230,6 +297,10 @@ def main(argv=None):
         node.destroy_node()
         try:
             rclpy.shutdown()
+        except Exception:
+            pass
+        try:
+            lock_f.close()
         except Exception:
             pass
     return 0

@@ -34,7 +34,7 @@ except ImportError:  # pragma: no cover
     StdString = None
 
 # 本系统 /fix 状态码约定（与 src/rtk_tools/core/bridge.py STATUS_MAP 一致）
-RTK_FIXED_STATUS = 4
+RTK_FIXED_STATUS = 2  # nmea_navsat_driver 对 GGA quality 4/5(RTK) 发 sensor_msgs GBAS_FIX(2)；4 仅为 STATUS_MAP 兼容保留
 
 
 def haversine_m(lat1, lon1, lat2, lon2):
@@ -57,7 +57,8 @@ def is_valid_coordinate(lat, lon):
 def covariance_hint(fix_msg):
     """返回位置协方差对角线的均值（米²），没有则为 None；用于质量审计。"""
     cov = getattr(fix_msg, "position_covariance", None)
-    if not cov:
+    # rclpy 的 position_covariance 是 numpy 数组，不能直接做真值判断
+    if cov is None or len(cov) == 0:
         return None
     values = [v for v in cov if isinstance(v, (int, float)) and v >= 0]
     if not values:
@@ -93,10 +94,9 @@ def should_log(status, fixed_statuses, lat, lon, last_lat, last_lon, min_dist_m)
         return False, None
     if not is_valid_coordinate(lat, lon):
         return False, None
-    if last_lat is not None and last_lon is not None:
-        if haversine_m(lat, lon, last_lat, last_lon) < min_dist_m:
-            return False, None
-    return True, haversine_m(lat, lon, last_lat, last_lon) if last_lat is not None else 0.0
+    # 位置去重已移除: 每次 RTK 固定解都记录(含静止), 让时间轴记录持续到最新
+    dist = haversine_m(lat, lon, last_lat, last_lon) if (last_lat is not None and last_lon is not None) else 0.0
+    return True, dist
 
 
 class RtkFixedLoggerNode(Node or object):
@@ -105,12 +105,16 @@ class RtkFixedLoggerNode(Node or object):
     无 ROS 环境下导入时退化为 object（便于单测纯逻辑），仅在 main() 里实例化。
     """
 
-    def __init__(self, fix_topic, fixed_statuses, min_dist_m, log_path):
+    def __init__(self, fix_topic, fixed_statuses, min_dist_m, log_path, backup_path=None):
         super().__init__("rtk_fixed_logger")
         self.fixed_statuses = set(fixed_statuses)
         self.min_dist_m = min_dist_m
         self.log_path = Path(log_path)
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        # 双写备份：独立于 campusCar 目录（NUC 电源不稳反复重启时兜底）
+        self.backup_path = Path(backup_path) if backup_path else None
+        if self.backup_path is not None:
+            self.backup_path.parent.mkdir(parents=True, exist_ok=True)
 
         self.session = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.total_records = 0
@@ -129,15 +133,23 @@ class RtkFixedLoggerNode(Node or object):
         )
         self.create_timer(1.0, self._publish_stats)
         self.get_logger().info(
-            "rtk_fixed_logger started: fix_topic={} fixed_statuses={} min_dist={}m log={}".format(
-                fix_topic, sorted(self.fixed_statuses), min_dist_m, self.log_path
+            "rtk_fixed_logger started: fix_topic={} fixed_statuses={} min_dist={}m log={} backup={}".format(
+                fix_topic, sorted(self.fixed_statuses), min_dist_m, self.log_path, self.backup_path
             )
         )
 
-    def _append(self, record):
-        with open(self.log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    @staticmethod
+    def _write_line(path, line):
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(line)
             f.flush()
+            os.fsync(f.fileno())  # 断电/重启不丢最后几条
+
+    def _append(self, record):
+        line = json.dumps(record, ensure_ascii=False) + "\n"
+        self._write_line(self.log_path, line)
+        if self.backup_path is not None:
+            self._write_line(self.backup_path, line)
 
     def _on_fix(self, msg):
         status = int(msg.status.status)
@@ -169,18 +181,86 @@ class RtkFixedLoggerNode(Node or object):
         self.pub_stats.publish(StdString(data=text))
 
 
+# ---------------------------------------------------------------------------
+# 单实例守卫：无论从哪里启动（systemd / host / 容器内 / docker exec），
+# 都只保留最新一个实例。任何新的启动都会"顶替"旧的（杀掉旧进程）。
+# ---------------------------------------------------------------------------
+SINGLE_INSTANCE_PID_FILE = "data/rtk_fixed_logger.pid"
+SINGLE_INSTANCE_OPTS = {
+    "host": "data/rtk_fixed_logger.pid",
+    "container": "/workspace/campusCar-new-chassis/data/rtk_fixed_logger.pid",
+}
+
+
+def _single_instance_path():
+    """返回单实例 PID 文件路径（host 与容器内基于各自 cwd 自适应）。"""
+    # 容器内 cwd=.../campusCar-new-chassis；host cwd=/home/pc/campusCar。
+    # 两者 data/ 是同一挂载卷，PID 文件中存的 PID 均为宿主命名空间可见。
+    return SINGLE_INSTANCE_PID_FILE if os.path.exists("data") else SINGLE_INSTANCE_PID_FILE
+
+
+def _adopt_single_instance(pidfile=None):
+    """单实例守卫：若已有存活实例则杀之，再写入自身 PID 并持锁。
+
+    用 flock 互斥文件 + PID 文件实现原子「新顶旧」。任何来源启动本进程
+    都会调用它，确保同一时刻全车只有一个 rtk_fixed_logger 在跑。
+
+    返回一个保持打开的锁文件句柄；调用方需持有其引用，进程存活期间锁不被释放。
+    """
+    import fcntl
+    import signal
+    import struct
+
+    pidfile = pidfile or _single_instance_path()
+    lockfile = pidfile + ".lock"
+    # data/ 目录存在（run.sh 已 mkdir -p）；确保锁目录可写
+    Path(pidfile).parent.mkdir(parents=True, exist_ok=True)
+
+    lock_f = open(lockfile, "w")
+    try:
+        fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        # 有别的进程持锁 → 说明已有实例正在跑，杀掉它（新顶旧）
+        try:
+            old_pid = int(open(pidfile).read().strip())
+        except Exception:
+            old_pid = None
+            # 无 PID 记录也拿不到锁：说明仍在握手/半死，直接尝试杀 rtk_fixed_logger 进程
+        if old_pid is not None and old_pid != os.getpid():
+            try:
+                os.kill(old_pid, signal.SIGKILL)
+                print("[rtk_fixed_logger] 单实例守卫: 杀掉旧实例 pid=%s" % old_pid, flush=True)
+            except (ProcessLookupError, PermissionError):
+                pass
+        # 等旧进程释放锁（最多 3s 轮询）
+        deadline = time.time() + 3.0
+        while time.time() < deadline:
+            try:
+                fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                time.sleep(0.2)
+
+    with open(pidfile, "w") as pf:
+        pf.write(str(os.getpid()))
+    print("[rtk_fixed_logger] 单实例守卫: 就绪 pid=%s pidfile=%s" % (os.getpid(), pidfile), flush=True)
+    return lock_f
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         prog="rtk_fixed_logger",
         description="RTK Fixed 持久化日志节点（只记录 status==4 固定解，追加写入，跨启动保留）。",
     )
     parser.add_argument("--fix-topic", default="/fix", help="NavSatFix 输入话题（默认 /fix）")
-    parser.add_argument("--fixed-statuses", default="4",
+    parser.add_argument("--fixed-statuses", default="2,4",
                         help="视为 RTK Fixed 的状态码，逗号分隔（默认 4，见 core/bridge.py STATUS_MAP）")
     parser.add_argument("--min-dist", type=float, default=0.5,
                         help="相邻记录最小间距（米，默认 0.5，用于稀疏化）")
     parser.add_argument("--log-path", default="data/logs/rtk_fixed.jsonl",
                         help="持久化日志路径（默认 data/logs/rtk_fixed.jsonl，追加不截断）")
+    parser.add_argument("--backup-path", default="/workspace/campusCar-new-chassis/rtk_backup/rtk_fixed.jsonl",
+                        help="双写备份路径（默认容器挂载卷内独立目录；host 侧另有 systemd 定时快照到 /home/pc/rtk_logs/）")
     args = parser.parse_args(argv)
     statuses = []
     for part in args.fixed_statuses.split(","):
@@ -204,8 +284,11 @@ def main(argv=None):
               file=sys.stderr)
         return 1
     args, statuses = parse_args(argv)
+    # 单实例守卫（new-replaces-old）：不管谁启动都只留最新一个
+    lock_f = _adopt_single_instance()
     rclpy.init()
-    node = RtkFixedLoggerNode(args.fix_topic, statuses, args.min_dist, args.log_path)
+    node = RtkFixedLoggerNode(args.fix_topic, statuses, args.min_dist, args.log_path,
+                              backup_path=args.backup_path)
     try:
         rclpy.spin(node)
     except (KeyboardInterrupt, Exception):
@@ -214,6 +297,10 @@ def main(argv=None):
         node.destroy_node()
         try:
             rclpy.shutdown()
+        except Exception:
+            pass
+        try:
+            lock_f.close()
         except Exception:
             pass
     return 0
