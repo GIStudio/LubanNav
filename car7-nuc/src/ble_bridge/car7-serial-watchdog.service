@@ -1,0 +1,17 @@
+[Unit]
+Description=car7 chassis serial hot-plug watchdog (auto switch skip/local_command)
+Documentation=file:///home/pc/campusCar/src/ble_bridge/car7_serial_watchdog.sh
+After=docker.service
+Requires=docker.service
+StartLimitIntervalSec=0
+StartLimitBurst=0
+
+[Service]
+Type=simple
+User=pc
+ExecStart=/bin/bash /home/pc/campusCar/src/ble_bridge/car7_serial_watchdog.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=car7 RTK fixed log snapshot to /home/pc/rtk_logs (host-independent backup)
+After=rtk-fixed-logger.service
+
+[Service]
+Type=oneshot
+User=pc
+ExecStart=/bin/sh -c 'mkdir -p /home/pc/rtk_logs && cp -f /home/pc/campusCar/rtk_backup/rtk_fixed.jsonl /home/pc/rtk_logs/rtk_fixed.jsonl 2>/dev/null || cp -f /home/pc/campusCar/data/logs/rtk_fixed.jsonl /home/pc/rtk_logs/rtk_fixed.jsonl'

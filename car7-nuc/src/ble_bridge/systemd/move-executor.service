@@ -1,0 +1,16 @@
+[Unit]
+Description=car7 move executor (odom closed-loop, 127.0.0.1:9099)
+Documentation=file:///home/pc/campusCar/src/ble_bridge/README.md
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=pc
+# 在 campuscar 容器内前台运行；容器未就绪时 ExecStart 失败由 Restart 重试
+ExecStart=/usr/bin/docker exec campuscar-stm32-hoverboard bash -c 'source /opt/ros/humble/setup.bash && cd /workspace/campusCar-new-chassis/src/ble_bridge && exec python3 move_executor.py'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

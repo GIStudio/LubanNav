@@ -1,0 +1,18 @@
+[Unit]
+Description=car7 BLE bridge (LubanNav robot protocol, direction mode)
+Documentation=file:///home/pc/campusCar/src/ble_bridge/README.md
+After=bluetooth.service
+Requires=bluetooth.service
+
+[Service]
+Type=simple
+User=pc
+WorkingDirectory=/home/pc/campusCar/src/ble_bridge
+# --direction: 手动方向指令经 move_executor(127.0.0.1:9099) 驱动真实底盘；
+# 不加则 telemetry-only（只回放遥测、不驱动电机）。
+ExecStart=/usr/bin/python3 /home/pc/campusCar/src/ble_bridge/car7_ble_bridge.py --direction --campuscar-export /home/pc/campusCar/data/lubannav-campuscar-route.json
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Unit tests for car7_status_server.py (pure logic; no ROS, no network)."""
+
+import json
+import os
+import sys
+import tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import car7_status_server as status
+
+PASSED = 0
+FAILED = []
+
+
+def check(name, condition, detail=""):
+    global PASSED
+    if condition:
+        PASSED += 1
+        print("PASS  {}".format(name))
+    else:
+        FAILED.append(name)
+        print("FAIL  {}  {}".format(name, detail))
+
+
+def test_jsonl_stats():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "rtk_fixed.jsonl")
+        with open(path, "w") as handle:
+            handle.write(json.dumps({"type": "session_start", "session": "s1"}) + "\n")
+            handle.write(json.dumps({"type": "fix", "lat": 22.888, "lon": 113.477, "status": 2}) + "\n")
+            handle.write(json.dumps({"type": "fix", "lat": 22.889, "lon": 113.478, "status": 2}) + "\n")
+        stats = status.read_jsonl_stats(path)
+        check("jsonl counts", stats["records"] == 2 and stats["sessions"] == 1, stats)
+        check("jsonl last fix", stats["lastFix"]["lat"] == 22.889, stats["lastFix"])
+    missing = status.read_jsonl_stats("/nonexistent.jsonl")
+    check("jsonl missing file", missing["records"] == 0, missing)
+
+
+def test_roadnet_stats():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "campus_road_network.json")
+        with open(path, "w") as handle:
+            json.dump({"nodes": [{"id": 1}, {"id": 2}], "edges": [{"from": 1, "to": 2}], "builtAt": "2026-08-23T08:00:00Z"}, handle)
+        stats = status.read_roadnet_stats(path)
+        check("roadnet counts", stats["nodes"] == 2 and stats["edges"] == 1, stats)
+    empty = status.read_roadnet_stats("/nonexistent.json")
+    check("roadnet missing", empty["nodes"] == 0 and empty["edges"] == 0, empty)
+
+
+def test_snapshot_structure_without_ros():
+    with tempfile.TemporaryDirectory() as tmp:
+        collector = status.StatusCollector(data_dir=tmp, bridge_url="http://127.0.0.1:1/")
+        snapshot = collector.snapshot()
+        check("snapshot keys", all(key in snapshot for key in
+              ["rtk", "fixLabel", "jsonl", "roadnet", "rosReady", "time"]), snapshot.keys())
+        check("snapshot ros ready false", snapshot["rosReady"] is False)
+        check("snapshot no fix label", snapshot["fixLabel"] == "无信号", snapshot["fixLabel"])
+        check("snapshot no fake position without history",
+              snapshot["rtk"].get("approximate") is not True and
+              snapshot["rtk"].get("latitude") is None, snapshot["rtk"])
+
+
+def test_page_contains_ui():
+    check("page has fix badge", "RTK 定位" in status.PAGE_HTML)
+    check("page has EventSource", "EventSource" in status.PAGE_HTML)
+    check("page has stream endpoint", "/api/stream" in status.PAGE_HTML)
+    check("page has timeline", "tl-start" in status.PAGE_HTML)
+    check("page has save segment", "traj-save" in status.PAGE_HTML)
+    check("page has auto select", "traj-auto" in status.PAGE_HTML)
+
+
+def test_save_and_load_trajectory():
+    import time
+    with tempfile.TemporaryDirectory() as tmp:
+        # 造 5 个 fix 记录
+        log = os.path.join(tmp, "logs", "rtk_fixed.jsonl")
+        os.makedirs(os.path.dirname(log), exist_ok=True)
+        base = time.time() * 1000
+        with open(log, "w") as handle:
+            for i in range(5):
+                handle.write(json.dumps({"type": "fix", "lat": 22.88 + i * 1e-4, "lon": 113.47,
+                                         "t": "2026-08-23T{:02d}:00:00Z".format(10 + i)}) + "\n")
+        collector = status.StatusCollector(data_dir=tmp, bridge_url="http://127.0.0.1:1/")
+        traj = collector.trajectory()
+        check("trajectory meta count", traj["meta"]["count"] == 5, traj["meta"])
+        check("trajectory meta duration", traj["meta"]["durationSeconds"] == 14400.0, traj["meta"])
+        # 保存中段（索引 1..4）
+        result = collector.save_trajectory("lab_loop", traj["points"][1:4])
+        check("save ok", result.get("ok") is True, result)
+        saved = collector.list_saved()
+        check("list saved", len(saved) == 1 and saved[0]["points"] == 3, saved)
+        # 读回内容含 t
+        payload = json.loads((collector.saved_dir() / saved[0]["file"]).read_text(encoding="utf-8"))
+        check("saved keeps t", payload["waypoints"][0].get("t") is not None, payload["waypoints"][0])
+        check("saved meta", payload["meta"]["count"] == 3, payload["meta"])
+
+
+if __name__ == "__main__":
+    test_jsonl_stats()
+    test_roadnet_stats()
+    test_snapshot_structure_without_ros()
+    test_page_contains_ui()
+    test_save_and_load_trajectory()
+    print("\n{} passed, {} failed".format(PASSED, len(FAILED)))
+    sys.exit(1 if FAILED else 0)
