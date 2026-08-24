@@ -342,8 +342,8 @@ export function CampusMap({
           <span><i class="legend-robot" />{t('map.legend.robot')}</span>
           <span><i class="legend-building" />{t('map.legend.building')}</span>
           <span><i class="legend-road" />{t('map.legend.road')}</span>
-          <span><i class="legend-indoor" />{t('map.legend.indoor')}</span>
           <span><i class="legend-water" />{t('map.legend.water')}</span>
+          {showIndoor && (<span><i class="legend-indoor" />{t('map.legend.indoor')}</span>)}
         </div>
         <button
           type="button"
