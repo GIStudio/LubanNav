@@ -4213,3 +4213,11 @@ h2 {
 .trajcrumb-panel .traj-nav-speed { display:flex; gap:6px; align-items:center; font-size:.72rem; color:var(--muted); flex:1; }
 .trajcrumb-panel .traj-nav-speed input { width:70px; accent-color:#3ecf8e; }
 .trajcrumb-panel .traj-nav-speed strong { font-family:var(--mono,monospace); color:var(--text); }
+
+/* 地图工具栏: 室内虚线开关 */
+.map-toggle-indoor {
+  margin-left: auto; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: transparent; color: var(--muted); font-size: .72rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.map-toggle-indoor:hover { border-color: var(--accent); }
+.map-toggle-indoor.on { border-color: #79ded5; color: #79ded5; background: rgba(121,222,213,.12); }

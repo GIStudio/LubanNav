@@ -130,6 +130,8 @@ const zh = {
       indoor: '室内',
       water: '水域',
     },
+    indoor: '室内虚线',
+    indoorToggleAria: '显示或隐藏室内虚线',
     categories: {
       all: '全部',
       entrance: '入口',
@@ -580,6 +582,8 @@ const en = {
       indoor: 'Indoor',
       water: 'Water',
     },
+    indoor: 'Indoor lines',
+    indoorToggleAria: 'Show or hide indoor dashed lines',
     categories: {
       all: 'All',
       entrance: 'Entrances',

@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { CAMPUS_BOUNDS, PUBLIC_LOCATIONS } from '../data/campus.js';
 import { addIndoorLayers, addLocalNavLayers, addOsmLayers } from '../lib/mapLayers.js';
 import { getLocationBinding } from '../lib/pathfinding.js';
@@ -52,6 +52,20 @@ export function CampusMap({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [mapStatus, setMapStatus] = useState('loading');
   const [zoom, setZoom] = useState(17);
+  const [showIndoor, setShowIndoor] = useState(false);   // 室内虚线默认不显示(杂乱), 开关控制
+  const indoorDashedRef = useRef(null);
+  const toggleIndoor = useCallback(() => {
+    setShowIndoor((value) => {
+      const next = !value;
+      const layer = indoorDashedRef.current;
+      const map = mapRef.current;
+      if (layer && map) {
+        if (next) layer.addTo(map);
+        else if (map.hasLayer(layer)) map.removeLayer(layer);
+      }
+      return next;
+    });
+  }, []);
   const { t, lang } = useI18n();
 
   useEffect(() => {
@@ -94,7 +108,7 @@ export function CampusMap({
     )
       .then(([osmData, indoorData, localNavData]) => {
         addOsmLayers(map, osmData);
-        addIndoorLayers(map, indoorData);
+        indoorDashedRef.current = addIndoorLayers(map, indoorData, t, { indoorDashedViewed: showIndoor }); // 室内虚线默认不显示, 由开关控制
         addLocalNavLayers(map, localNavData);
         setMapStatus('ready');
       })
@@ -331,6 +345,15 @@ export function CampusMap({
           <span><i class="legend-indoor" />{t('map.legend.indoor')}</span>
           <span><i class="legend-water" />{t('map.legend.water')}</span>
         </div>
+        <button
+          type="button"
+          class={`map-toggle-indoor ${showIndoor ? 'on' : ''}`}
+          onClick={toggleIndoor}
+          title={t('map.indoorToggleAria')}
+          aria-pressed={showIndoor}
+        >
+          {t('map.indoor')}
+        </button>
       </div>
 
       <div class="category-filter" aria-label={t('map.categoryAria')}>

@@ -138,7 +138,10 @@ export function addLocalNavLayers(map, data) {
   }).addTo(map);
 }
 
-export function addIndoorLayers(map, data, t = translate) {  const canvas = L.canvas({ padding: 0.5, tolerance: 7 });
+export function addIndoorLayers(map, data, t = translate, { indoorDashedViewed = false } = {}) {
+  const canvas = L.canvas({ padding: 0.5, tolerance: 7 });
+  // 室内虚线路径(indoorPath/indoorNetworkLink): 杂乱, 放入独立图层, 默认不显示, 由前端开关控制
+  const dashedLayer = L.layerGroup();
   L.geoJSON(data, {
     renderer: canvas,
     pane: 'indoorPane',
@@ -158,8 +161,10 @@ export function addIndoorLayers(map, data, t = translate) {  const canvas = L.ca
         sticky: true,
       });
     },
-  }).addTo(map);
+  }).addTo(dashedLayer);
+  if (indoorDashedViewed) dashedLayer.addTo(map);
 
+  // 室内垂直连接(保留显示)
   L.geoJSON(data, {
     renderer: canvas,
     pane: 'indoorPane',
@@ -181,4 +186,5 @@ export function addIndoorLayers(map, data, t = translate) {  const canvas = L.ca
       );
     },
   }).addTo(map);
+  return dashedLayer;
 }
