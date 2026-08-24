@@ -10,8 +10,11 @@ const RATE_WINDOW_MS = 5 * 60 * 1000;
 // sessions can drive many exchanges, so 10/5min would 429 legitimate
 // walking demos. 30/5min keeps ~15s reconnect spacing well within budget.
 const RATE_LIMIT = Number(process.env.RATE_LIMIT_PER_WINDOW || 30);
+// 默认白名单包含生产 Pages 来源 + 本地开发来源(localhost/127.0.0.1)；
+// 即使 FC 环境变量未配置 ALLOWED_ORIGINS, 本地演示也能放行。
 const ALLOWED_ORIGINS = new Set(
-  (process.env.ALLOWED_ORIGINS || 'https://gistudio.github.io')
+  (process.env.ALLOWED_ORIGINS
+    || 'https://gistudio.github.io,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5173,http://127.0.0.1:5173')
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean),
