@@ -16,7 +16,7 @@
 DASHSCOPE_API_KEY=<北京地域、属于下方 Workspace 的永久 API Key>
 QWEN_WORKSPACE_ID=<部署方的北京地域 Workspace ID>
 LUBANNAV_ACCESS_CODE=<演示访问码>
-ALLOWED_ORIGINS=https://gistudio.github.io
+ALLOWED_ORIGINS=https://gistudio.github.io  # 逗号分隔白名单; 传 '0.0.0' / '*' / '0.0.0.0' 表示通配(放行任意来源, 含 http://localhost:4173 与 http://127.0.0.1:4173 本地演示)
 RATE_LIMIT_PER_WINDOW=30
 ```
 
