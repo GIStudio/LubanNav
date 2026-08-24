@@ -1246,6 +1246,15 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
+    def do_OPTIONS(self):
+        # 跨域预检: 前端(POST /api/trajectory/start 带 JSON)需 OPTIONS 预检通过, 否则 CORS 拦截
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_GET(self):
         path = self.path.split("?")[0]
         if path == "/" or path == "/index.html":
