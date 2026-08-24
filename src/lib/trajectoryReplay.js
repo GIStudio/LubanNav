@@ -46,7 +46,7 @@ export function detectThirdFloorIntent(text) {
   if (!text) return false;
   const raw = String(text);
   // 目标词(三楼平台) 与 动作词(带/去/到) 都出现即认为"带我去三楼平台"类意图, 不限中间字符数
-  const hasTarget = /(三楼平台|三楼中央|3楼平台|3楼露天平台|3层平台|3f平台|三层平台|露天平台|平台中央|三楼露天)/i.test(raw);
+  const hasTarget = /(三楼平台|三楼中央|3楼平台|3楼露天平台|3层平台|3f平台|三层平台|露天平台|平台中央|中央平台|三楼露天)/i.test(raw);
   const hasAction = /(去|到|前往|带我|带我去|带我到|请你|麻烦|帮我|带)/i.test(raw);
   return hasTarget && hasAction;
 }
