@@ -9,8 +9,6 @@
  * 数据本体在 public/data/trajectories/*.json（昨晚从车机拷贝的 E1 三楼→中央平台段）。
  */
 
-import { parseNavigationQuery } from './destinationParser.js';
-
 // 内置演示轨迹列表（file 对应 public/data/trajectories/<file>）
 export const DEMO_REPLAYS = [
   { id: 'traj-2026-08-23-12-28-23', name: '昨晚①(E1→平台,65点)', file: 'traj-2026-08-23-12-28-23.json' },
@@ -47,11 +45,8 @@ export async function loadReplayPoints(file = currentReplay().file) {
 export function detectThirdFloorIntent(text) {
   if (!text) return false;
   const raw = String(text);
-  try {
-    const parsed = parseNavigationQuery(raw);
-    if (parsed?.understood && parsed.to === 'third-floor-platform') return true;
-  } catch {
-    /* ignore */
-  }
-  return /(去|到|前往|带我|带我去|麻烦|请).{0,8}(三楼|3楼|3楼平台|三楼平台|三楼中央|3f平台|3层平台|露天平台)/i.test(raw);
+  // 目标词(三楼平台) 与 动作词(带/去/到) 都出现即认为"带我去三楼平台"类意图, 不限中间字符数
+  const hasTarget = /(三楼平台|三楼中央|3楼平台|3楼露天平台|3层平台|3f平台|三层平台|露天平台)/i.test(raw);
+  const hasAction = /(去|到|前往|带我|带我去|带我到|请你|麻烦|帮我|带)/i.test(raw);
+  return hasTarget && hasAction;
 }

@@ -9,13 +9,15 @@ describe('trajectoryReplay', () => {
 
   it('detects "带我去三楼平台" intents', () => {
     expect(detectThirdFloorIntent('我现在在E1，请你带我去三楼平台')).toBe(true);
+    expect(detectThirdFloorIntent('请你带我从 E1 到三楼平台')).toBe(true);
     expect(detectThirdFloorIntent('请带我前往三楼中央')).toBe(true);
-    expect(detectThirdFloorIntent('麻烦带我到3楼平台')).toBe(true);
+    expect(detectThirdFloorIntent('麻烦帮我去3楼露天平台')).toBe(true);
   });
 
   it('does not false-positive on unrelated text', () => {
     expect(detectThirdFloorIntent('你好')).toBe(false);
     expect(detectThirdFloorIntent('帮我导航到图书馆')).toBe(false);
     expect(detectThirdFloorIntent('今天天气怎么样')).toBe(false);
+    expect(detectThirdFloorIntent('一楼平台在哪里')).toBe(false);
   });
 });
