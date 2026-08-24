@@ -221,7 +221,7 @@ a {
 .workspace {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(340px, 405px) minmax(0, 1fr);
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
   gap: 18px;
   padding-top: 14px;
   overflow: hidden;
@@ -304,6 +304,9 @@ a {
   background: linear-gradient(160deg, rgba(15, 46, 63, 0.96), rgba(7, 28, 43, 0.95));
   box-shadow: var(--shadow);
 }
+
+/* 地图卡片: 瓦片填满圆角, 避免圆角处露深色背景的灰边角 */
+.map-panel { overflow: hidden; }
 
 .navigation-title {
   min-width: 0;
@@ -2471,6 +2474,18 @@ h2 {
     justify-content: center;
     padding: 0;
   }
+
+  /* 小屏顶栏精简: 隐藏次要文字, 避免顶栏超宽/挤压 */
+  .car-status-fix,
+  .trajcrumb-state {
+    display: none;
+  }
+  /* 手机顶栏精简: 车机徽标只留状态点, 隐藏文字 */
+  .car-status-text { display: none; }
+  .car-status-badge .car-status-dot { width: 9px; height: 9px; }
+  .trajcrumb-trigger { padding: 5px 8px; font-size: .7rem; }
+  .brand > span:last-child strong { font-size: 14px; }
+  .pref-toggle { padding: 5px 7px; font-size: .72rem; }
 
   .route-control,
   .event-panel {
