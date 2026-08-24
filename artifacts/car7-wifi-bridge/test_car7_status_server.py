@@ -111,6 +111,24 @@ def test_annotate_speeds():
     check("annotate 断段不跨段(无speedAvg)", out2[3].get("speedAvg") is None, out2[3])
 
 
+def test_smooth_trajectory():
+    lat0, lon0 = 22.88, 113.47
+    # 每隔一点加 1e-5 抖动 → 原始相邻跳变较大, 平滑后应明显减小
+    pts = [{"lat": lat0 + i * 5e-5 + (1e-5 if i % 2 else 0), "lon": lon0,
+            "t": "2026-08-23T00:00:0{}Z".format(i)} for i in range(20)]
+    raw_jumps = max(abs(pts[i + 1]["lat"] - pts[i]["lat"]) for i in range(len(pts) - 1))
+    out = status.smooth_trajectory(list(pts), window=10)
+    check("smooth keeps count", len(out) == len(pts), len(out))
+    check("smooth keeps t", out[5].get("t") == pts[5].get("t"), out[5])
+    sm_jumps = max(abs(out[i + 1]["lat"] - out[i]["lat"]) for i in range(len(out) - 1))
+    check("smooth reduces jumps", sm_jumps < raw_jumps, (raw_jumps, sm_jumps))
+    # 断段: 第2点后跳到很远(>10m) → 平滑窗口不跨段, 断段点不受前段影响
+    pts2 = [dict(p) for p in pts[:3]]
+    pts2.append({"lat": 22.90, "lon": 113.47, "t": "2026-08-23T00:00:03Z"})
+    out2 = status.smooth_trajectory(list(pts2), window=10)
+    check("smooth 断段不跨段(最后点不回归前段)", abs(out2[3]["lat"] - 22.90) < 1e-6, out2[3]["lat"])
+
+
 if __name__ == "__main__":
     test_jsonl_stats()
     test_roadnet_stats()
@@ -118,5 +136,6 @@ if __name__ == "__main__":
     test_page_contains_ui()
     test_save_and_load_trajectory()
     test_annotate_speeds()
+    test_smooth_trajectory()
     print("\n{} passed, {} failed".format(PASSED, len(FAILED)))
     sys.exit(1 if FAILED else 0)

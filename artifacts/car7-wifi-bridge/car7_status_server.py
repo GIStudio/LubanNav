@@ -196,6 +196,43 @@ def annotate_speeds(points: list, window: int = 5, max_gap_m: float = 10.0) -> l
     return points
 
 
+def smooth_trajectory(points: list, window: int = 10, max_gap_m: float = 10.0) -> list:
+    """对轨迹坐标做 N 点(默认10)窗口移动平均以平滑道路(借鉴 gps_navigator 低通滤波思想)。
+
+    - 相邻点间距 > max_gap_m(10m) 视为断段: 平滑窗口不跨断段。
+    - 只平滑 lat/lon, 保留 t/speedAvg 等字段(速度字段保持原始)。
+    返回新列表(不改输入)。
+    """
+    n = len(points)
+    if n < 3:
+        return points
+    seg_break = [False] * (n - 1)
+    for i in range(n - 1):
+        if _haversine_m(points[i]["lat"], points[i]["lon"], points[i + 1]["lat"], points[i + 1]["lon"]) > max_gap_m:
+            seg_break[i] = True
+    half = window // 2
+    out = []
+    for i in range(n):
+        lo = i
+        hi = i + 1
+        c = 0
+        while lo > 0 and c < half and not seg_break[lo - 1]:
+            lo -= 1
+            c += 1
+        c = 0
+        while hi < n and c < half and not seg_break[hi - 1]:
+            hi += 1
+            c += 1
+        seg = points[lo:hi]
+        lat = sum(p["lat"] for p in seg) / len(seg)
+        lon = sum(p["lon"] for p in seg) / len(seg)
+        q = dict(points[i])
+        q["lat"] = round(lat, 7)
+        q["lon"] = round(lon, 7)
+        out.append(q)
+    return out
+
+
 def campuscar_waypoint_payload(points: list) -> dict:
     """campusCar gps_navigator.py 可读的 {origin, waypoints[]} 格式。"""
     waypoints = [{"lat": p["lat"], "lon": p["lon"], "alt": 0} for p in points]
@@ -427,7 +464,7 @@ class StatusCollector:
         self.navigator = NavigatorRunner(data_dir)
 
     def trajectory(self) -> dict:
-        points = annotate_speeds(read_trajectory(str(self.data_dir / "logs" / "rtk_fixed.jsonl")))
+        points = annotate_speeds(smooth_trajectory(read_trajectory(str(self.data_dir / "logs" / "rtk_fixed.jsonl"))))
         meta = {
             "count": len(points),
             "firstT": points[0]["t"] if points else None,
