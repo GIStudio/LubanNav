@@ -25,6 +25,7 @@ import { useRouteQueryState } from './lib/useRouteQueryState.js';
 import { voiceSession } from './lib/voiceSession.js';
 import { TrajectoryNav } from './components/TrajectoryNav.jsx';
 import { detectThirdFloorIntent, loadReplayPoints } from './lib/trajectoryReplay.js';
+import { startTrajectory, DEFAULT_NAV_SPEED } from './lib/car7Trajectory.js';
 
 export function App() {
   const { t, lang, setLang } = useI18n();
@@ -54,19 +55,20 @@ export function App() {
     if (update && Object.prototype.hasOwnProperty.call(update, 'points')) setTrajectoryPoints(update.points ?? []);
   }, []);
 
-  // 8/25 演示流程: 打招呼 → 用户说「带我去三楼平台」→ 放包提示 → 启动小车沿 RTK 轨迹重演
+  // 8/25: 说「带我去三楼平台」→ 直接自动启动小车沿 RTK 轨迹重演(无欢迎/放包/确认), 行人/机器人模式通用
   const [replayTrigger, setReplayTrigger] = useState(null);
   const handleThirdFloorFlow = useCallback(() => {
     setPhase('nav');
-    setMessages((items) => [
-      ...items,
-      { role: 'assistant', text: '您好！我是鲁班导航，很高兴为您服务。' },
-      { role: 'assistant', text: '请把包裹放到我车上（已就绪），我这就带您前往三楼平台 🚗' },
-    ]);
+    setReplayTrigger(null); // 清旧触发
     loadReplayPoints()
       .then((pts) => {
-        setTrajectoryPoints(pts);                                        // 前端轨迹重演(只画走过的段)
-        setReplayTrigger({ points: pts, nav: true, tick: Date.now() });  // 启动小车沿轨迹重演(真车)
+        setTrajectoryPoints(pts);                                     // 前端轨迹重演(只画走过的段)
+        startTrajectory(pts, { speed: DEFAULT_NAV_SPEED })            // 直接自动启动小车沿轨迹重演
+          .then((data) => setMessages((items) => [...items, {
+            role: 'assistant',
+            text: data?.ok ? `已启动小车沿轨迹重演（${data.trajectoryPoints} 点）` : `启动失败：${data?.error || '未知'}`,
+          }]))
+          .catch((error) => setMessages((items) => [...items, { role: 'assistant', text: `启动失败：${error.message}` }]));
       })
       .catch(() => setMessages((items) => [...items, { role: 'assistant', text: '轨迹加载失败，请稍后重试。' }]));
   }, []);
