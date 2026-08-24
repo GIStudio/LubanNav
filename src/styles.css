@@ -4178,3 +4178,23 @@ h2 {
   font-size: 8.5px;
   line-height: 1.5;
 }
+
+/* 右上角面包屑: 轨迹导航入口 + 下拉面板 */
+.trajcrumb { position: relative; }
+.trajcrumb-trigger { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.03); color:var(--text); font-size:.74rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+.trajcrumb-trigger:hover { border-color:#4aa3ff; }
+.trajcrumb-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); }
+.trajcrumb-dot.on { background:#3ecf8e; box-shadow:0 0 6px #3ecf8e; }
+.trajcrumb-state { color:var(--muted); font-weight:600; font-size:.68rem; }
+.trajcrumb-panel { position:absolute; top:calc(100% + 8px); right:0; z-index:980; width:320px; padding:12px; border:1px solid var(--line); border-radius:12px; background:linear-gradient(160deg, rgba(15,46,63,.97), rgba(7,28,43,.97)); box-shadow:0 8px 28px rgba(0,0,0,.45); display:flex; flex-direction:column; gap:10px; }
+.trajcrumb-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.trajcrumb-row button { flex:1; min-width:90px; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--text); font-size:.74rem; font-weight:700; cursor:pointer; }
+.trajcrumb-row button.primary { border-color:#3ecf8e; color:#3ecf8e; }
+.trajcrumb-row button.danger { border-color:#e35d6a; color:#e35d6a; }
+.trajcrumb-row button:disabled { opacity:.5; cursor:not-allowed; }
+.trajcrumb-panel .traj-nav-info { color:var(--muted); font-size:.72rem; font-family:var(--mono, monospace); }
+.trajcrumb-panel .traj-nav-traj { display:flex; gap:6px; align-items:center; font-size:.72rem; color:var(--muted); flex:1.4; }
+.trajcrumb-panel .traj-nav-traj select { flex:1; min-width:0; padding:5px 6px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.04); color:var(--text); font-size:.72rem; font-family:var(--mono,monospace); }
+.trajcrumb-panel .traj-nav-speed { display:flex; gap:6px; align-items:center; font-size:.72rem; color:var(--muted); flex:1; }
+.trajcrumb-panel .traj-nav-speed input { width:70px; accent-color:#3ecf8e; }
+.trajcrumb-panel .traj-nav-speed strong { font-family:var(--mono,monospace); color:var(--text); }

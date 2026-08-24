@@ -442,6 +442,7 @@ export function App() {
             <span class="version">V0.3.0</span>
           </div>
           <CarStatusBadge status={carStatus} />
+          <TrajectoryNav onTrajectoryChange={handleTrajectoryChange} replayTrigger={replayTrigger} />
           <button
             type="button"
             class="pref-toggle"
@@ -578,10 +579,8 @@ export function App() {
             trajectoryPlaying={trajectoryPlaying}
             trajectoryIndex={trajectoryIndex}
           />
-          <TrajectoryNav onTrajectoryChange={handleTrajectoryChange} replayTrigger={replayTrigger} />
           <VoiceQuickControl onConfigure={() => openSystemMenu('voice')} />
-        </section>
-      </div>
+        </section>      </div>
 
         <footer class="footer">
           <p><strong>{t('footer.demo')}</strong>{t('footer.disclaimer')}</p>

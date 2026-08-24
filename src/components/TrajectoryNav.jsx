@@ -6,19 +6,20 @@ import {
 } from '../lib/car7Trajectory.js';
 
 /**
- * TrajectoryNav — 演示/联调控制条。
+ * TrajectoryNav — 右上角面包屑下的"轨迹导航"入口（顶栏按钮 + 下拉面板）。
  *
  * 需求:
  *  - 鲁班 nav 直接下发命令让小车沿轨迹走 (8901 POST /api/trajectory/start -> car7_navigator)。
- *  - 不向用户展示 replay 界面(无回放控件)；
- *  - 但内部可以"模拟回放": 加载昨晚保存的演示轨迹后, 自动让地图上的高亮点沿轨迹移动。
+ *  - 不在地图上铺大控制条, 只作为顶栏右上角面包屑展示; 点开可切换轨迹/速度/下发/停止。
+ *  - 内部"模拟回放": 加载演示轨迹后自动让地图高亮点沿轨迹移动(无回放控件)。
  *
- * 轨迹数据来自项目内置 public/data/trajectories/*.json (昨晚从车机拷贝的 E1三楼→中央平台段)。
- *
+ * 轨迹数据: public/data/trajectories/*.json (昨晚车机拷贝的 E1 三楼→中央平台段)。
  * Props:
  *   onTrajectoryChange(update) — 上报 {points, playing, index} 给 App -> CampusMap 画绿线+移动高亮点。
+ *   replayTrigger({points, nav, tick}) — 演示流程(打招呼→放包后)触发回放。
  */
 export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
+  const [open, setOpen] = useState(false);
   const [demoList, setDemoList] = useState([]);
   const [selected, setSelected] = useState('');
   const [points, setPoints] = useState([]);
@@ -114,21 +115,14 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
   }, [replayTrigger?.tick]);
 
   const navigate = async () => {
-    if (!points.length) {
-      setInfo('请先加载轨迹');
-      return;
-    }
+    if (!points.length) { setInfo('请先加载轨迹'); return; }
     if (!window.confirm(`让小车沿这条轨迹自主行驶（速度 ${speed.toFixed(1)} m/s，需 RTK 固定解，将暂停模拟）。确认下发？`)) return;
     stopAutoSim();
     setBusy(true);
     setInfo('正在下发导航…');
     try {
       const data = await startTrajectory(points, { speed });
-      setInfo(
-        data?.ok
-          ? `🚗 导航已下发：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s`
-          : `❌ ${data?.error || '启动失败'}`,
-      );
+      setInfo(data?.ok ? `🚗 导航已下发：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s` : `❌ ${data?.error || '启动失败'}`);
     } catch (error) {
       setInfo(`导航下发失败: ${error.message}`);
     } finally {
@@ -149,44 +143,44 @@ export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
     }
   };
 
+  const stateLabel = busy ? '下发中…'
+    : points.length ? (/已下发|导航已下发/.test(info) ? '导航中' : '模拟中') : '待命';
+
   return (
-    <div class="trajectory-nav">
-      <div class="traj-nav-head">
-        <span class="traj-nav-title">🚗 轨迹导航</span>
-        <span class="traj-nav-info">{info}</span>
-      </div>
-      <div class="traj-nav-controls">
-        <label class="traj-nav-traj">
-          轨迹
-          <select
-            value={selected}
-            onChange={(event) => {
-              setSelected(event.currentTarget.value);
-              loadTrajectory(event.currentTarget.value);
-            }}
-          >
-            {demoList.map((item) => <option key={item.file} value={item.file}>{item.name} · {item.points}点</option>)}
-          </select>
-        </label>
-        <label class="traj-nav-speed">
-          速度
-          <input
-            type="range"
-            min="0.5"
-            max="5.0"
-            step="0.1"
-            value={speed}
-            onChange={(event) => setSpeed(Number(event.currentTarget.value))}
-          />
-          <strong>{speed.toFixed(1)} m/s</strong>
-        </label>
-        <button type="button" class="primary" onClick={navigate} disabled={busy || !points.length}>
-          {busy ? '下发中…' : '🚗 下发导航'}
-        </button>
-        <button type="button" class="danger" onClick={stop} disabled={busy}>
-          ⏹ 停止导航
-        </button>
-      </div>
+    <div class="trajcrumb">
+      <button type="button" class="trajcrumb-trigger" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <i class={`trajcrumb-dot ${points.length ? 'on' : ''}`} />
+        <span class="trajcrumb-label">轨迹导航</span>
+        <span class="trajcrumb-state">{stateLabel}</span>
+      </button>
+      {open && (
+        <div class="trajcrumb-panel" role="dialog" aria-label="轨迹导航">
+          <div class="traj-nav-info">{info}</div>
+          <div class="trajcrumb-row">
+            <label class="traj-nav-traj">
+              轨迹
+              <select
+                value={selected}
+                onChange={(event) => { setSelected(event.currentTarget.value); loadTrajectory(event.currentTarget.value); }}
+              >
+                {demoList.map((item) => <option key={item.file} value={item.file}>{item.name} · {item.points}点</option>)}
+              </select>
+            </label>
+            <label class="traj-nav-speed">
+              速度
+              <input type="range" min="0.5" max="5.0" step="0.1" value={speed}
+                onChange={(event) => setSpeed(Number(event.currentTarget.value))} />
+              <strong>{speed.toFixed(1)} m/s</strong>
+            </label>
+          </div>
+          <div class="trajcrumb-row">
+            <button type="button" class="primary" onClick={navigate} disabled={busy || !points.length}>
+              {busy ? '下发中…' : '🚗 下发导航'}
+            </button>
+            <button type="button" class="danger" onClick={stop} disabled={busy}>⏹ 停止导航</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
