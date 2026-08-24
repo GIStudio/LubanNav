@@ -111,9 +111,10 @@ function weatherInstructionLine(weather) {
 }
 
 function highlightsInstructionLine(routeContext) {
+  const origin = routeContext.fromName || '当前起点';
   const highlights = routeContext.highlights ?? [];
   if (!highlights.length) {
-    return '当前路线没有明显途经点介绍。';
+    return `我们将要离开 ${origin}，走到室外。途中不经过其它建筑或位置。`;
   }
   const list = highlights
     .map(
@@ -121,7 +122,7 @@ function highlightsInstructionLine(routeContext) {
         `${highlight.name}（距路线约 ${highlight.distanceMeters} 米）——${highlight.description ?? '校内地点'}`,
     )
     .join('；');
-  return `当前路线途经点（按到达顺序）：${list}。当路线较长（约 800 米以上）或用户询问“沿途有什么／现在到哪了／经过哪些地方”时，按顺序用一两句话简要介绍这些途经点的用途；不要一次性把全部途经点念完。`;
+  return `我们将要离开 ${origin}，走到室外。除非用户明确询问“沿途有什么／经过哪里”，否则不要主动介绍：${list}——E1 到室外平台并不途经这些位置。`;
 }
 
 // ── live navigation context (auto-refreshed) ─────────────────────────────

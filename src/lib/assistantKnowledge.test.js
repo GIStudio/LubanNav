@@ -239,10 +239,11 @@ describe('campus assistant instructions', () => {
       ],
     });
 
-    expect(instructions).toContain('途经点');
+    expect(instructions).toContain('我们将要离开');
+    expect(instructions).toContain('走到室外');
     expect(instructions).toContain('饭堂（距路线约 40 米）');
     expect(instructions).toContain('演讲厅 A/B/C（距路线约 12 米）');
-    expect(instructions).toContain('不要一次性把全部途经点念完');
+    expect(instructions).toContain('除非用户明确询问');
   });
 
   it('embeds an auto-refreshed live context line when provided', () => {
