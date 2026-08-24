@@ -18,7 +18,7 @@ import {
  * Props:
  *   onTrajectoryChange(update) — 上报 {points, playing, index} 给 App -> CampusMap 画绿线+移动高亮点。
  */
-export function TrajectoryNav({ onTrajectoryChange }) {
+export function TrajectoryNav({ onTrajectoryChange, replayTrigger }) {
   const [demoList, setDemoList] = useState([]);
   const [selected, setSelected] = useState('');
   const [points, setPoints] = useState([]);
@@ -93,6 +93,25 @@ export function TrajectoryNav({ onTrajectoryChange }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 外部触发"开始轨迹回放"(演示流程: 打招呼→放包提示后调用): 模拟 + 可选真车下发
+  useEffect(() => {
+    if (!replayTrigger?.points?.length) return;
+    const pts = replayTrigger.points;
+    setPoints(pts);
+    if (replayTrigger.nav) {
+      setInfo('正在下发导航…');
+      startTrajectory(pts, { speed })
+        .then((data) => setInfo(data?.ok
+          ? `🚗 导航已下发：${data.trajectoryPoints} 点 @ ${speed.toFixed(1)} m/s`
+          : `❌ ${data?.error || '启动失败'}`))
+        .catch((error) => setInfo(`导航下发失败: ${error.message}`));
+    } else {
+      setInfo(`演示回放：${pts.length} 点`);
+    }
+    startAutoSim(pts); // 模拟回放(小车 marker 沿轨迹动)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replayTrigger?.tick]);
 
   const navigate = async () => {
     if (!points.length) {

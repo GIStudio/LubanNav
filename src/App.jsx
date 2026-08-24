@@ -24,6 +24,7 @@ import { useEventProfiles } from './lib/useEventProfiles.js';
 import { useRouteQueryState } from './lib/useRouteQueryState.js';
 import { voiceSession } from './lib/voiceSession.js';
 import { TrajectoryNav } from './components/TrajectoryNav.jsx';
+import { detectThirdFloorIntent, loadReplayPoints } from './lib/trajectoryReplay.js';
 
 export function App() {
   const { t, lang, setLang } = useI18n();
@@ -57,6 +58,27 @@ export function App() {
     if (Object.prototype.hasOwnProperty.call(update, 'playing')) setTrajectoryPlaying(update.playing ?? false);
     if (Object.prototype.hasOwnProperty.call(update, 'index')) setTrajectoryIndex(update.index ?? 0);
   }, []);
+
+  // 8/25 演示流程: 打招呼 → 用户说「带我去三楼平台」→ 放包提示 → 开始轨迹回放(模拟+真车下发)
+  const [replayTrigger, setReplayTrigger] = useState(null);
+  const handleThirdFloorFlow = useCallback(() => {
+    setPhase('nav');
+    setMessages((items) => [
+      ...items,
+      { role: 'assistant', text: '您好！我是鲁班导航，很高兴为您服务。' },
+      { role: 'assistant', text: '请把包裹放到我车上（已就绪），我这就带您前往三楼平台 🚗' },
+    ]);
+    loadReplayPoints()
+      .then((pts) => setReplayTrigger({ points: pts, nav: true, tick: Date.now() }))
+      .catch(() => setMessages((items) => [...items, { role: 'assistant', text: '轨迹加载失败，请稍后重试。' }]));
+  }, []);
+  const startThirdFloorFlowIfRequested = useCallback((query) => {
+    if (detectThirdFloorIntent(query)) {
+      handleThirdFloorFlow();
+      return true;
+    }
+    return false;
+  }, [handleThirdFloorFlow]);
 
   // Position fusion store: car RTK telemetry is the primary source, the
   // browser's geolocation is the fallback (see lib/positionStore.js). The
@@ -183,8 +205,10 @@ export function App() {
   }
 
   async function handleQuery(query, includeUser = true) {
-    const parsed = parseQueryWithEvent(query);
     if (includeUser) setMessages((items) => [...items, { role: 'user', text: query }]);
+    if (startThirdFloorFlowIfRequested(query)) return;
+
+    const parsed = parseQueryWithEvent(query);
 
     if (parsed.understood) {
       const nextRoute = applyNavigation(parsed);
@@ -284,6 +308,7 @@ export function App() {
   function handleVoiceUserTranscript(query) {
     lastVoiceLangRef.current = /[\u4e00-\u9fff]/.test(query) ? 'zh' : 'en';
     setMessages((items) => [...items, { role: 'user', text: query, source: 'voice' }]);
+    if (startThirdFloorFlowIfRequested(query)) return;
     const parsed = parseQueryWithEvent(query);
     if (!parsed.understood) return;
     applyNavigation(parsed);
@@ -300,6 +325,9 @@ export function App() {
   }
 
   function handleVoiceNavigationCommand(argumentsValue) {
+    if (startThirdFloorFlowIfRequested(argumentsValue)) {
+      return { ok: true, action: 'third_floor_flow', message: '已开始带您前往三楼平台' };
+    }
     const parsed = resolveNavigationCommand(argumentsValue, from, mode);
     const en = lastVoiceLangRef.current !== 'zh';
     if (!parsed.understood) {
@@ -550,7 +578,7 @@ export function App() {
             trajectoryPlaying={trajectoryPlaying}
             trajectoryIndex={trajectoryIndex}
           />
-          <TrajectoryNav onTrajectoryChange={handleTrajectoryChange} />
+          <TrajectoryNav onTrajectoryChange={handleTrajectoryChange} replayTrigger={replayTrigger} />
           <VoiceQuickControl onConfigure={() => openSystemMenu('voice')} />
         </section>
       </div>
