@@ -27,6 +27,14 @@ import { TrajectoryNav } from './components/TrajectoryNav.jsx';
 import { detectThirdFloorIntent, loadReplayPoints } from './lib/trajectoryReplay.js';
 import { startTrajectory, DEFAULT_NAV_SPEED } from './lib/car7Trajectory.js';
 
+// 隐藏模型/工具暴露的 tool_code / markdown 代码块(如 set_navigation_route), 避免当文本给用户
+function stripToolCode(text) {
+  return String(text || '')
+    .replace(/<tool_code>[\s\S]*?<\/tool_code>/gi, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .trim();
+}
+
 export function App() {
   const { t, lang, setLang } = useI18n();
   const { theme, toggleTheme } = useTheme();
@@ -334,12 +342,16 @@ export function App() {
   }
 
   function handleVoiceAssistantTranscript(text) {
-    setMessages((items) => [...items, { role: 'assistant', text, source: 'voice' }]);
+    setMessages((items) => [...items, { role: 'assistant', text: stripToolCode(text), source: 'voice' }]);
   }
 
   function handleVoiceNavigationCommand(argumentsValue) {
-    if (startThirdFloorFlowIfRequested(argumentsValue)) {
-      return { ok: true, action: 'third_floor_flow', message: '已开始带您前往三楼平台' };
+    // 劫持"去三楼平台"的 set_navigation_route 工具调用 → 改为轨迹重演直接启动(不生成路线描述)
+    const to = argumentsValue?.to;
+    const isThirdFloor = to === 'third-floor-platform' || startThirdFloorFlowIfRequested(argumentsValue);
+    if (isThirdFloor) {
+      handleThirdFloorFlow();
+      return { ok: true, action: 'third_floor_replay', message: '已启动小车沿轨迹重演' };
     }
     const parsed = resolveNavigationCommand(argumentsValue, from, mode);
     const en = lastVoiceLangRef.current !== 'zh';
