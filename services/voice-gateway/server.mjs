@@ -36,6 +36,8 @@ function isAllowedOrigin(origin) {
   // 白名单支持通配: ALLOWED_ORIGINS 含 '*' / '0.0.0' / '0.0.0.0' 时接受任意来源
   // (含 http://localhost:4173, http://127.0.0.1:4173 等本地演示来源)。
   if (ALLOWED_ORIGINS.has('*') || ALLOWED_ORIGINS.has('0.0.0') || ALLOWED_ORIGINS.has('0.0.0.0')) return true;
+  // 本地开发来源(localhost/127.0.0.1, 任意端口)无条件放行, 不受 ALLOWED_ORIGINS 影响
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) return true;
   return ALLOWED_ORIGINS.has(origin);
 }
 
