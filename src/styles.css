@@ -290,6 +290,11 @@ a {
 .traj-nav-speed { display: flex; gap: 6px; align-items: center; font-size: 0.72rem; color: var(--muted); }
 .traj-nav-speed input { width: 90px; accent-color: #3ecf8e; }
 .traj-nav-speed strong { font-family: var(--mono, monospace); color: var(--text); }
+.traj-nav-traj { display: flex; gap: 6px; align-items: center; font-size: 0.72rem; color: var(--muted); }
+.traj-nav-traj select {
+  flex: 1; min-width: 150px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04); color: var(--text); font-size: 0.72rem; font-family: var(--mono, monospace);
+}
 
 .route-control,
 .event-panel,
