@@ -2186,6 +2186,16 @@ h2 {
   box-shadow: 0 0 0 1px var(--orange);
 }
 
+/* 浏览器定位图例(并入主图例): 蓝点 */
+.legend-location {
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--ink-deep);
+  border-radius: 50%;
+  background: #4aa3ff;
+  box-shadow: 0 0 0 1px #4aa3ff;
+}
+
 .category-filter {
   display: flex;
   gap: 5px;

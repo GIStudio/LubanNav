@@ -344,6 +344,12 @@ export function CampusMap({
           <span><i class="legend-road" />{t('map.legend.road')}</span>
           <span><i class="legend-water" />{t('map.legend.water')}</span>
           {showIndoor && (<span><i class="legend-indoor" />{t('map.legend.indoor')}</span>)}
+          {positionSource && (
+            <span class="legend-source">
+              <i class={positionSource === 'robot' ? 'legend-robot' : 'legend-location'} />
+              {t(`map.positionSources.${positionSource}`)}
+            </span>
+          )}
         </div>
         <button
           type="button"
@@ -388,12 +394,6 @@ export function CampusMap({
             })
             : t('map.noteOutdoor')}
         </div>
-        {positionSource && (
-          <div class={`position-source-chip ${positionSource === 'robot' ? 'rtk' : 'browser'}`} role="status">
-            <i />
-            {t(`map.positionSources.${positionSource}`)}
-          </div>
-        )}
         <div class="zoom-controls" aria-label={t('map.zoomAria')}>
           <button onClick={() => mapRef.current?.zoomIn()} aria-label={t('map.zoomIn')}>＋</button>
           <button onClick={resetView} aria-label={t('map.zoomReset')}>{zoom.toFixed(1)}</button>
