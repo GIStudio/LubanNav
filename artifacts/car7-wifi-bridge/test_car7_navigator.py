@@ -60,15 +60,18 @@ def test_heading_estimator():
 
 
 def test_right_turn_when_target_is_east_but_heading_north():
-    """车在起点朝北 (heading≈pi/2), 目标在正东 → 到点后应右转 (angular<0)。"""
-    wps = [{"lat": 0.0, "lon": 0.0}, {"lat": 0.0, "lon": 2e-4}]  # 目标在东
-    nav2 = nav.StopAndGoNavigator(wps, speed=0.3, radius=0.3, min_leg=0.0, turn_thresh_deg=5)
-    # 建航向: 向北移动 (lon 不变, lat 增加)
+    """车在起点朝北 (heading≈pi/2), 目标在正东 → 到点后应右转 (angular<0)。
+
+    车在 wp0 半径内 → 推进到 wp1(正东), 需从朝北转向正东 → 右转(负角速度)。
+    """
+    wps = [{"lat": 0.0, "lon": 0.0}, {"lat": 0.0, "lon": 2e-4}]  # wp1 在东
+    nav2 = nav.StopAndGoNavigator(wps, speed=0.3, radius=0.5, min_leg=0.0, turn_thresh_deg=5)
+    # 建航向: 向北大位移 (lon 不变, lat 增加)
     nav2.on_position(0.0, 0.0, 0.0)
-    nav2.on_position(3e-6, 0.0, 0.0)   # 向北
-    check("north heading established", nav2.heading() is not None and nav2.heading() > 0.5, nav2.heading())
-    # 车仍在起点附近 → wp0 在半径内, control 会推进到 wp1 并进入 ALIGN
-    lin, ang = nav2.control()
+    nav2.on_position(3e-6, 0.0, 0.0)   # 向北 → heading≈pi/2
+    check("north heading established", nav2.heading() > 0.5, nav2.heading())
+    nav2.control()                     # call1: 到达 wp0, 推进/进入 ALIGN
+    lin, ang = nav2.control()          # call2: 以 wp1 方位(东) 计算 → 右转
     check("right turn angular<0", ang < 0, (lin, ang))
 
 
@@ -121,6 +124,25 @@ def test_align_speed_high_enough_for_diff():
     check("tolerant heading min_move", nav.HeadingEstimator().min_move <= 0.03, nav.HeadingEstimator().min_move)
 
 
+def test_align_u_turn_left():
+    """掉头/大转角(方向相反, err>turn_hard_deg): 车靠右行驶, 直接向左转(正角速度), 不做渐进纠偏。
+
+    车朝东(heading=0), 目标在正西(err≈π, 完全反向) → 硬转分支 → 左转(>0)。
+    """
+    import math
+    import time
+    nav2 = nav.StopAndGoNavigator([{"lat": 0.0, "lon": 0.0}, {"lat": 0.0, "lon": 2e-4}],
+                                  radius=0.3, min_leg=0.0, max_align_secs=60.0)
+    nav2.align_start = time.monotonic()   # 避免触发超时
+    nav2.hdg.heading = 0.0                # 车头朝东(0)
+    nav2.state = nav2.STATE_ALIGN
+    lin, ang = nav2._align_cmd(math.pi)   # 目标正西, err≈π(掉头) → 直接左转(角速度>0)
+    check("u-turn: direct left (ang>0)", ang > 0.3 and abs(ang) >= nav2.max_ang - 1e-6, (lin, ang))
+    # 小转角(15°)仍走比例纠偏: 不饱和到 max_ang
+    lin2, ang2 = nav2._align_cmd(math.pi / 12)
+    check("small turn: proportional", 0.0 < ang2 < nav2.max_ang, (lin2, ang2))
+
+
 if __name__ == "__main__":
     test_build_key_waypoints()
     test_angle_diff()
@@ -130,6 +152,7 @@ if __name__ == "__main__":
     test_arrival_advances_waypoint()
     test_odom_yaw_calibration()
     test_align_timeout_forces_forward()
+    test_align_u_turn_left()
     test_align_speed_high_enough_for_diff()
     print("\n{} passed, {} failed".format(PASSED, len(FAILED)))
     sys.exit(1 if FAILED else 0)

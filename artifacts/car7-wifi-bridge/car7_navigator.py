@@ -149,7 +149,7 @@ class StopAndGoNavigator:
     def __init__(self, waypoints, speed=3.0, radius=0.6, min_leg=1.2,
                  turn_thresh_deg=25.0, k_turn=1.6, align_speed=0.18,
                  align_tol_deg=8.0, k_align=1.2, max_ang=0.6, decel_dist=1.5,
-                 start_speed=0.12, min_speed=0.08, max_align_secs=6.0):
+                 start_speed=0.12, min_speed=0.08, max_align_secs=6.0, turn_hard_deg=135.0):
         self.waypoints = build_key_waypoints(waypoints, min_leg, turn_thresh_deg)
         self.speed = speed
         self.radius = radius
@@ -158,6 +158,7 @@ class StopAndGoNavigator:
         self.align_tol = math.radians(align_tol_deg)
         self.k_align = k_align
         self.max_ang = max_ang
+        self.turn_hard_deg = math.radians(turn_hard_deg)
         self.decel_dist = decel_dist
         self.start_speed = start_speed
         self.min_speed = min_speed
@@ -301,6 +302,11 @@ class StopAndGoNavigator:
         if abs(err) <= self.align_tol:
             self.state = self.STATE_FORWARD
             return (0.0, 0.0)
+        # 掉头/大转角(方向相反): 不渐进纠偏, 先固定向左转(逆时针, angular>0)消除转角,
+        # 待转到接近目标(转入比例区)后再微调对齐, 避免保守犹豫/反复。
+        # 车靠右行驶, 掉头走左侧更符合路权与转弯半径。
+        if abs(err) > self.turn_hard_deg:
+            return (self.align_speed, self.max_ang)
         ang = clamp(self.k_align * err, -self.max_ang, self.max_ang)
         return (self.align_speed, ang)
 
@@ -328,6 +334,8 @@ def main():
     parser.add_argument("--k-turn", type=float, default=1.6)
     parser.add_argument("--k-align", type=float, default=1.2)
     parser.add_argument("--max-ang", type=float, default=0.6)
+    parser.add_argument("--turn-hard-deg", type=float, default=135.0,
+                        help="掉头触发角(deg): |err| 超过则直接向左硬转, 不做渐进纠偏")
     parser.add_argument("--hz", type=float, default=10.0)
     parser.add_argument("--fix-topic", default="/fix")
     parser.add_argument("--cmd-topic", default="/cmd_vel")
@@ -343,6 +351,7 @@ def main():
     from sensor_msgs.msg import NavSatFix
     from geometry_msgs.msg import Twist
     from nav_msgs.msg import Odometry
+    from std_msgs.msg import String
 
     # 加载航点
     with open(args.waypoints, "r", encoding="utf-8") as handle:
@@ -354,15 +363,18 @@ def main():
 
     nav = StopAndGoNavigator(wps, speed=args.speed, radius=args.radius,
                              min_leg=args.min_leg, turn_thresh_deg=args.turn_thresh,
-                             k_turn=args.k_turn, k_align=args.k_align, max_ang=args.max_ang)
+                             k_turn=args.k_turn, k_align=args.k_align, max_ang=args.max_ang,
+                             turn_hard_deg=args.turn_hard_deg)
 
     class NavNode(Node):
         def __init__(self):
             super().__init__("car7_navigator")
             self.pub = self.create_publisher(Twist, args.cmd_topic, 10)
+            self.pub_status = self.create_publisher(String, "/nav_status", 10)
             self.sub = self.create_subscription(NavSatFix, args.fix_topic, self._on_fix, 10)
             self.sub_odom = self.create_subscription(Odometry, "/odom", self._on_odom, 10)
             self.gps_ok = False
+            self._status_cnt = 0
             self.create_timer(1.0 / args.hz, self._control)
             self.get_logger().info(
                 "car7-nav 启动: {} 个关键点 (原{}点) speed={} radius={} turn_thresh={}".format(
@@ -393,16 +405,32 @@ def main():
                 # 无有效 fix → 停车, 等待信号
                 stop = Twist()
                 self.pub.publish(stop)
+                self._emit_status()
                 return
             cmd = nav.control()
             if cmd is None:
                 stop = Twist()
                 self.pub.publish(stop)
+                self._emit_status()
                 return
             twist = Twist()
             twist.linear.x = float(cmd[0])
             twist.angular.z = float(cmd[1])
             self.pub.publish(twist)
+            self._emit_status()
+
+        def _emit_status(self):
+            self._status_cnt += 1
+            if self._status_cnt % 4 != 0:
+                return
+            import json as _json
+            st = nav.status()
+            st["gpsOk"] = bool(self.gps_ok)
+            st["odomYaw"] = round(nav.odom_yaw, 3) if nav.odom_yaw is not None else None
+            st["yawOffset"] = round(nav.yaw_offset, 3) if nav.yaw_offset is not None else None
+            msg = String()
+            msg.data = _json.dumps(st, ensure_ascii=False)
+            self.pub_status.publish(msg)
 
     rclpy.init()
     node = NavNode()
