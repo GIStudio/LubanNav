@@ -8,7 +8,7 @@
  * the car. When unreachable the poller reports `offline` instead of failing.
  */
 
-export const DEFAULT_CAR_STATUS_URL = 'http://10.7.181.161:8901/api/status';
+export const DEFAULT_CAR_STATUS_URL = '/api/status'; // 同源相对: 由所在环境 nginx/vite 把 /api 反代到车机 8901
 
 export function loadCarStatusUrl() {
   try {
